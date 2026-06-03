@@ -166,15 +166,17 @@ POST /api/documents/upload
 DELETE /api/documents/{id}
 
 POST /api/search/
-POST /api/search/index   ← trigger reindex to Azure AI Search
+POST /api/search/index          ← trigger Azure SQL Indexer (syncs SQL view → search)
+GET  /api/search/index/status   ← SQL indexer run status
 ```
 
 ## Azure Services Setup
 
 ### Azure AI Search
 1. Create an Azure AI Search resource
-2. The app will auto-create the `buildtrack-index` on first search
-3. Run `POST /api/search/index` to index all your data
+2. Run `python azure/search/setup_sql_indexer.py` from `backend/` (creates index, SQL view, indexer)
+3. The SQL Indexer runs every 15 minutes; uploads/deletes also trigger a debounced run via the API
+4. Do **not** use manual Python indexing — all searchable content comes from `vw_global_search_documents`
 
 ### Azure OpenAI
 1. Create an Azure OpenAI resource

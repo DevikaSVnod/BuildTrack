@@ -1,0 +1,348 @@
+from typing import List, Optional, Dict, Any
+from concurrent.futures import ThreadPoolExecutor
+from app.core.config import settings
+from app.search.indexer import get_search_client, VECTOR_FIELD
+from app.search.query_intel import (
+    QueryAnalysis,
+    analyze_query,
+    rerank_score,
+    is_workforce_aggregate_query,
+    extract_project_qualifier,
+)
+from app.search.query_planner import QueryMode, plan_query
+from app.search.structured_filters import execute_exhaustive_plan
+import json
+import time
+import hashlib
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def _get_query_vector(text: str) -> Optional[List[float]]:
+    """Return embedding vector for the query, or None if not available."""
+    try:
+        from app.search.embeddings import embed_text
+        return embed_text(text)
+    except Exception as e:
+        logger.debug(f"Query embedding skipped: {e}")
+        return None
+
+_search_cache: Dict[str, tuple] = {}
+SEARCH_CACHE_TTL = 120
+
+# Limit parallel Azure calls so login/API stay responsive
+_executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="search")
+
+
+def _search_cache_key(query: str, filter_type: Optional[str], top_k: int, analysis_key: str) -> str:
+    raw = f"{query.strip().lower()}|{filter_type}|{top_k}|{analysis_key}"
+    return hashlib.md5(raw.encode()).hexdigest()
+
+
+def _merge_results(*lists: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    seen: set[str] = set()
+    merged: List[Dict[str, Any]] = []
+    for lst in lists:
+        for item in lst:
+            rid = item.get("id", "")
+            if rid and rid not in seen:
+                seen.add(rid)
+                merged.append(item)
+    return merged
+
+
+def hybrid_search(
+    query: str,
+    filter_type: Optional[str] = None,
+    top_k: int = 8,
+    analysis: Optional[QueryAnalysis] = None,
+) -> List[Dict[str, Any]]:
+    if analysis is None:
+        analysis = analyze_query(query, default_top_k=top_k)
+
+    plan = plan_query(query, analysis, filter_type=filter_type, top_k=top_k)
+    effective_top = plan.max_results if plan.is_exhaustive() else (
+        analysis.top_k if filter_type in (None, "all", "") else top_k
+    )
+    key = _search_cache_key(query, filter_type, effective_top, analysis.cache_suffix())
+    if key in _search_cache:
+        ts, cached = _search_cache[key]
+        if time.time() - ts < SEARCH_CACHE_TTL:
+            return cached
+
+    client = get_search_client()
+    if not client:
+        return _fallback_results(query)
+
+    try:
+        # Exhaustive modes — filter / list-all (never top-K truncation)
+        if plan.is_exhaustive() and plan.mode != QueryMode.WORKFORCE:
+            exhaustive = execute_exhaustive_plan(plan)
+            if exhaustive is not None:
+                _search_cache[key] = (time.time(), exhaustive)
+                return exhaustive
+
+        filter_expr = None
+        if filter_type and filter_type != "all":
+            type_map = {
+                "projects": "project",
+                "tasks": "task",
+                "documents": "document",
+                "team": "team",
+            }
+            mapped = type_map.get(filter_type, filter_type)
+            filter_expr = f"content_type eq '{mapped}'"
+        elif (
+            analysis.content_types == ["team"]
+            and not filter_type
+            and extract_project_qualifier(query)
+        ):
+            # Project-specific workforce query (e.g. "Core Members in Metro Station")
+            # → restrict to team docs only so all result slots go to finding members
+            filter_expr = "content_type eq 'team'"
+
+        # Decide whether to embed this query.
+        # Skip for very short / trivial queries — BM25 is sufficient and we save
+        # the round-trip to Azure OpenAI (~1-3 s).
+        _should_embed = len(query.split()) >= 3 or analysis.is_question
+
+        # Fire the embedding request in the background immediately so it can
+        # overlap with the Azure AI Search round-trip.  We only harvest the
+        # result once BM25 is done (non-blocking check with a short timeout).
+        _f_embed = _executor.submit(_get_query_vector, query) if _should_embed else None
+
+        def _run_search(search_text: str, use_semantic: bool, limit: int,
+                        vector: Optional[List[float]] = None) -> list:
+            kwargs: Dict[str, Any] = {
+                "search_text": search_text,
+                "top": limit,
+                "select": ["id", "title", "content", "content_type", "url", "metadata"],
+            }
+            if filter_expr:
+                kwargs["filter"] = filter_expr
+            if use_semantic:
+                kwargs["query_type"] = "semantic"
+                kwargs["semantic_configuration_name"] = "default"
+
+            # Attach vector query when a vector is available (hybrid search)
+            if vector:
+                try:
+                    from azure.search.documents.models import VectorizedQuery
+                    vq = VectorizedQuery(
+                        vector=vector,
+                        k_nearest_neighbors=limit,
+                        fields=VECTOR_FIELD,
+                    )
+                    kwargs["vector_queries"] = [vq]
+                except Exception as ve:
+                    logger.debug(f"VectorizedQuery not attached: {ve}")
+
+            rows = []
+            for r in client.search(**kwargs):
+                metadata = {}
+                try:
+                    metadata = json.loads(r.get("metadata", "{}") or "{}")
+                except Exception:
+                    pass
+                rows.append({
+                    "id": r.get("id", ""),
+                    "title": r.get("title", ""),
+                    "snippet": (r.get("content", "") or "")[:220],
+                    "content_type": r.get("content_type", ""),
+                    "url": r.get("url", ""),
+                    "metadata": metadata,
+                    "score": r.get("@search.score", 0),
+                })
+            return rows
+
+        fetch_n = plan.fetch_limit if plan.mode == QueryMode.SEMANTIC else min(max(effective_top, 15), 40)
+
+        def _resolve_vector(timeout: float = 4.0) -> Optional[List[float]]:
+            """Return the embedding vector once it's ready, or None on timeout."""
+            if _f_embed is None:
+                return None
+            try:
+                return _f_embed.result(timeout=timeout)
+            except Exception:
+                return None
+
+        # Workforce /team page: return all registered personnel (8 users)
+        if is_workforce_aggregate_query(analysis.original):
+            team_filter = filter_expr or "content_type eq 'team'"
+            # For workforce queries, let the embedding finish (it's a short query)
+            query_vector = _resolve_vector(timeout=4.0)
+
+            def _team_search(search_text: str, limit: int) -> list:
+                kwargs: Dict[str, Any] = {
+                    "search_text": search_text,
+                    "top": limit,
+                    "select": ["id", "title", "content", "content_type", "url", "metadata"],
+                    "filter": team_filter,
+                }
+                if query_vector:
+                    try:
+                        from azure.search.documents.models import VectorizedQuery
+                        kwargs["vector_queries"] = [VectorizedQuery(
+                            vector=query_vector,
+                            k_nearest_neighbors=limit,
+                            fields=VECTOR_FIELD,
+                        )]
+                    except Exception:
+                        pass
+                rows = []
+                for r in client.search(**kwargs):
+                    metadata = {}
+                    try:
+                        metadata = json.loads(r.get("metadata", "{}") or "{}")
+                    except Exception:
+                        pass
+                    rows.append({
+                        "id": r.get("id", ""),
+                        "title": r.get("title", ""),
+                        "snippet": (r.get("content", "") or "")[:220],
+                        "content_type": r.get("content_type", ""),
+                        "url": r.get("url", ""),
+                        "metadata": metadata,
+                        "score": r.get("@search.score", 0),
+                    })
+                return rows
+
+            items = _team_search(
+                "workforce personnel staff registered LMS team member", 20
+            )
+            if len(items) < 4:
+                items = _merge_results(items, _team_search("*", 20))
+
+            # One row per person (same as /team page)
+            seen_users: set[int] = set()
+            unique: List[Dict[str, Any]] = []
+            for item in sorted(items, key=lambda x: x.get("score", 0), reverse=True):
+                uid = item.get("metadata", {}).get("user_id")
+                if uid is not None:
+                    if uid in seen_users:
+                        continue
+                    seen_users.add(int(uid))
+                unique.append(item)
+
+            for item in unique:
+                item["score"] = rerank_score(item, analysis)
+            unique.sort(key=lambda x: x.get("score", 0), reverse=True)
+            items = unique[:effective_top]
+            _search_cache[key] = (time.time(), items)
+            return items
+
+        # Fast path: short keyword queries → BM25 + vector run in parallel.
+        # Embedding fires in the background (_f_embed), BM25 also runs in parallel.
+        # We wait for BM25 (fast, ~500ms) then check if embedding is done.
+        needs_deep_search = (
+            analysis.is_question
+            or bool(analysis.content_types)
+            or bool(analysis.status_hints)
+            or len(query.split()) > 6
+        )
+
+        if not needs_deep_search:
+            # Run BM25 search on executor (parallel with background embedding)
+            f_bm25 = _executor.submit(
+                _run_search, analysis.search_text or query, False, fetch_n, None
+            )
+            bm25_items: List[Dict[str, Any]] = []
+            try:
+                bm25_items = f_bm25.result(timeout=8)
+            except Exception as e:
+                logger.warning(f"BM25 search failed: {e}")
+
+            # Non-blocking check: did embedding finish while BM25 was running?
+            query_vector = _resolve_vector(timeout=0.05)
+            if query_vector and bm25_items:
+                # Upgrade to hybrid: quick vector re-search and merge
+                try:
+                    hybrid_items = _run_search(
+                        analysis.search_text or query, False, fetch_n, query_vector
+                    )
+                    items = _merge_results(hybrid_items, bm25_items)
+                except Exception:
+                    items = bm25_items
+            else:
+                items = bm25_items
+        else:
+            # Question / intent: 3 things in parallel —
+            #   embedding, semantic search, keyword search
+            keyword_text = analysis.search_text
+            if analysis.content_types:
+                keyword_text = f"{analysis.content_types[0]} {keyword_text}"
+
+            semantic_items: List[Dict[str, Any]] = []
+            keyword_items: List[Dict[str, Any]] = []
+
+            # Both Azure calls run without vector first (immediate start)
+            f_sem = _executor.submit(_run_search, analysis.original, True, fetch_n, None)
+            f_kw = _executor.submit(_run_search, keyword_text, False, fetch_n, None)
+
+            try:
+                semantic_items = f_sem.result(timeout=10)
+            except Exception as e:
+                logger.warning(f"Semantic search failed: {e}")
+            try:
+                keyword_items = f_kw.result(timeout=10)
+            except Exception as e:
+                logger.warning(f"Keyword search failed: {e}")
+
+            items = _merge_results(semantic_items, keyword_items)
+
+            # If embedding is now ready, re-rank using vector similarity score
+            query_vector = _resolve_vector(timeout=0.05)
+
+        if not items:
+            query_vector = _resolve_vector(timeout=2.0)
+            items = _run_search(query, use_semantic=False, limit=fetch_n, vector=query_vector)
+
+        for item in items:
+            item["score"] = rerank_score(item, analysis)
+        items.sort(key=lambda x: x.get("score", 0), reverse=True)
+        items = items[:effective_top]
+
+        _search_cache[key] = (time.time(), items)
+        if len(_search_cache) > 300:
+            oldest = sorted(_search_cache.items(), key=lambda x: x[1][0])[:80]
+            for k, _ in oldest:
+                del _search_cache[k]
+
+        return items
+
+    except Exception as e:
+        logger.error(f"Search error: {e}")
+        return _fallback_results(query)
+
+
+def get_cached_results(
+    query: str,
+    filter_type: Optional[str] = None,
+    top_k: int = 8,
+    analysis: Optional[QueryAnalysis] = None,
+) -> Optional[List[Dict[str, Any]]]:
+    """Return cached search results if /results was called moments before /answer."""
+    if analysis is None:
+        analysis = analyze_query(query, default_top_k=top_k)
+    effective_top = analysis.top_k if filter_type in (None, "all", "") else top_k
+    key = _search_cache_key(query, filter_type, effective_top, analysis.cache_suffix())
+    if key in _search_cache:
+        ts, cached = _search_cache[key]
+        if time.time() - ts < SEARCH_CACHE_TTL:
+            return cached
+    return None
+
+
+def _fallback_results(query: str) -> List[Dict[str, Any]]:
+    return [
+        {
+            "id": "fallback-1",
+            "title": "Azure Search Not Configured",
+            "snippet": "Configure AZURE_SEARCH_ENDPOINT and AZURE_SEARCH_KEY in .env to enable real search.",
+            "content_type": "project",
+            "url": "/projects",
+            "metadata": {},
+            "score": 0,
+        }
+    ]

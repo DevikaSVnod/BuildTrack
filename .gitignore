@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment files
+.env
+.env.*
+backend/.env
+frontend/.env.local
+
+# Virtual environments
+venv/
+.venv/
+
+# Next.js
+.next/
+out/
+
+# TypeScript
+*.tsbuildinfo
+
+# Node
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db

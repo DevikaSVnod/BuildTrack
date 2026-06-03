@@ -1,0 +1,470 @@
+"""
+Query understanding: detect questions, domain intent, status filters, and search terms.
+"""
+import re
+from dataclasses import dataclass, field
+from typing import List, Optional, Set
+
+# Natural-language → Azure content_type
+DOMAIN_SIGNALS: dict[str, list[str]] = {
+    "handover": [
+        "handover", "closeout", "close-out", "completion certificate",
+        "warranty", "defects liability", "dlp", "o&m manual", "as-built",
+    ],
+    "drawing": [
+        "drawing", "drawings", "specification", "specs", "revision", "rev ",
+        "structural plan", "architectural", "discipline",
+    ],
+    "safety": [
+        "safety", "hse", "incident", "near miss", "violation", "injury",
+        "observation", "hazard",
+    ],
+    "attendance": [
+        "attendance", "present", "absent", "late arrival", "workforce on site",
+        "labour", "labor register",
+    ],
+    "document": [
+        "document control", "uploaded file", "uploaded on", "uploaded",
+        "file type", "file size", "pdf", "dms", "docx", "report",
+    ],
+    "task": [
+        "task", "site activity", "activities", "kanban", "priority task",
+        "milestone",
+    ],
+    "project": [
+        "project", "budget", "progress", "construction site",
+    ],
+    "team": [
+        "team member", "team members", "core members", "core team",
+        "workforce", "personnel", "staff", "members of", "member in",
+        "project manager", "site engineer", "contractor", "engineers",
+        "who is", "who are", "who work",
+    ],
+}
+
+STATUS_WORDS = {
+    "pending": ["pending", "not signed", "awaiting", "outstanding"],
+    "approved": ["approved", "signed off"],
+    "open": ["open", "unresolved", "active incident"],
+    "closed": ["closed", "resolved", "completed"],
+    "high": ["high priority", "high severity", "urgent"],
+}
+
+QUESTION_STARTERS = (
+    "what", "which", "who", "where", "when", "how", "why",
+    "show", "list", "find", "tell", "give", "are there", "is there",
+    "do we", "does", "can you", "any",
+)
+
+STOP_WORDS = {
+    "a", "an", "the", "in", "on", "at", "for", "to", "of", "and", "or",
+    "is", "are", "was", "were", "be", "been", "being", "have", "has", "had",
+    "do", "does", "did", "will", "would", "could", "should", "may", "might",
+    "me", "my", "our", "we", "you", "your", "all", "any", "some", "with",
+    "from", "about", "into", "that", "this", "these", "those", "there",
+    "their", "them", "it", "its", "by", "as", "up", "out", "so", "if",
+    "not", "no", "yes", "please", "tell", "show", "list", "find", "give",
+    "what", "which", "who", "where", "when", "how", "why", "many", "much",
+    "status", "documents", "document", "items", "records",
+}
+
+
+@dataclass
+class QueryAnalysis:
+    original: str
+    is_question: bool
+    search_text: str
+    content_types: List[str] = field(default_factory=list)
+    status_hints: List[str] = field(default_factory=list)
+    top_k: int = 8
+
+    def cache_suffix(self) -> str:
+        parts = [self.search_text]
+        if self.content_types:
+            parts.append("|".join(sorted(self.content_types)))
+        if self.status_hints:
+            parts.append("|".join(sorted(self.status_hints)))
+        return "|".join(parts)
+
+
+def _normalize(text: str) -> str:
+    return re.sub(r"\s+", " ", text.strip().lower())
+
+
+def is_question(query: str) -> bool:
+    q = _normalize(query)
+    if not q:
+        return False
+    if q.endswith("?"):
+        return True
+    if any(q.startswith(s + " ") or q == s for s in QUESTION_STARTERS):
+        return True
+    if re.search(r"\b(how many|how much|what is|what are|which)\b", q):
+        return True
+    return False
+
+
+def is_workforce_aggregate_query(query: str) -> bool:
+    """Matches /team page — total personnel, not daily attendance."""
+    q = _normalize(query)
+    if re.search(r"\b(total|all|entire|full)\s+(workforce|personnel|staff|team)\b", q):
+        return True
+    if re.search(r"\bworkforce\s+(total|count|size|number)\b", q):
+        return True
+    if q in ("total workforce", "total personnel", "all personnel", "all workforce"):
+        return True
+    if "personnel registered" in q or "how many personnel" in q or "how many workforce" in q:
+        return True
+    return False
+
+
+def detect_content_types(query: str) -> List[str]:
+    q = _normalize(query)
+    if is_workforce_aggregate_query(q):
+        return ["team"]
+    found: List[str] = []
+    for ctype, signals in DOMAIN_SIGNALS.items():
+        if any(sig in q for sig in signals):
+            found.append(ctype)
+    # "workforce" alone → team (LMS), not attendance register
+    if "workforce" in q and "attendance" not in q and "present" not in q and "absent" not in q:
+        if "team" not in found:
+            found.append("team")
+        found = [t for t in found if t != "attendance"]
+    return found
+
+
+def detect_status_hints(query: str) -> List[str]:
+    q = _normalize(query)
+    hints: List[str] = []
+    for status, phrases in STATUS_WORDS.items():
+        if any(p in q for p in phrases):
+            hints.append(status)
+    return hints
+
+
+def parse_progress_filter(query: str) -> Optional[int]:
+    """
+    Extract a numeric progress value from filter-style queries.
+    e.g. 'projects with 0 progress', 'progress at 100%', 'zero progress'
+    """
+    q = _normalize(query)
+    if re.search(r"\b(zero|no)\s+progress\b", q):
+        return 0
+    patterns = [
+        r"(?:with|at|having|equals?|=)\s*(\d+)\s*(?:%|\s)?progress",
+        r"progress\s*(?:of|at|is|=)\s*(\d+)\s*%?",
+        r"(\d+)\s*%\s*progress",
+        r"progress\s*(\d+)\s*%",
+    ]
+    for pat in patterns:
+        m = re.search(pat, q)
+        if m:
+            return int(m.group(1))
+    return None
+
+
+# Natural-language status → metadata.status values in the index
+_STATUS_FILTER_MAP = {
+    "on hold": "On Hold",
+    "in progress": "In Progress",
+    "planning": "Planning",
+    "completed": "Completed",
+    "done": "Done",
+    "open": "Open",
+    "closed": "Closed",
+    "resolved": "Resolved",
+    "todo": "To Do",
+    "to do": "To Do",
+    "review": "Review",
+    "approved": "Approved",
+    "pending": "Pending",
+}
+
+
+def parse_status_filter(query: str) -> Optional[str]:
+    """Extract an exact status filter when the query asks for it."""
+    q = _normalize(query)
+    # Longest phrase first so "in progress" beats "progress"
+    for phrase in sorted(_STATUS_FILTER_MAP.keys(), key=len, reverse=True):
+        if phrase in q:
+            return _STATUS_FILTER_MAP[phrase]
+    return None
+
+
+def target_content_types_for_filter(query: str, analysis: QueryAnalysis) -> List[str]:
+    """Which content types to scan for structured metadata filters."""
+    q = _normalize(query)
+    if any(w in q for w in ("timeline", "phase", "phases", "milestone", "gantt")):
+        return ["timeline"]
+    if "task" in q or "activit" in q:
+        return ["task"]
+    if "project" in q:
+        # Project-level progress queries also include timeline phases (0% phases).
+        if parse_progress_filter(query) is not None:
+            return ["project", "timeline"]
+        return ["project"]
+    if analysis.content_types:
+        return list(dict.fromkeys(analysis.content_types))
+    return ["project", "task", "timeline", "document", "handover", "drawing", "safety"]
+
+
+def extract_search_terms(query: str) -> str:
+    """Strip question filler; keep entities and domain terms for BM25."""
+    q = _normalize(query).rstrip("?")
+    tokens = re.findall(r"[a-z0-9]+", q)
+    kept: List[str] = []
+    for t in tokens:
+        if t in STOP_WORDS and len(tokens) > 3:
+            continue
+        kept.append(t)
+    if not kept:
+        return query.strip()
+    # Re-inject multi-word domain phrases if present in original
+    text = " ".join(kept)
+    for signals in DOMAIN_SIGNALS.values():
+        for sig in signals:
+            if " " in sig and sig in q:
+                text = f"{text} {sig}"
+    return text.strip() or query.strip()
+
+
+def analyze_query(query: str, default_top_k: int = 8) -> QueryAnalysis:
+    q = query.strip()
+    question = is_question(q)
+    content_types = detect_content_types(q)
+    status_hints = detect_status_hints(q)
+
+    # Questions: use full query for semantic; lean keywords for BM25 merge
+    search_text = q if question else extract_search_terms(q)
+    if question and content_types:
+        # Add domain anchor so BM25 doesn't drift to unrelated "pending" projects
+        search_text = f"{' '.join(content_types)} {extract_search_terms(q)}"
+
+    top_k = 10 if question else default_top_k
+    if is_workforce_aggregate_query(_normalize(q)):
+        top_k = 15
+    elif "team" in content_types:
+        # Workforce / member queries need enough results to surface all project members
+        top_k = 15
+    elif content_types and not question:
+        top_k = max(top_k, 8)
+
+    if is_upload_date_query(q):
+        if "document" not in content_types:
+            content_types = ["document", *content_types]
+        top_k = max(top_k, 10)
+
+    if is_file_detail_query(q):
+        if "document" not in content_types:
+            content_types = ["document", *content_types]
+        top_k = max(top_k, 12)
+
+    # Filter queries (progress/status) must return every match, not top-K relevance picks.
+    if parse_progress_filter(q) is not None or parse_status_filter(q) is not None:
+        top_k = 50
+
+    return QueryAnalysis(
+        original=q,
+        is_question=question,
+        search_text=search_text,
+        content_types=content_types,
+        status_hints=status_hints,
+        top_k=top_k,
+    )
+
+
+def extract_upload_date(query: str) -> Optional[str]:
+    """
+    Parse an upload date from natural language.
+    Returns ISO date YYYY-MM-DD or None.
+    Handles: 2026-06-01, June 1 2026, Jun1 2026, Jun 1st 2026
+    """
+    q = query.strip()
+
+    m = re.search(r"\b(20\d{2})-(\d{1,2})-(\d{1,2})\b", q)
+    if m:
+        return f"{m.group(1)}-{int(m.group(2)):02d}-{int(m.group(3)):02d}"
+
+    month_map = {
+        "jan": 1, "january": 1, "feb": 2, "february": 2, "mar": 3, "march": 3,
+        "apr": 4, "april": 4, "may": 5, "jun": 6, "june": 6, "jul": 7, "july": 7,
+        "aug": 8, "august": 8, "sep": 9, "sept": 9, "september": 9,
+        "oct": 10, "october": 10, "nov": 11, "november": 11, "dec": 12, "december": 12,
+    }
+    month_pattern = "|".join(sorted(month_map.keys(), key=len, reverse=True))
+
+    # June 1 2026 / Jun 1, 2026 / Jun1 2026
+    m = re.search(
+        rf"\b({month_pattern})\.?\s*(\d{{1,2}})(?:st|nd|rd|th)?\s*,?\s*(20\d{{2}})\b",
+        q,
+        re.IGNORECASE,
+    )
+    if m:
+        month_key = m.group(1).lower().rstrip(".")
+        month = month_map.get(month_key)
+        if month:
+            return f"{m.group(3)}-{month:02d}-{int(m.group(2)):02d}"
+
+    # 1 June 2026
+    m = re.search(
+        rf"\b(\d{{1,2}})(?:st|nd|rd|th)?\s+(?:of\s+)?({month_pattern})\.?\s+(20\d{{2}})\b",
+        q,
+        re.IGNORECASE,
+    )
+    if m:
+        month_key = m.group(2).lower().rstrip(".")
+        month = month_map.get(month_key)
+        if month:
+            return f"{m.group(3)}-{month:02d}-{int(m.group(1)):02d}"
+
+    return None
+
+
+def is_upload_date_query(query: str) -> bool:
+    q = _normalize(query)
+    if extract_upload_date(query):
+        return True
+    return bool(re.search(r"\bupload(?:ed)?\s+(?:on|date)\b", q))
+
+
+def is_file_detail_query(query: str) -> bool:
+    q = _normalize(query)
+    return bool(
+        re.search(
+            r"\b(file size|file type|how (?:big|large)|size of|bytes|kb|mb|megabytes|kilobytes)\b",
+            q,
+        )
+    )
+
+
+def extract_document_name_tokens(query: str) -> List[str]:
+    """Tokens from the document name phrase, e.g. after 'of' in a file-size question."""
+    q = _normalize(query).rstrip("?")
+    m = re.search(r"\b(?:of|for|named|called)\s+(.+)$", q)
+    phrase = m.group(1) if m else q
+    return [
+        t for t in re.findall(r"[a-z0-9]+", phrase)
+        if len(t) > 3 and t not in STOP_WORDS and t not in {"size", "file", "document", "report"}
+    ]
+
+
+def extract_project_qualifier(query: str) -> Optional[str]:
+    """
+    Extract a specific project name from the query.
+    Looks for multi-word capitalized phrases or phrases after 'in/for/of/on/at'.
+    E.g. "Workforce in Highway Bridge Expansion" → "highway bridge expansion"
+    E.g. "Core Members in Metro Station Renovation Project" → "metro station renovation"
+    """
+    q = query.strip()
+    # Single generic words at the END that are part of the query, not the project name.
+    # Only strip one-word suffixes (e.g. "Project", "Site") — never compound nouns
+    # that are part of the actual project name (e.g. "Renovation", "Expansion").
+    _TRAILING_NOISE = re.compile(
+        r"\s+(?:project|construction site|work site|team|core|members?|staff"
+        r"|personnel|managers?|engineers?|contractors?)\s*$",
+        re.IGNORECASE,
+    )
+    # Match phrases after prepositions: "in/for/of/on/at <Name...>"
+    m = re.search(
+        r"\b(?:in|for|of|on|at|under|from)\s+([A-Z][A-Za-z0-9\s\-]+?)(?:\s*$|\s*[,?])",
+        q,
+    )
+    if m:
+        phrase = m.group(1).strip()
+        # Strip trailing noise words (e.g. "Project", "Site", "Team")
+        phrase = _TRAILING_NOISE.sub("", phrase).strip()
+        if len(phrase.split()) >= 2:  # at least 2 words = likely a project name
+            return phrase.lower()
+    return None
+
+
+def rerank_score(item: dict, analysis: QueryAnalysis) -> float:
+    """Boost results that match detected intent (on top of Azure score)."""
+    base = float(item.get("score") or 0)
+    title = (item.get("title") or "").lower()
+    snippet = (item.get("snippet") or "").lower()
+    content = (item.get("content") or snippet)[:400].lower()
+    ctype = item.get("content_type") or ""
+    meta = item.get("metadata") or {}
+    meta_text = " ".join(str(v).lower() for v in meta.values() if v)
+
+    boost = 0.0
+
+    if is_workforce_aggregate_query(analysis.original):
+        if ctype == "team":
+            boost += 20.0
+        else:
+            boost -= 25.0
+    elif analysis.content_types:
+        if ctype in analysis.content_types:
+            boost += 12.0
+        else:
+            boost -= 10.0
+
+    for hint in analysis.status_hints:
+        if hint in title or hint in snippet or hint in meta_text:
+            boost += 5.0
+        status_val = str(meta.get("status", "")).lower()
+        if hint in status_val:
+            boost += 6.0
+
+    # ── Project qualifier check ────────────────────────────────────────────────
+    # If the query names a specific project (e.g. "Highway Bridge Expansion"),
+    # strongly boost results that contain it and penalize those that don't.
+    project_qualifier = extract_project_qualifier(analysis.original)
+    if project_qualifier:
+        qualifier_words = set(project_qualifier.split())
+        # How many qualifier words appear in this result's text?
+        result_text = f"{title} {snippet} {content} {meta_text}"
+        matches = sum(1 for w in qualifier_words if w in result_text and len(w) > 3)
+        match_ratio = matches / len(qualifier_words) if qualifier_words else 0
+
+        if match_ratio >= 0.6:
+            boost += 10.0   # most qualifier words found → strong boost
+        elif match_ratio >= 0.3:
+            boost += 3.0    # partial match
+        elif ctype == "team":
+            # For workforce queries: mild penalty only — don't hide members whose
+            # docs weren't re-indexed yet with the project name
+            boost -= 3.0
+        else:
+            boost -= 12.0   # non-team result doesn't mention the project → penalize hard
+
+    # Title / phrase overlap with original question
+    orig_tokens = set(re.findall(r"[a-z0-9]+", analysis.original.lower()))
+    overlap = sum(1 for t in orig_tokens if t in title or t in snippet and len(t) > 3)
+    boost += min(overlap * 0.8, 4.0)
+
+    # Upload-date queries: boost the doc uploaded on that exact date
+    target_date = extract_upload_date(analysis.original)
+    if target_date and ctype == "document":
+        item_date = str(meta.get("upload_date", ""))
+        item_display = str(meta.get("upload_date_display", "")).lower()
+        if item_date == target_date:
+            boost += 30.0
+        elif target_date in content or target_date.replace("-", " ") in content:
+            boost += 20.0
+        elif item_display and any(
+            part in item_display
+            for part in target_date.split("-")[1:]  # month/day fragments
+        ):
+            boost += 8.0
+        elif item_date and item_date != target_date:
+            boost -= 12.0
+
+    # File-size / document detail queries: prefer the named document over project/timeline rows
+    if is_file_detail_query(analysis.original):
+        doc_tokens = extract_document_name_tokens(analysis.original)
+        if ctype == "document":
+            boost += 18.0
+            if doc_tokens:
+                title_hits = sum(1 for t in doc_tokens if t in title.replace("_", " "))
+                snippet_hits = sum(1 for t in doc_tokens if t in snippet.replace("_", " "))
+                boost += min(title_hits * 6.0 + snippet_hits * 2.0, 24.0)
+            if meta.get("file_size") or meta.get("file_size_display"):
+                boost += 8.0
+        elif ctype in {"project", "timeline", "handover", "report", "safety", "task"}:
+            boost -= 15.0
+
+    return base + boost
