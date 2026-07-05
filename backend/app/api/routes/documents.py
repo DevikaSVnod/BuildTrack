@@ -6,13 +6,16 @@ import os
 import logging
 import asyncio
 from app.core.database import get_db
+from app.search import content_service
 from app.core.config import settings
 from app.models.document import Document
 from app.models.user import User
 from app.schemas.document import DocumentResponse, DocumentCreate
 from app.api.deps import get_current_user
 from app.search.sql_indexer import trigger_sql_indexer_async
-from app.search import content_service
+from app.search.blob_indexer import trigger_blob_indexer_async
+from app.search.index_purge import purge_after_sql_delete
+from app.storage.document_blob import delete_document_blob, is_blob_url
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -74,9 +77,9 @@ async def upload_to_azure(file: UploadFile, filename: str) -> tuple[str, int]:
 def list_documents(
     project_id: Optional[int] = None,
     file_type: Optional[str] = None,
-    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """List documents from Azure AI Search (cached) — ids match /files/documents/{id}."""
     try:
         return content_service.documents(project_id=project_id, file_type=file_type)
     except RuntimeError as exc:
@@ -109,8 +112,9 @@ async def upload_document(
         .filter(Document.id == doc.id)
         .first()
     )
-    # Search index is updated ONLY via Azure SQL Indexer (reads vw_global_search_documents)
+    # Search index: SQL metadata indexer + blob RAG indexer (file content)
     trigger_sql_indexer_async()
+    trigger_blob_indexer_async()
     return DocumentResponse(**enrich_document(doc))
 
 
@@ -123,6 +127,13 @@ def delete_document(
     doc = db.query(Document).filter(Document.id == doc_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
+    if is_blob_url(doc.file_url):
+        try:
+            delete_document_blob(doc.file_url)
+        except Exception as exc:
+            logger.warning("Blob delete failed for document %s: %s", doc_id, exc)
     db.delete(doc)
     db.commit()
+    purge_after_sql_delete("document", doc_id)
     trigger_sql_indexer_async()
+    trigger_blob_indexer_async()

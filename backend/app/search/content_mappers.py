@@ -135,7 +135,8 @@ def map_documents(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for row in rows:
         meta = row.get("metadata", {})
         did = meta.get("doc_id") or _numeric_id(row["id"], "document-")
-        uploader = meta.get("uploader")
+        uploader_name = (meta.get("uploader") or "").strip()
+        upload_date = meta.get("upload_date") or meta.get("upload_date_display")
         out.append({
             "id": int(did),
             "name": row.get("title", ""),
@@ -143,10 +144,11 @@ def map_documents(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "file_url": meta.get("file_url"),
             "project_id": meta.get("project_id"),
             "project_name": meta.get("project_name"),
-            "uploaded_by": None,
+            "uploaded_by": meta.get("uploaded_by"),
             "uploader": None,
+            "uploader_name": uploader_name or None,
             "file_size": int(meta.get("file_size") or 0),
-            "created_at": meta.get("upload_date") or _now_iso(),
+            "created_at": upload_date or _now_iso(),
         })
     return out
 
@@ -211,12 +213,16 @@ def map_drawings(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         {
             "id": m.get("drawing_id") or _numeric_id(r["id"], "drawing-"),
             "drawingNo": m.get("drawing_no"),
-            "title": r.get("title", ""),
+            "title": r.get("title", "").split(" – ", 1)[-1] if " – " in r.get("title", "") else r.get("title", ""),
             "discipline": m.get("discipline"),
             "rev": m.get("revision"),
             "project": m.get("project"),
             "status": m.get("status"),
             "uploadedBy": m.get("uploaded_by"),
+            "sheet_notes": m.get("sheet_notes"),
+            "file_url": m.get("file_url"),
+            "file_type": m.get("file_type") or "PNG",
+            "file_size": int(m.get("file_size") or 0),
         }
         for r in rows
         for m in [r.get("metadata", {})]

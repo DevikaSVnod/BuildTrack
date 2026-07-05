@@ -5,14 +5,32 @@ import { Plus, Users, Sparkles, HardHat, ShieldCheck, ClipboardCheck, UserPlus }
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import TeamMemberCard from "@/components/team/TeamMemberCard";
+import AttendanceRegister, { type AttendanceRow } from "@/components/workforce/AttendanceRegister";
 import Input from "@/components/ui/Input";
-import { teamApi, projectsApi } from "@/lib/api";
+import { teamApi, operationalApi } from "@/lib/api";
+import { usePageData } from "@/hooks/usePageData";
+import { cachedProjectsOrFetch } from "@/lib/cachedFetch";
 import type { TeamMember, Project } from "@/types";
 
+type TeamPageData = { members: TeamMember[]; projects: Project[] };
+type Tab = "personnel" | "attendance";
+
 export default function TeamPage() {
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, reload } = usePageData<TeamPageData>(
+    "team-page",
+    async () => {
+      const [m, p] = await Promise.all([teamApi.list(), cachedProjectsOrFetch()]);
+      return { members: m.data, projects: p };
+    },
+  );
+  const { data: attendance, loading: attendanceLoading } = usePageData<AttendanceRow[]>(
+    "attendance",
+    () => operationalApi.attendance().then((r) => r.data),
+  );
+  const members = data?.members ?? [];
+  const projects = data?.projects ?? [];
+  const attendanceRows = attendance ?? [];
+  const [activeTab, setActiveTab] = useState<Tab>("personnel");
   const [showModal, setShowModal] = useState(false);
   const [highlightUserId, setHighlightUserId] = useState<number | null>(null);
   const searchParams = useSearchParams();
@@ -27,21 +45,12 @@ export default function TeamPage() {
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState("");
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [m, p] = await Promise.all([teamApi.list(), projectsApi.list()]);
-      setMembers(m.data);
-      setProjects(p.data);
-    } catch {
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchData(); }, []);
+  const fetchData = () => reload();
 
   useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "attendance") setActiveTab("attendance");
+
     const id = searchParams.get("userId");
     if (id) {
       setHighlightUserId(Number(id));
@@ -110,19 +119,43 @@ export default function TeamPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <a href="/attendance" className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors">
-            <ClipboardCheck size={15} /> Attendance
-          </a>
           <a href="/safety" className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors">
             <ShieldCheck size={15} /> Safety
           </a>
-          <Button onClick={() => setShowModal(true)}>
-            <UserPlus size={16} /> Add Personnel
-          </Button>
+          {activeTab === "personnel" && (
+            <Button onClick={() => setShowModal(true)}>
+              <UserPlus size={16} /> Add Personnel
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Workforce KPIs */}
+      <div className="border-b border-gray-200">
+        <div className="flex gap-1">
+          {([
+            { id: "personnel" as const, label: "Personnel", count: uniqueMembers.length },
+            { id: "attendance" as const, label: "Attendance", count: attendanceRows.length },
+          ]).map(({ id, label, count }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === id
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {label}
+              {count > 0 && <span className="ml-1.5 text-xs text-gray-400">({count})</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeTab === "attendance" ? (
+        <AttendanceRegister rows={attendanceRows} loading={attendanceLoading && attendanceRows.length === 0} />
+      ) : (
+        <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Total Personnel",  value: uniqueMembers.length,                                                icon: Users,         color: "text-primary",   bg: "bg-primary/10" },
@@ -150,7 +183,7 @@ export default function TeamPage() {
         </div>
       )}
 
-      {loading ? (
+      {loading && uniqueMembers.length === 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-white rounded-xl border h-48 animate-pulse" />
@@ -187,6 +220,8 @@ export default function TeamPage() {
             </div>
           ))}
         </div>
+      )}
+        </>
       )}
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Add Team Member">

@@ -67,6 +67,7 @@ export interface Document {
   project_name?: string;
   uploaded_by?: number;
   uploader?: User;
+  uploader_name?: string;
   file_size: number;
   created_at: string;
 }

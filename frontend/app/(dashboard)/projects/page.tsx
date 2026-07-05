@@ -1,39 +1,33 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Plus, Building2, Sparkles } from "lucide-react";
 import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
 import ProjectCard from "@/components/projects/ProjectCard";
-import ProjectForm from "@/components/projects/ProjectForm";
 import { projectsApi } from "@/lib/api";
+import { usePageData } from "@/hooks/usePageData";
 import type { Project } from "@/types";
+
+const Modal = dynamic(() => import("@/components/ui/Modal"), { ssr: false });
+const ProjectForm = dynamic(() => import("@/components/projects/ProjectForm"), { ssr: false });
 
 const FILTERS = ["all", "Planning", "In Progress", "Completed", "On Hold"] as const;
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const cacheKey = filter === "all" ? "projects" : `projects-${filter}`;
+  const { data: projects, loading, reload } = usePageData<Project[]>(
+    cacheKey,
+    () => projectsApi.list(filter === "all" ? undefined : filter).then((r) => r.data),
+    [filter],
+  );
+  const list = projects ?? [];
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
   const [highlightId, setHighlightId] = useState<number | null>(null);
   const searchParams = useSearchParams();
   const highlightRef = useRef<HTMLDivElement>(null);
-
-  const fetchProjects = async (f?: string) => {
-    setLoading(true);
-    try {
-      const res = await projectsApi.list(f || filter);
-      setProjects(res.data);
-    } catch {
-      setError("Failed to load projects");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchProjects(); }, [filter]);
 
   // Handle ?highlightId= from search navigation
   useEffect(() => {
@@ -51,8 +45,10 @@ export default function ProjectsPage() {
   const handleCreate = async (data: Partial<Project>) => {
     await projectsApi.create(data);
     setShowModal(false);
-    fetchProjects();
+    reload();
   };
+
+  const showSkeleton = loading && list.length === 0;
 
   return (
     <div className="space-y-6">
@@ -60,7 +56,7 @@ export default function ProjectsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {loading ? "Loading projects from database…" : `${projects.length} projects found`}
+            {showSkeleton ? "Loading projects…" : `${list.length} projects found`}
           </p>
         </div>
         <Button onClick={() => setShowModal(true)} className="gap-2">
@@ -87,7 +83,7 @@ export default function ProjectsPage() {
       </div>
 
       {/* Grid */}
-      {loading ? (
+      {showSkeleton ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-white rounded-xl border h-52 animate-pulse" />
@@ -95,7 +91,7 @@ export default function ProjectsPage() {
         </div>
       ) : error ? (
         <div className="text-center py-12 text-red-500">{error}</div>
-      ) : projects.length === 0 ? (
+      ) : list.length === 0 ? (
         <div className="text-center py-20">
           <Building2 size={48} className="text-gray-200 mx-auto mb-4" />
           <h3 className="font-semibold text-gray-500 mb-2">No projects found</h3>
@@ -106,7 +102,7 @@ export default function ProjectsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {projects.map((p) => (
+          {list.map((p) => (
             <div
               key={p.id}
               ref={highlightId === p.id ? highlightRef : null}

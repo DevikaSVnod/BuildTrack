@@ -47,3 +47,5 @@ CREATE TABLE dbo.safety_kpi_metrics (
     CONSTRAINT CK_safety_kpi_single_row CHECK (id = 1)
 );
 GO
+
+

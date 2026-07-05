@@ -1,6 +1,7 @@
 """Load all read-only page data from Azure AI Search (SQL indexer output)."""
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Optional
 
 from app.search import index_reader
@@ -20,8 +21,17 @@ from app.search.content_mappers import (
 )
 
 
+_load_pool = ThreadPoolExecutor(max_workers=6)
+
+
 def _load(*types: str) -> dict[str, list[dict[str, Any]]]:
-    return {t: index_reader.list_indexed(t) for t in types}
+    if not types:
+        return {}
+    if len(types) == 1:
+        t = types[0]
+        return {t: index_reader.list_indexed(t)}
+    futures = {_load_pool.submit(index_reader.list_indexed, t): t for t in types}
+    return {futures[fut]: fut.result() for fut in futures}
 
 
 def projects(status_filter: Optional[str] = None) -> list[dict[str, Any]]:
@@ -36,7 +46,7 @@ def project(project_id: int) -> Optional[dict[str, Any]]:
     row = index_reader.get_indexed(f"project-{project_id}")
     if not row:
         return None
-    bundle = _load("project", "task", "team")
+    bundle = _load("task", "team")
     mapped = map_projects([row], bundle["task"], bundle["team"])
     return mapped[0] if mapped else None
 
@@ -115,3 +125,4 @@ def milestones() -> list[dict[str, Any]]:
     rows = index_reader.list_indexed("timeline")
     milestone_rows = [r for r in rows if r["id"].startswith("dashboard-milestone-")]
     return map_milestones(milestone_rows)
+

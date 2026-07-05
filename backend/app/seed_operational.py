@@ -48,17 +48,6 @@ def seed_operational_data(db: Session) -> int:
         db.add(HandoverDocument(project_id=_project_id(db, pname), project_name=pname, **d))
 
     for d in [
-        {"drawing_no": "ST-001-A", "title": "Foundation Layout Plan", "discipline": "Structural", "revision": "Rev C", "project": "Highway Bridge Expansion", "status": "Approved", "uploaded_by": "Sarah Chen"},
-        {"drawing_no": "AR-005-B", "title": "Site Master Plan", "discipline": "Architectural", "revision": "Rev B", "project": "Metro Station Renovation", "status": "Under Review", "uploaded_by": "Priya Nair"},
-        {"drawing_no": "ME-012-A", "title": "HVAC Duct Routing – Level 2", "discipline": "MEP", "revision": "Rev A", "project": "Commercial Tower Phase 2", "status": "Approved", "uploaded_by": "James Okafor"},
-        {"drawing_no": "CI-003-C", "title": "Piling & Bored Pile Layout", "discipline": "Civil", "revision": "Rev C", "project": "Highway Bridge Expansion", "status": "Superseded", "uploaded_by": "Sarah Chen"},
-        {"drawing_no": "EL-007-A", "title": "Electrical Distribution Board", "discipline": "Electrical", "revision": "Rev A", "project": "Industrial Warehouse Build", "status": "Under Review", "uploaded_by": "Carlos Mendez"},
-        {"drawing_no": "ST-009-B", "title": "Roof Truss Detail – Span 24m", "discipline": "Structural", "revision": "Rev B", "project": "Metro Station Renovation", "status": "Approved", "uploaded_by": "Carlos Mendez"},
-    ]:
-        pname = d.pop("project")
-        db.add(EngineeringDrawing(project_id=_project_id(db, pname), project_name=pname, **d))
-
-    for d in [
         {"incident_type": "Near Miss", "description": "Worker slipped on wet surface near crane area", "project": "Highway Bridge Expansion", "severity": "Medium", "status": "Open", "reported_by": "James Okafor", "incident_date": date(2026, 5, 15)},
         {"incident_type": "Minor Injury", "description": "Cut on hand during steel rod handling – no PPE", "project": "Commercial Tower Phase 2", "severity": "Low", "status": "Closed", "reported_by": "Carlos Mendez", "incident_date": date(2026, 5, 10)},
         {"incident_type": "Safety Violation", "description": "Working at height without harness – third floor", "project": "Metro Station Renovation", "severity": "High", "status": "Open", "reported_by": "Sarah Chen", "incident_date": date(2026, 5, 18)},

@@ -28,7 +28,8 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    if (status === 401 || status === 403) {
       clearAuth();
       if (typeof window !== "undefined") {
         window.location.href = "/login";
@@ -104,6 +105,32 @@ export const documentsApi = {
 export const operationalApi = {
   handover: () => apiClient.get("/operational/handover"),
   drawings: () => apiClient.get("/operational/drawings"),
+  uploadDrawing: (data: {
+    file: File;
+    previewFile?: File;
+    drawingNo: string;
+    title: string;
+    discipline?: string;
+    revision?: string;
+    projectId?: number;
+    status?: string;
+    sheetNotes?: string;
+  }) => {
+    const formData = new FormData();
+    formData.append("file", data.file);
+    if (data.previewFile) formData.append("preview_file", data.previewFile);
+    formData.append("drawing_no", data.drawingNo);
+    formData.append("title", data.title);
+    if (data.discipline) formData.append("discipline", data.discipline);
+    if (data.revision) formData.append("revision", data.revision);
+    if (data.projectId) formData.append("project_id", String(data.projectId));
+    if (data.status) formData.append("status", data.status);
+    if (data.sheetNotes) formData.append("sheet_notes", data.sheetNotes);
+    return apiClient.post("/operational/drawings/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  deleteDrawing: (id: number) => apiClient.delete(`/operational/drawings/${id}`),
   safetyIncidents: () => apiClient.get("/operational/safety/incidents"),
   safetyMetrics: () => apiClient.get("/operational/safety/metrics"),
   attendance: () => apiClient.get("/operational/attendance"),
@@ -133,13 +160,22 @@ export const searchApi = {
     });
   },
   /** AI answer: called in background after results are shown. */
-  searchAI: (query: string, filterType?: string, topK?: number) => {
+  searchAI: (
+    query: string,
+    filterType?: string,
+    topK?: number,
+    signal?: AbortSignal,
+  ) => {
     const k = topK ?? (looksLikeQuestion(query) ? 10 : 8);
-    return apiClient.post<SearchResponse>("/search/answer", {
-      query,
-      filter_type: filterType || "all",
-      top_k: k,
-    });
+    return apiClient.post<SearchResponse>(
+      "/search/answer",
+      {
+        query,
+        filter_type: filterType || "all",
+        top_k: k,
+      },
+      { signal },
+    );
   },
   /** Trigger Azure SQL Indexer (syncs SQL view → Azure AI Search) */
   triggerSqlIndexer: () => apiClient.post("/search/index"),

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Text, BigInteger
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -32,6 +32,11 @@ class EngineeringDrawing(Base):
     project_name = Column(String(255), nullable=True)
     status = Column(String(50), nullable=True)
     uploaded_by = Column(String(255), nullable=True)
+    file_url = Column(String(1000), nullable=True)
+    preview_url = Column(String(1000), nullable=True)
+    file_type = Column(String(20), nullable=True)
+    file_size = Column(BigInteger, nullable=True)
+    sheet_notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     project = relationship("Project", backref="engineering_drawings")

@@ -208,7 +208,8 @@ SELECT
     CONCAT(
         d.drawing_no, ' ', d.title, ' ', ISNULL(d.discipline, ''), ' drawing ',
         ISNULL(d.revision, ''), ' ', ISNULL(d.status, ''), ' ',
-        ISNULL(COALESCE(p.name, d.project_name), ''), ' technical specifications'
+        ISNULL(COALESCE(p.name, d.project_name), ''), ' technical specifications ',
+        ISNULL(d.sheet_notes, ''), ' ', ISNULL(d.file_url, '')
     ) AS content,
     'drawing' AS content_type,
     '/drawings' AS url,
@@ -219,7 +220,19 @@ SELECT
             d.revision AS revision,
             d.status AS status,
             COALESCE(p.name, d.project_name) AS project,
-            d.id AS doc_id
+            d.uploaded_by AS uploaded_by,
+            d.id AS drawing_id,
+            d.sheet_notes AS sheet_notes,
+            d.file_url AS file_url,
+            d.file_type AS file_type,
+            d.file_size AS file_size,
+            CASE
+                WHEN ISNULL(d.file_size, 0) >= 1048576
+                    THEN CONCAT(CAST(CAST(d.file_size AS FLOAT) / 1048576.0 AS DECIMAL(10,2)), ' MB')
+                WHEN ISNULL(d.file_size, 0) >= 1024
+                    THEN CONCAT(CAST(CAST(d.file_size AS FLOAT) / 1024.0 AS DECIMAL(10,1)), ' KB')
+                ELSE 'unknown size'
+            END AS file_size_display
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
     ) AS metadata
 FROM dbo.engineering_drawings d
@@ -263,7 +276,7 @@ SELECT
         ISNULL(COALESCE(p.name, a.project_name), ''), ' site roll daily check-in'
     ) AS content,
     'attendance' AS content_type,
-    '/attendance' AS url,
+    '/team?tab=attendance' AS url,
     (
         SELECT
             a.person_name AS name,
@@ -315,7 +328,7 @@ SELECT
         'financial expenditure cost tracking budget vs spent reports'
     ) AS content,
     'report' AS content_type,
-    '/reports' AS url,
+    '/dashboard' AS url,
     (
         SELECT
             COALESCE(p.name, f.project_name) AS project,

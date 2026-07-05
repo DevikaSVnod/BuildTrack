@@ -47,3 +47,36 @@ def ping_database() -> bool:
     except Exception as exc:
         logger.warning("Database ping failed: %s", exc)
         return False
+
+
+_columns_checked = False
+
+
+def ensure_drawing_file_columns() -> None:
+    """Add file_url/file_type/file_size to engineering_drawings if missing (Azure SQL)."""
+    global _columns_checked
+    if _columns_checked:
+        return
+    if not settings.DATABASE_URL.startswith("mssql"):
+        _columns_checked = True
+        return
+    alters = [
+        "IF COL_LENGTH('dbo.engineering_drawings', 'file_url') IS NULL "
+        "ALTER TABLE dbo.engineering_drawings ADD file_url NVARCHAR(1000) NULL",
+        "IF COL_LENGTH('dbo.engineering_drawings', 'file_type') IS NULL "
+        "ALTER TABLE dbo.engineering_drawings ADD file_type NVARCHAR(20) NULL",
+        "IF COL_LENGTH('dbo.engineering_drawings', 'file_size') IS NULL "
+        "ALTER TABLE dbo.engineering_drawings ADD file_size BIGINT NULL",
+        "IF COL_LENGTH('dbo.engineering_drawings', 'sheet_notes') IS NULL "
+        "ALTER TABLE dbo.engineering_drawings ADD sheet_notes NVARCHAR(MAX) NULL",
+        "IF COL_LENGTH('dbo.engineering_drawings', 'preview_url') IS NULL "
+        "ALTER TABLE dbo.engineering_drawings ADD preview_url NVARCHAR(1000) NULL",
+    ]
+    try:
+        with engine.begin() as conn:
+            for stmt in alters:
+                conn.execute(text(stmt))
+    except Exception as exc:
+        logger.warning("Could not ensure drawing file columns: %s", exc)
+    finally:
+        _columns_checked = True

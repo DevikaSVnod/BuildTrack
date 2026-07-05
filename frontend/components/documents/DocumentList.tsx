@@ -1,7 +1,8 @@
 "use client";
-import { FileText, File, Table, Image, Trash2, ExternalLink, Sparkles } from "lucide-react";
+import { FileText, File, Table, Image, Trash2, Sparkles } from "lucide-react";
 import type { Document } from "@/types";
 import { formatDate, formatFileSize, cn } from "@/lib/utils";
+import FileActionButtons from "@/components/files/FileActionButtons";
 
 interface DocumentListProps {
   documents: Document[];
@@ -86,7 +87,7 @@ export default function DocumentList({ documents, onDelete, highlightId }: Docum
                 </td>
                 <td className="px-6 py-4 hidden md:table-cell">
                   <span className="text-sm text-gray-600">
-                    {doc.uploader?.full_name || "—"}
+                    {doc.uploader?.full_name || doc.uploader_name || "—"}
                   </span>
                 </td>
                 <td className="px-6 py-4 hidden lg:table-cell">
@@ -97,16 +98,13 @@ export default function DocumentList({ documents, onDelete, highlightId }: Docum
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2 justify-end">
-                    {doc.file_url && (
-                      <a
-                        href={doc.file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1.5 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 transition-colors"
-                      >
-                        <ExternalLink size={15} />
-                      </a>
-                    )}
+                    <FileActionButtons
+                      resource="documents"
+                      lookup={{ kind: "id", id: doc.id }}
+                      title={doc.name}
+                      filename={doc.name}
+                      fileType={doc.file_type}
+                    />
                     {onDelete && (
                       <button
                         onClick={() => onDelete(doc.id)}

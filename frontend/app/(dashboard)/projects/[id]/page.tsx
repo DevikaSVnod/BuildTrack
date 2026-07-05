@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useLayoutEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft, MapPin, Calendar, DollarSign,
-  TrendingUp, Edit2, Trash2, Plus,
+  Edit2, Trash2, Plus, Users, CheckSquare,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
@@ -15,6 +15,8 @@ import TaskForm from "@/components/tasks/TaskForm";
 import TeamMemberCard from "@/components/team/TeamMemberCard";
 import DocumentList from "@/components/documents/DocumentList";
 import { projectsApi, tasksApi, teamApi, documentsApi, operationalApi } from "@/lib/api";
+import { usePageData } from "@/hooks/usePageData";
+import { readPageCache } from "@/lib/pageCache";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import type { Project, Task, TeamMember, Document } from "@/types";
 
@@ -29,24 +31,67 @@ interface TimelinePhase {
   progress?: number;
 }
 
+interface ProjectDetailData {
+  project: Project;
+  tasks: Task[];
+  team: TeamMember[];
+  documents: Document[];
+  timeline: TimelinePhase[];
+}
+
 export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const id = parseInt(params.id as string);
+  const id = parseInt(params.id as string, 10);
 
-  const [project, setProject] = useState<Project | null>(null);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [team, setTeam] = useState<TeamMember[]>([]);
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [timeline, setTimeline] = useState<TimelinePhase[]>([]);
+  const { data, loading, error, reload, setData } = usePageData<ProjectDetailData>(
+    `project-detail-${id}`,
+    async () => {
+      const p = await projectsApi.get(id);
+      const [t, tm, d, tl] = await Promise.allSettled([
+        tasksApi.list({ project_id: id }),
+        teamApi.list(),
+        documentsApi.list({ project_id: id }),
+        operationalApi.timeline(),
+      ]);
+      const tasks = t.status === "fulfilled" ? t.value.data : [];
+      const team = tm.status === "fulfilled"
+        ? tm.value.data.filter(
+            (m) => m.project_id === id || m.project_name === p.data.name,
+          )
+        : [];
+      const documents = d.status === "fulfilled" ? d.value.data : [];
+      const timeline = tl.status === "fulfilled"
+        ? (tl.value.data as TimelinePhase[]).filter(
+            (row) => row.project?.toLowerCase() === p.data.name.toLowerCase(),
+          )
+        : [];
+      return { project: p.data, tasks, team, documents, timeline };
+    },
+    [id],
+  );
+
+  const project = data?.project ?? null;
+  const tasks = data?.tasks ?? [];
+  const team = data?.team ?? [];
+  const documents = data?.documents ?? [];
+  const timeline = data?.timeline ?? [];
   const [activeTab, setActiveTab] = useState<typeof TABS[number]>("Overview");
   const [highlightTaskId, setHighlightTaskId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
   const [editModal, setEditModal] = useState(false);
   const [addTaskModal, setAddTaskModal] = useState(false);
+  const showLoading = loading && !data;
 
-  // Handle ?tab=Tasks&taskId=X from search navigation
+  // Instant paint when navigating from the projects list (cached).
+  useLayoutEffect(() => {
+    if (data) return;
+    const stub = readPageCache<Project[]>("projects")?.find((p) => p.id === id);
+    if (stub) {
+      setData({ project: stub, tasks: [], team: [], documents: [], timeline: [] });
+    }
+  }, [id, data, setData]);
+
   useEffect(() => {
     const tab = searchParams.get("tab") as typeof TABS[number] | null;
     const taskId = searchParams.get("taskId");
@@ -59,37 +104,9 @@ export default function ProjectDetailPage() {
     }
   }, [searchParams]);
 
-  const fetchAll = async () => {
-    setLoading(true);
-    try {
-      const [p, t, tm, d, tl] = await Promise.all([
-        projectsApi.get(id),
-        tasksApi.list({ project_id: id }),
-        teamApi.list(),
-        documentsApi.list({ project_id: id }),
-        operationalApi.timeline(),
-      ]);
-      setProject(p.data);
-      setTasks(t.data);
-      setTeam(tm.data.filter((m) => m.project_id === id || m.project_name === p.data.name));
-      setDocuments(d.data);
-      setTimeline(
-        (tl.data as TimelinePhase[]).filter(
-          (row) => row.project?.toLowerCase() === p.data.name.toLowerCase()
-        )
-      );
-    } catch {
-      router.push("/projects");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchAll(); }, [id]);
-
-  const handleUpdate = async (data: Partial<Project>) => {
-    const res = await projectsApi.update(id, data);
-    setProject(res.data);
+  const handleUpdate = async (update: Partial<Project>) => {
+    const res = await projectsApi.update(id, update);
+    if (data) setData({ ...data, project: res.data });
     setEditModal(false);
   };
 
@@ -101,25 +118,43 @@ export default function ProjectDetailPage() {
 
   const handleTaskStatusChange = async (task: Task, newStatus: Task["status"]) => {
     await tasksApi.update(task.id, { status: newStatus });
-    fetchAll();
+    reload();
   };
 
-  const handleAddTask = async (data: Partial<Task>) => {
-    await tasksApi.create({ ...data, project_id: id });
+  const handleAddTask = async (taskData: Partial<Task>) => {
+    await tasksApi.create({ ...taskData, project_id: id });
     setAddTaskModal(false);
-    fetchAll();
+    reload();
   };
 
-  if (loading) {
+  if (showLoading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
-        <div className="h-40 bg-gray-200 rounded-xl animate-pulse" />
+      <div className="space-y-6 animate-pulse">
+        <div className="h-5 w-36 bg-gray-200 rounded" />
+        <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-4">
+          <div className="h-8 w-2/3 bg-gray-200 rounded" />
+          <div className="h-4 w-1/2 bg-gray-200 rounded" />
+          <div className="h-3 w-full bg-gray-100 rounded-full" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-12 bg-gray-100 rounded-lg" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!project) return null;
+  if (error || !project) {
+    return (
+      <div className="space-y-4 text-center py-20">
+        <p className="text-gray-500">{error || "Project not found."}</p>
+        <Link href="/projects">
+          <Button variant="outline">Back to Projects</Button>
+        </Link>
+      </div>
+    );
+  }
 
   const STATUS_MILESTONE_COLORS: Record<string, string> = {
     Completed: "bg-green-100 text-green-700",
@@ -128,41 +163,43 @@ export default function ProjectDetailPage() {
     "On Hold": "bg-gray-100 text-gray-600",
   };
 
+  const detailItems = [
+    { icon: MapPin, label: "Location", value: project.location || "—" },
+    {
+      icon: Calendar,
+      label: "Timeline",
+      value: project.start_date && project.end_date
+        ? `${formatDate(project.start_date)} — ${formatDate(project.end_date)}`
+        : project.end_date
+          ? `Due ${formatDate(project.end_date)}`
+          : "—",
+    },
+    { icon: Users, label: "Team", value: `${project.team_size} members` },
+    { icon: CheckSquare, label: "Tasks", value: `${project.task_count} tasks` },
+    { icon: DollarSign, label: "Budget", value: formatCurrency(project.budget) },
+    { icon: Calendar, label: "Status", value: project.status },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Back + Header */}
       <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors">
         <ArrowLeft size={16} />
         Back to Projects
       </Link>
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+      {/* Hero — expanded project card */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 md:p-8">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{project.name}</h1>
               <ProjectStatus status={project.status} />
             </div>
-            <div className="flex flex-wrap gap-4 mt-3">
-              {project.location && (
-                <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                  <MapPin size={14} />
-                  {project.location}
-                </div>
-              )}
-              {project.start_date && (
-                <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                  <Calendar size={14} />
-                  {formatDate(project.start_date)} — {formatDate(project.end_date)}
-                </div>
-              )}
-              {project.budget && (
-                <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                  <DollarSign size={14} />
-                  {formatCurrency(project.budget)}
-                </div>
-              )}
-            </div>
+            {project.description && (
+              <p className="text-gray-600 text-sm md:text-base mt-3 leading-relaxed max-w-3xl">
+                {project.description}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Button variant="outline" size="sm" onClick={() => setEditModal(true)}>
@@ -174,8 +211,7 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="mt-4">
+        <div className="mt-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-700">Overall Progress</span>
             <span className="text-sm font-bold text-primary">{project.progress}%</span>
@@ -187,37 +223,75 @@ export default function ProjectDetailPage() {
             />
           </div>
         </div>
+
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {detailItems.map(({ icon: Icon, label, value }) => (
+            <div
+              key={label}
+              className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50/60 px-4 py-3"
+            >
+              <div className="p-2 rounded-lg bg-white border border-gray-100 flex-shrink-0">
+                <Icon size={16} className="text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">{label}</p>
+                <p className="text-sm font-semibold text-gray-900 mt-0.5 break-words">{value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Tabs */}
       <div className="border-b border-gray-200">
-        <div className="flex gap-1">
+        <div className="flex gap-1 overflow-x-auto">
           {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab
                   ? "border-primary text-primary"
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
               {tab}
+              {tab === "Tasks" && tasks.length > 0 && (
+                <span className="ml-1.5 text-xs text-gray-400">({tasks.length})</span>
+              )}
+              {tab === "Team" && team.length > 0 && (
+                <span className="ml-1.5 text-xs text-gray-400">({team.length})</span>
+              )}
+              {tab === "Documents" && documents.length > 0 && (
+                <span className="ml-1.5 text-xs text-gray-400">({documents.length})</span>
+              )}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Tab content */}
       {activeTab === "Overview" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-            <h3 className="font-semibold text-gray-900 mb-3">Description</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">About this project</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
               {project.description || "No description provided."}
             </p>
+            {tasks.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Recent tasks</h4>
+                <ul className="space-y-2">
+                  {tasks.slice(0, 5).map((t) => (
+                    <li key={t.id} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-700 truncate pr-4">{t.title}</span>
+                      <span className="text-xs text-gray-500 flex-shrink-0">{t.status}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {[
               { label: "Status", value: project.status },
               { label: "Progress", value: `${project.progress}%` },
@@ -226,7 +300,7 @@ export default function ProjectDetailPage() {
               { label: "End Date", value: formatDate(project.end_date) },
               { label: "Location", value: project.location || "—" },
               { label: "Team Size", value: `${project.team_size} members` },
-              { label: "Tasks", value: `${project.task_count} tasks` },
+              { label: "Open Tasks", value: `${project.task_count} tasks` },
             ].map(({ label, value }) => (
               <div key={label} className="bg-white rounded-xl border border-gray-100 p-4">
                 <p className="text-xs text-gray-400 font-medium mb-1">{label}</p>
@@ -314,7 +388,7 @@ export default function ProjectDetailPage() {
               )) : (
                 <tr>
                   <td colSpan={5} className="px-6 py-10 text-center text-sm text-gray-400">
-                    No timeline phases in search index for this project
+                    No timeline phases for this project
                   </td>
                 </tr>
               )}
@@ -323,7 +397,6 @@ export default function ProjectDetailPage() {
         </div>
       )}
 
-      {/* Edit modal */}
       <Modal open={editModal} onClose={() => setEditModal(false)} title="Edit Project" size="lg">
         <ProjectForm
           initialData={project}
@@ -332,7 +405,6 @@ export default function ProjectDetailPage() {
         />
       </Modal>
 
-      {/* Add task modal */}
       <Modal open={addTaskModal} onClose={() => setAddTaskModal(false)} title="Add Task" size="md">
         <TaskForm
           initialData={{ project_id: id }}

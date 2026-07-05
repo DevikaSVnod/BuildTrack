@@ -21,6 +21,7 @@ class DocumentResponse(DocumentBase):
     uploaded_by: Optional[int] = None
     created_at: datetime
     uploader: Optional[UserResponse] = None
+    uploader_name: Optional[str] = None
     project_name: Optional[str] = None
 
     class Config:

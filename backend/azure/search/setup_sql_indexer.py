@@ -300,6 +300,5 @@ def main() -> None:
     print("\nDone. Azure SQL Indexer is active (schedule: every 15 min).")
     print("Search bar will read from Azure AI Search; data syncs from Azure SQL automatically.")
 
-
 if __name__ == "__main__":
     main()

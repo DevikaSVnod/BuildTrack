@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Calendar } from "lucide-react";
 import { operationalApi } from "@/lib/api";
+import { usePageData } from "@/hooks/usePageData";
 import { formatDate, cn } from "@/lib/utils";
 
 interface Milestone {
@@ -21,22 +22,19 @@ const STATUS_COLORS_LOCAL: Record<string, string> = {
 };
 
 export default function TimelinePage() {
-  const [milestones, setMilestones] = useState<Milestone[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: milestones, loading } = usePageData<Milestone[]>(
+    "timeline",
+    () => operationalApi.timeline().then((r) => r.data),
+  );
+  const list = milestones ?? [];
   const [selectedProject, setSelectedProject] = useState<string>("all");
+  const showLoading = loading && list.length === 0;
 
-  useEffect(() => {
-    operationalApi.timeline()
-      .then((r) => setMilestones(r.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  const projectNames = [...new Set(milestones.map((m) => m.project).filter(Boolean))];
+  const projectNames = [...new Set(list.map((m) => m.project).filter(Boolean))];
   const displayed =
     selectedProject === "all"
-      ? milestones
-      : milestones.filter((m) => m.project === selectedProject);
+      ? list
+      : list.filter((m) => m.project === selectedProject);
 
   return (
     <div className="space-y-6">
@@ -57,7 +55,7 @@ export default function TimelinePage() {
         </select>
       </div>
 
-      {loading ? (
+      {showLoading ? (
         <div className="bg-white rounded-xl border h-64 animate-pulse" />
       ) : (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">

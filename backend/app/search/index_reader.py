@@ -17,7 +17,9 @@ logger = logging.getLogger(__name__)
 
 _SELECT = ["id", "title", "content", "content_type", "url", "metadata"]
 _cache: dict[str, tuple[float, list[dict[str, Any]]]] = {}
-_CACHE_TTL = 90
+_doc_cache: dict[str, tuple[float, dict[str, Any]]] = {}
+_CACHE_TTL = 300
+_DOC_CACHE_TTL = 300
 
 
 def _parse_metadata(raw: Any) -> dict[str, Any]:
@@ -174,10 +176,16 @@ def _list_all_raw(content_type: Optional[str], top: int) -> list[dict[str, Any]]
 
 
 def get_indexed(item_id: str) -> Optional[dict[str, Any]]:
+    now = time.time()
+    cached = _doc_cache.get(item_id)
+    if cached and now - cached[0] < _DOC_CACHE_TTL:
+        return cached[1]
     client = _client_or_raise()
     try:
         doc = client.get_document(key=item_id)
-        return _row(doc)
+        row = _row(doc)
+        _doc_cache[item_id] = (now, row)
+        return row
     except Exception:
         return None
 
@@ -188,3 +196,4 @@ def get_kpi_item(item_id: str) -> Optional[dict[str, Any]]:
 
 def clear_index_cache() -> None:
     _cache.clear()
+    _doc_cache.clear()

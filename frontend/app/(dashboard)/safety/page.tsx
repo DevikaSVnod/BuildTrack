@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
 import { ShieldCheck, AlertTriangle, CheckCircle2, HardHat, FileWarning } from "lucide-react";
 import { operationalApi } from "@/lib/api";
+import { usePageData } from "@/hooks/usePageData";
 
 interface Incident {
   id: number;
@@ -40,21 +40,22 @@ const STATUS_COLOR: Record<string, string> = {
   Resolved: "text-green-500",
 };
 
-export default function SafetyPage() {
-  const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [metrics, setMetrics] = useState<SafetyMetrics>({});
-  const [loading, setLoading] = useState(true);
+interface SafetyData {
+  incidents: Incident[];
+  metrics: SafetyMetrics;
+}
 
-  useEffect(() => {
-    Promise.all([
+export default function SafetyPage() {
+  const { data, loading } = usePageData<SafetyData>("safety", async () => {
+    const [inc, met] = await Promise.all([
       operationalApi.safetyIncidents(),
       operationalApi.safetyMetrics(),
-    ]).then(([inc, met]) => {
-      setIncidents(inc.data);
-      setMetrics(met.data);
-    }).catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    ]);
+    return { incidents: inc.data, metrics: met.data };
+  });
+  const incidents = data?.incidents ?? [];
+  const metrics = data?.metrics ?? {};
+  const showLoading = loading && !data;
 
   const SAFETY_METRICS = [
     { label: "Safe Working Days", value: metrics.safe_working_days ?? "—", icon: ShieldCheck, color: "text-green-600", bg: "bg-green-50" },
@@ -64,57 +65,57 @@ export default function SafetyPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="space-y-6 min-w-0 max-w-full">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-gray-900">Safety & HSE Register</h1>
-          <p className="text-gray-500 text-sm mt-1">Data from Azure AI Search (SQL indexer)</p>
+          <p className="text-gray-500 text-sm mt-1">Incident log and HSE metrics across projects</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors">
+        <button className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors">
           <AlertTriangle size={15} /> Report Incident
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {SAFETY_METRICS.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-            <div className={`p-3 rounded-xl flex-shrink-0 ${bg}`}>
-              <Icon size={20} className={color} />
+          <div key={label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 min-w-0">
+            <div className={`p-2.5 rounded-xl flex-shrink-0 ${bg}`}>
+              <Icon size={18} className={color} />
             </div>
-            <div>
-              <p className="text-sm text-gray-500">{label}</p>
-              <p className="text-2xl font-bold text-gray-900">{loading ? "—" : value}</p>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-gray-500 truncate">{label}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">{showLoading ? "—" : value}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-6 text-white flex items-center justify-between">
-        <div>
+      <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-5 sm:p-6 text-white flex items-center justify-between gap-4 overflow-hidden">
+        <div className="min-w-0">
           <p className="text-green-100 text-sm font-medium">Site Safety Score</p>
-          <p className="text-5xl font-black mt-1">{loading ? "—" : metrics.safety_score}<span className="text-2xl">/100</span></p>
-          <p className="text-green-100 text-sm mt-2">
+          <p className="text-4xl sm:text-5xl font-black mt-1">{showLoading ? "—" : metrics.safety_score}<span className="text-xl sm:text-2xl">/100</span></p>
+          <p className="text-green-100 text-sm mt-2 truncate">
             {metrics.pending_inspections != null
               ? `${metrics.pending_inspections} pending inspections`
-              : "Safety metrics from search index"}
+              : "Track incidents and inspections across projects"}
           </p>
         </div>
-        <ShieldCheck size={80} className="text-white/20" />
+        <ShieldCheck size={64} className="text-white/20 flex-shrink-0 hidden sm:block" />
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-50">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden min-w-0">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-50">
           <h2 className="font-semibold text-gray-900">Incident & Observation Log</h2>
         </div>
-        <table className="w-full">
+        <table className="w-full table-fixed">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              <th className="text-left px-6 py-3">Date</th>
-              <th className="text-left px-6 py-3">Type</th>
-              <th className="text-left px-6 py-3">Description</th>
-              <th className="text-left px-6 py-3 hidden md:table-cell">Project</th>
-              <th className="text-left px-6 py-3">Severity</th>
-              <th className="text-left px-6 py-3">Status</th>
+              <th className="text-left px-3 sm:px-4 py-3 w-[88px]">Date</th>
+              <th className="text-left px-3 sm:px-4 py-3 w-[18%]">Type</th>
+              <th className="text-left px-3 sm:px-4 py-3">Description</th>
+              <th className="text-left px-3 sm:px-4 py-3 w-[20%] hidden lg:table-cell">Project</th>
+              <th className="text-left px-3 sm:px-4 py-3 w-[72px]">Severity</th>
+              <th className="text-left px-3 sm:px-4 py-3 w-[88px] hidden sm:table-cell">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -122,24 +123,25 @@ export default function SafetyPage() {
               const StatusIcon = STATUS_ICON[inc.status] || CheckCircle2;
               return (
                 <tr key={inc.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{inc.date || "—"}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{inc.type}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">{inc.description}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 hidden md:table-cell whitespace-nowrap">{inc.project}</td>
-                  <td className="px-6 py-4">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${SEV[inc.severity] ?? ""}`}>{inc.severity}</span>
+                  <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-500 truncate">{inc.date || "—"}</td>
+                  <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium text-gray-900 truncate">{inc.type}</td>
+                  <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-600 truncate">{inc.description}</td>
+                  <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-500 hidden lg:table-cell truncate">{inc.project}</td>
+                  <td className="px-3 sm:px-4 py-3">
+                    <span className={`text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${SEV[inc.severity] ?? ""}`}>{inc.severity}</span>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className={`flex items-center gap-1.5 text-xs font-semibold ${STATUS_COLOR[inc.status] ?? ""}`}>
-                      <StatusIcon size={13} />{inc.status}
+                  <td className="px-3 sm:px-4 py-3 hidden sm:table-cell">
+                    <div className={`flex items-center gap-1 text-[10px] sm:text-xs font-semibold truncate ${STATUS_COLOR[inc.status] ?? ""}`}>
+                      <StatusIcon size={12} className="flex-shrink-0" />
+                      <span className="truncate">{inc.status}</span>
                     </div>
                   </td>
                 </tr>
               );
             }) : (
               <tr>
-                <td colSpan={6} className="px-6 py-10 text-center text-sm text-gray-400">
-                  {loading ? "Loading incidents…" : "No incidents in search index"}
+                <td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-400">
+                  {showLoading ? "Loading incidents…" : "No incidents recorded"}
                 </td>
               </tr>
             )}

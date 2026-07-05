@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
-  HardHat, Building2, CheckSquare, Users, FileText,
-  Search, ArrowRight, Star, Shield, Zap, BarChart2,
+  HardHat, Building2, Users, FileText,
+  Search, ArrowRight, Zap,
   ChevronRight,
 } from "lucide-react";
 
@@ -9,25 +9,25 @@ const FEATURES = [
   {
     icon: Building2,
     title: "Project Tracking",
-    description: "Track every project from planning to completion with real-time progress updates, milestone tracking, and budget management.",
+    description: "Track projects from planning to completion with progress updates, milestones, and budget visibility.",
     color: "bg-blue-50 text-blue-600",
   },
   {
     icon: Users,
     title: "Team Management",
-    description: "Manage your entire construction crew — assign roles, track workloads, and keep everyone aligned on project goals.",
+    description: "Manage your construction crew — assign roles, track workloads, and keep everyone aligned.",
     color: "bg-purple-50 text-purple-600",
   },
   {
     icon: FileText,
     title: "Document Control",
-    description: "Centralize all project documents — blueprints, contracts, reports — with version control and instant access.",
+    description: "Centralize blueprints, contracts, and reports with version control and instant access.",
     color: "bg-green-50 text-green-600",
   },
   {
     icon: Search,
     title: "AI-Powered Search",
-    description: "Ask natural language questions about your projects. Get instant AI answers powered by Azure OpenAI and semantic search.",
+    description: "Ask natural language questions about your projects and get instant answers from your data.",
     color: "bg-amber-50 text-amber-600",
   },
 ];
@@ -36,25 +36,18 @@ const HOW_IT_WORKS = [
   {
     step: "01",
     title: "Create Your Project",
-    description: "Set up projects with budgets, timelines, locations, and team assignments in minutes.",
+    description: "Set up projects with budgets, timelines, locations, and team assignments.",
   },
   {
     step: "02",
     title: "Track & Collaborate",
-    description: "Assign tasks, upload documents, and monitor progress with your entire team in real time.",
+    description: "Assign tasks, upload documents, and monitor progress with your team.",
   },
   {
     step: "03",
     title: "Get AI Insights",
-    description: "Use natural language search to query project data and get instant AI-generated answers.",
+    description: "Use natural language search to query project data and get instant answers.",
   },
-];
-
-const STATS = [
-  { value: "500+", label: "Projects Managed" },
-  { value: "10,000+", label: "Tasks Tracked" },
-  { value: "200+", label: "Teams Using BuildTrack" },
-  { value: "99.9%", label: "Uptime" },
 ];
 
 export default function LandingPage() {
@@ -72,12 +65,11 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-sm text-gray-600 hover:text-primary transition-colors">Features</a>
             <a href="#how-it-works" className="text-sm text-gray-600 hover:text-primary transition-colors">How It Works</a>
-            <Link href="/login" className="text-sm text-gray-600 hover:text-primary transition-colors">Sign In</Link>
             <Link
-              href="/register"
+              href="/login"
               className="bg-primary text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors"
             >
-              Get Started Free
+              Sign In
             </Link>
           </div>
         </div>
@@ -95,38 +87,24 @@ export default function LandingPage() {
             <span className="text-primary">Smarter</span>
           </h1>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-            BuildTrack combines powerful project management with AI-powered search to keep your construction
+            BuildTrack combines project management with AI-powered search to keep your construction
             projects on track, on budget, and on time.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/register"
+              href="/login"
               className="inline-flex items-center gap-2 bg-primary text-white font-semibold px-8 py-4 rounded-xl hover:bg-primary-600 transition-all shadow-lg shadow-primary/25 text-base"
             >
-              Get Started Free
+              Sign In
               <ArrowRight size={18} />
             </Link>
             <Link
-              href="/login"
+              href="/register"
               className="inline-flex items-center gap-2 border border-gray-200 text-gray-700 font-semibold px-8 py-4 rounded-xl hover:border-primary hover:text-primary transition-all text-base"
             >
-              Sign In
+              Create Account
               <ChevronRight size={18} />
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats bar */}
-      <section className="py-14 bg-primary">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {STATS.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-3xl font-extrabold text-white mb-1">{stat.value}</p>
-                <p className="text-primary-200 text-sm">{stat.label}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -167,9 +145,9 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Get started in 3 simple steps
+              How it works
             </h2>
-            <p className="text-gray-500">Set up your construction management platform in minutes.</p>
+            <p className="text-gray-500">Three steps to get your projects organized.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {HOW_IT_WORKS.map((step, i) => (
@@ -190,76 +168,16 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-6 bg-primary">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 text-white font-medium text-sm px-4 py-1.5 rounded-full mb-6">
-            <Star size={14} />
-            Trusted by 200+ construction teams
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to streamline your construction projects?
-          </h2>
-          <p className="text-primary-200 mb-8 text-lg">
-            Join hundreds of construction teams already using BuildTrack to deliver projects
-            faster, smarter, and within budget.
-          </p>
-          <Link
-            href="/register"
-            className="inline-flex items-center gap-2 bg-secondary text-white font-bold px-8 py-4 rounded-xl hover:bg-secondary-600 transition-all shadow-lg text-base"
-          >
-            Start Building for Free
-            <ArrowRight size={18} />
-          </Link>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-start justify-between gap-8">
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-primary rounded-xl">
-                  <HardHat size={18} className="text-secondary" />
-                </div>
-                <span className="font-bold text-white text-lg">BuildTrack</span>
-              </div>
-              <p className="text-sm max-w-xs">
-                The complete construction project management platform for modern teams.
-              </p>
+      <footer className="bg-gray-900 text-gray-400 py-10 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary rounded-xl">
+              <HardHat size={18} className="text-secondary" />
             </div>
-            <div className="grid grid-cols-2 gap-8">
-              <div>
-                <h4 className="text-white font-semibold mb-3 text-sm">Product</h4>
-                <ul className="space-y-2 text-sm">
-                  {["Features", "Pricing", "Security", "Roadmap"].map((item) => (
-                    <li key={item}>
-                      <a href="#" className="hover:text-white transition-colors">{item}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-white font-semibold mb-3 text-sm">Company</h4>
-                <ul className="space-y-2 text-sm">
-                  {["About", "Blog", "Careers", "Contact"].map((item) => (
-                    <li key={item}>
-                      <a href="#" className="hover:text-white transition-colors">{item}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+            <span className="font-bold text-white text-lg">BuildTrack</span>
           </div>
-          <div className="mt-10 pt-6 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-xs">© 2024 BuildTrack. All rights reserved.</p>
-            <div className="flex gap-4 text-xs">
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
-            </div>
-          </div>
+          <p className="text-xs">© {new Date().getFullYear()} BuildTrack. Construction Project Management.</p>
         </div>
       </footer>
     </div>

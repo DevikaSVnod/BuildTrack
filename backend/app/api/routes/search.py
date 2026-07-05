@@ -10,6 +10,7 @@ from app.models.user import User
 from app.schemas.search import SearchRequest, SearchResponse, SearchResultItem
 from app.search.retrieval import hybrid_search, get_cached_results, _search_cache, _search_cache_key
 from app.search.answer import generate_answer
+from app.search.result_filter import filter_results_for_display, filter_results_for_query
 from app.search.query_intel import analyze_query, is_workforce_aggregate_query, extract_project_qualifier
 from app.search.workforce_db import workforce_results_from_db
 from app.search.document_enrich import enrich_document_results
@@ -74,14 +75,15 @@ def fast_search(
     raw_results = _resolve_search_results(
         request.query, db, request.filter_type, request.top_k, analysis
     )
+    filtered = filter_results_for_query(request.query, raw_results, analysis)
     elapsed_ms = int((time.time() - start_time) * 1000)
 
     return SearchResponse(
         ai_answer="",
-        results=_to_result_items(raw_results),
+        results=_to_result_items(filtered),
         suggested_questions=[],
         search_time_ms=elapsed_ms,
-        total_results=len(raw_results),
+        total_results=len(filtered),
         is_question=analysis.is_question,
     )
 
@@ -112,14 +114,17 @@ def ai_answer(
     answer_text, suggested_questions = generate_answer(
         request.query, raw_results, analysis=analysis
     )
+    filtered = filter_results_for_display(
+        request.query, answer_text, raw_results, analysis
+    )
     elapsed_ms = int((time.time() - start_time) * 1000)
 
     return SearchResponse(
         ai_answer=answer_text,
-        results=_to_result_items(raw_results),
+        results=_to_result_items(filtered),
         suggested_questions=suggested_questions,
         search_time_ms=elapsed_ms,
-        total_results=len(raw_results),
+        total_results=len(filtered),
         is_question=analysis.is_question,
     )
 
@@ -142,14 +147,17 @@ def global_search(
     answer_text, suggested_questions = generate_answer(
         request.query, raw_results, analysis=analysis
     )
+    filtered = filter_results_for_display(
+        request.query, answer_text, raw_results, analysis
+    )
     elapsed_ms = int((time.time() - start_time) * 1000)
 
     return SearchResponse(
         ai_answer=answer_text,
-        results=_to_result_items(raw_results),
+        results=_to_result_items(filtered),
         suggested_questions=suggested_questions,
         search_time_ms=elapsed_ms,
-        total_results=len(raw_results),
+        total_results=len(filtered),
         is_question=analysis.is_question,
     )
 
@@ -185,3 +193,26 @@ def sql_indexer_status(current_user: User = Depends(get_current_user)):
     from app.search.sql_indexer import get_sql_indexer_status
 
     return get_sql_indexer_status()
+
+
+@router.post("/blob-index", status_code=200)
+def trigger_blob_indexer(current_user: User = Depends(get_current_user)):
+    """Trigger Azure Blob/RAG indexer run (file content → search index)."""
+    from app.search.blob_indexer import get_blob_indexer_status, trigger_blob_indexer_run
+
+    try:
+        triggered = trigger_blob_indexer_run()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {
+        "message": "Blob/RAG indexer run triggered — file content will update shortly",
+        "triggered": triggered,
+        **get_blob_indexer_status(),
+    }
+
+
+@router.get("/blob-index/status", status_code=200)
+def blob_indexer_status(current_user: User = Depends(get_current_user)):
+    from app.search.blob_indexer import get_blob_indexer_status
+
+    return get_blob_indexer_status()

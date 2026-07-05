@@ -1,3 +1,9 @@
+# Drawing DWG preview cache (generated at runtime)
+backend/.cache/
+
+# Local dev/test scratch files
+backend/.tmp/
+
 # Python
 __pycache__/
 *.pyc

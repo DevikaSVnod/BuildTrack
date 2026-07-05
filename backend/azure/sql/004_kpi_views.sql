@@ -60,7 +60,7 @@ SELECT
         CAST(b.utilization_pct AS NVARCHAR(10)), N'% on track financial overview reports'
     ) AS content,
     N'report' AS content_type,
-    N'/reports' AS url,
+    N'/dashboard' AS url,
     (
         SELECT
             b.total_budget_cr AS total_budget_cr,
@@ -117,7 +117,7 @@ SELECT
         N' completed ', CAST(agg.total_completed AS NVARCHAR(10))
     ) AS content,
     N'report' AS content_type,
-    N'/reports' AS url,
+    N'/dashboard' AS url,
     CONCAT(
         N'{"total_tasks":', CAST(agg.total_tasks AS NVARCHAR(20)),
         N',"total_completed":', CAST(agg.total_completed AS NVARCHAR(20)),

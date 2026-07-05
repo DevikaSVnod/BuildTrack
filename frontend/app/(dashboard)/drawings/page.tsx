@@ -1,7 +1,16 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Layers, Download, Eye, CheckCircle2, Clock, XCircle, Search } from "lucide-react";
+import { useState } from "react";
+import dynamic from "next/dynamic";
+import { Layers, CheckCircle2, Clock, XCircle, Search, Trash2, Loader2 } from "lucide-react";
 import { operationalApi } from "@/lib/api";
+import { usePageData } from "@/hooks/usePageData";
+
+const FileActionButtons = dynamic(() => import("@/components/files/FileActionButtons"), {
+  ssr: false,
+  loading: () => <div className="h-7 w-14 rounded bg-gray-100 animate-pulse" />,
+});
+const Modal = dynamic(() => import("@/components/ui/Modal"), { ssr: false });
+const DrawingUpload = dynamic(() => import("@/components/drawings/DrawingUpload"), { ssr: false });
 
 interface Drawing {
   id: number;
@@ -12,6 +21,7 @@ interface Drawing {
   project: string;
   status: string;
   uploadedBy: string;
+  file_type?: string;
 }
 
 const DISC_COLORS: Record<string, string> = {
@@ -31,11 +41,24 @@ const STATUS_STYLE: Record<string, { color: string; icon: typeof CheckCircle2 }>
 const DISCIPLINES = ["All", "Structural", "Architectural", "MEP", "Civil", "Electrical"];
 
 export default function DrawingsPage() {
-  const [drawings, setDrawings] = useState<Drawing[]>([]);
+  const {
+    data: drawings,
+    loading,
+    refreshing,
+    reload,
+  } = usePageData<Drawing[]>("drawings", () => operationalApi.drawings().then((r) => r.data));
+  const [showUpload, setShowUpload] = useState(false);
+  const rows = drawings ?? [];
 
-  useEffect(() => {
-    operationalApi.drawings().then((r) => setDrawings(r.data)).catch(() => {});
-  }, []);
+  const handleDelete = async (id: number, drawingNo: string) => {
+    if (!confirm(`Delete drawing ${drawingNo}? This cannot be undone.`)) return;
+    try {
+      await operationalApi.deleteDrawing(id);
+      reload();
+    } catch {
+      alert("Could not delete this drawing. Please try again.");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -44,16 +67,20 @@ export default function DrawingsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Drawings & Specifications</h1>
           <p className="text-gray-500 text-sm mt-1">Document Management System · Drawing Register</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors">
+        <button
+          type="button"
+          onClick={() => setShowUpload(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors"
+        >
           <Layers size={15} /> Upload Drawing
         </button>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Total Drawings",  value: drawings.length, color: "text-primary",   bg: "bg-primary/10"  },
-          { label: "Approved",        value: drawings.filter((d) => d.status === "Approved").length, color: "text-green-600", bg: "bg-green-50"    },
-          { label: "Under Review",    value: drawings.filter((d) => d.status === "Under Review").length, color: "text-amber-600", bg: "bg-amber-50"    },
+          { label: "Total Drawings",  value: rows.length, color: "text-primary",   bg: "bg-primary/10"  },
+          { label: "Approved",        value: rows.filter((d) => d.status === "Approved").length, color: "text-green-600", bg: "bg-green-50"    },
+          { label: "Under Review",    value: rows.filter((d) => d.status === "Under Review").length, color: "text-amber-600", bg: "bg-amber-50"    },
         ].map(({ label, value, color, bg }) => (
           <div key={label} className={`rounded-xl p-4 ${bg} border border-gray-100`}>
             <p className="text-sm text-gray-600">{label}</p>
@@ -80,6 +107,12 @@ export default function DrawingsPage() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        {refreshing && !loading && (
+          <div className="flex items-center gap-2 px-4 py-2 text-xs text-gray-400 border-b border-gray-50">
+            <Loader2 size={12} className="animate-spin text-primary" />
+            Updating…
+          </div>
+        )}
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -93,7 +126,16 @@ export default function DrawingsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {drawings.map((d) => {
+            {loading && rows.length === 0 ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}>
+                  <td colSpan={7} className="px-6 py-4">
+                    <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                  </td>
+                </tr>
+              ))
+            ) : (
+            rows.map((d) => {
               const s = STATUS_STYLE[d.status] || STATUS_STYLE["Under Review"];
               const StatusIcon = s.icon;
               return (
@@ -114,20 +156,40 @@ export default function DrawingsPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1.5 justify-end">
-                      <button className="p-1.5 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 transition-colors">
-                        <Eye size={14} />
-                      </button>
-                      <button className="p-1.5 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 transition-colors">
-                        <Download size={14} />
+                      <FileActionButtons
+                        resource="drawings"
+                        lookup={{ kind: "drawingNo", drawingNo: d.drawingNo }}
+                        title={`${d.drawingNo} – ${d.title}`}
+                        filename={`${d.drawingNo}_${d.title}.${(d.file_type || "png").toLowerCase()}`}
+                        fileType={d.file_type || "PNG"}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(d.id, d.drawingNo)}
+                        title="Delete"
+                        className="p-1.5 text-gray-400 hover:text-danger rounded-lg hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </td>
                 </tr>
               );
-            })}
+            })
+            )}
           </tbody>
         </table>
       </div>
+
+      <Modal open={showUpload} onClose={() => setShowUpload(false)} title="Upload Drawing" size="lg">
+        <DrawingUpload
+          onUploaded={() => {
+            setShowUpload(false);
+            reload();
+          }}
+          onCancel={() => setShowUpload(false)}
+        />
+      </Modal>
     </div>
   );
 }

@@ -8,9 +8,19 @@ from app.search.query_intel import (
     rerank_score,
     is_workforce_aggregate_query,
     extract_project_qualifier,
+    is_drawing_count_query,
+    is_drawing_content_query,
+    is_document_content_query,
+    is_file_content_query,
 )
 from app.search.query_planner import QueryMode, plan_query
 from app.search.structured_filters import execute_exhaustive_plan
+from app.search.blob_retrieval import (
+    enrich_drawing_hits_with_crawl_text,
+    merge_sql_and_blob_hits,
+    search_blob_content,
+    should_search_blob_content,
+)
 import json
 import time
 import hashlib
@@ -105,7 +115,7 @@ def hybrid_search(
         # Decide whether to embed this query.
         # Skip for very short / trivial queries — BM25 is sufficient and we save
         # the round-trip to Azure OpenAI (~1-3 s).
-        _should_embed = len(query.split()) >= 3 or analysis.is_question
+        _should_embed = analysis.is_question or len(query.split()) >= 5
 
         # Fire the embedding request in the background immediately so it can
         # overlap with the Azure AI Search round-trip.  We only harvest the
@@ -156,7 +166,7 @@ def hybrid_search(
                 })
             return rows
 
-        fetch_n = plan.fetch_limit if plan.mode == QueryMode.SEMANTIC else min(max(effective_top, 15), 40)
+        fetch_n = plan.fetch_limit if plan.mode == QueryMode.SEMANTIC else min(max(effective_top, 8), 20)
 
         def _resolve_vector(timeout: float = 4.0) -> Optional[List[float]]:
             """Return the embedding vector once it's ready, or None on timeout."""
@@ -235,7 +245,11 @@ def hybrid_search(
         # Fast path: short keyword queries → BM25 + vector run in parallel.
         # Embedding fires in the background (_f_embed), BM25 also runs in parallel.
         # We wait for BM25 (fast, ~500ms) then check if embedding is done.
-        needs_deep_search = (
+        is_drawing_count_fast = (
+            is_drawing_count_query(query)
+            and analysis.content_types == ["drawing"]
+        )
+        needs_deep_search = not is_drawing_count_fast and (
             analysis.is_question
             or bool(analysis.content_types)
             or bool(analysis.status_hints)
@@ -297,6 +311,21 @@ def hybrid_search(
         if not items:
             query_vector = _resolve_vector(timeout=2.0)
             items = _run_search(query, use_semantic=False, limit=fetch_n, vector=query_vector)
+
+        if should_search_blob_content(plan, filter_type, query):
+            blob_vector = _resolve_vector(timeout=1.5)
+            blob_items = search_blob_content(
+                query,
+                search_text=analysis.search_text or query,
+                top_k=min(max(effective_top, 8), 15),
+                vector=blob_vector,
+                use_semantic=needs_deep_search or analysis.is_question,
+                multi_chunk=is_file_content_query(query),
+            )
+            if blob_items:
+                items = merge_sql_and_blob_hits(items, blob_items)
+            elif is_drawing_content_query(query):
+                items = enrich_drawing_hits_with_crawl_text(items)
 
         for item in items:
             item["score"] = rerank_score(item, analysis)

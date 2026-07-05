@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     AZURE_OPENAI_ENDPOINT: Optional[str] = None
     AZURE_OPENAI_KEY: Optional[str] = None
     AZURE_OPENAI_CHAT_DEPLOYMENT: str = "gpt-4o-mini"
+    # Optional: vision-capable deployment for drawing sheet Q&A (e.g., gpt-4o)
+    AZURE_OPENAI_VISION_DEPLOYMENT: Optional[str] = None
 
     # Embedding model — can live in a separate Azure OpenAI resource.
     # If AZURE_OPENAI_EMBEDDING_ENDPOINT / AZURE_OPENAI_EMBEDDING_KEY are not set,
@@ -25,6 +27,8 @@ class Settings(BaseSettings):
     AZURE_SEARCH_ENDPOINT: Optional[str] = None
     AZURE_SEARCH_KEY: Optional[str] = None
     AZURE_SEARCH_INDEX: str = "buildtrack-index"
+    # RAG / blob content index (Portal wizard). Auto-discovered if unset.
+    AZURE_SEARCH_BLOB_INDEX: Optional[str] = None
 
     # Azure SQL (target architecture — SQL indexer data source)
     AZURE_SQL_CONNECTION_STRING: Optional[str] = None

@@ -1,23 +1,36 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
+import Link from "next/link";
 import {
   Upload, FileText, Sparkles, FolderOpen,
-  Layers, BookOpen, Link2,
+  Layers, Link2,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
 import DocumentList from "@/components/documents/DocumentList";
-import DocumentUpload from "@/components/documents/DocumentUpload";
-import { documentsApi, projectsApi } from "@/lib/api";
+import { documentsApi } from "@/lib/api";
+import { usePageData } from "@/hooks/usePageData";
+import { cachedProjectsOrFetch } from "@/lib/cachedFetch";
 import type { Document, Project } from "@/types";
+
+const Modal = dynamic(() => import("@/components/ui/Modal"), { ssr: false });
+const DocumentUpload = dynamic(() => import("@/components/documents/DocumentUpload"), { ssr: false });
 
 const FILE_TYPES = ["All", "PDF", "DWG", "XLSX", "JPG", "PNG"];
 
+type DocumentsPageData = { documents: Document[]; projects: Project[] };
+
 export default function DocumentsPage() {
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, refreshing, reload } = usePageData<DocumentsPageData>(
+    "documents-page",
+    async () => {
+      const [d, p] = await Promise.all([documentsApi.list(), cachedProjectsOrFetch()]);
+      return { documents: d.data, projects: p };
+    },
+  );
+  const documents = data?.documents ?? [];
+  const projects = data?.projects ?? [];
   const [showUpload, setShowUpload] = useState(false);
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("All");
@@ -25,19 +38,7 @@ export default function DocumentsPage() {
   const searchParams = useSearchParams();
   const highlightRef = useRef<HTMLDivElement>(null);
 
-  const fetchDocs = async () => {
-    setLoading(true);
-    try {
-      const [d, p] = await Promise.all([documentsApi.list(), projectsApi.list()]);
-      setDocuments(d.data);
-      setProjects(p.data);
-    } catch {
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchDocs(); }, []);
+  const fetchDocs = () => reload();
 
   useEffect(() => {
     const id = searchParams.get("docId");
@@ -53,9 +54,15 @@ export default function DocumentsPage() {
 
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this document?")) return;
-    await documentsApi.delete(id);
-    fetchDocs();
+    try {
+      await documentsApi.delete(id);
+      reload();
+    } catch {
+      alert("Could not delete this document. Please try again.");
+    }
   };
+
+  const showSkeleton = loading && documents.length === 0;
 
   const filtered = documents.filter((d) => {
     const matchProject = projectFilter === "all" || String(d.project_id) === projectFilter;
@@ -78,18 +85,12 @@ export default function DocumentsPage() {
           <p className="text-gray-500 text-sm mt-1">{documents.length} files across all projects</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <a
+          <Link
             href="/drawings"
             className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
           >
             <Layers size={15} /> Drawings
-          </a>
-          <a
-            href="/handover"
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
-          >
-            <BookOpen size={15} /> Handover
-          </a>
+          </Link>
           <Button onClick={() => setShowUpload(true)}>
             <Upload size={16} /> Upload
           </Button>
@@ -156,7 +157,7 @@ export default function DocumentsPage() {
         </div>
       )}
 
-      {loading ? (
+      {showSkeleton ? (
         <div className="bg-white rounded-xl border h-64 animate-pulse" />
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">

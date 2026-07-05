@@ -13,7 +13,7 @@ DOMAIN_SIGNALS: dict[str, list[str]] = {
     ],
     "drawing": [
         "drawing", "drawings", "specification", "specs", "revision", "rev ",
-        "structural plan", "architectural", "discipline",
+        "structural plan", "architectural", "discipline", "floor plan", "dwg",
     ],
     "safety": [
         "safety", "hse", "incident", "near miss", "violation", "injury",
@@ -99,7 +99,7 @@ def is_question(query: str) -> bool:
         return True
     if any(q.startswith(s + " ") or q == s for s in QUESTION_STARTERS):
         return True
-    if re.search(r"\b(how many|how much|what is|what are|which)\b", q):
+    if re.search(r"\b(how many|how much|number of|no\.?\s*of|what is|what are|which)\b", q):
         return True
     return False
 
@@ -338,15 +338,277 @@ def is_file_detail_query(query: str) -> bool:
     )
 
 
+DRAWING_NO_PATTERN = re.compile(r"\b([A-Z]{2}-\d{3}-[A-Z])\b", re.IGNORECASE)
+
+
+def extract_drawing_no(query: str) -> Optional[str]:
+    m = DRAWING_NO_PATTERN.search(query)
+    return m.group(1).upper() if m else None
+
+
+_CONTEXTUAL_LAYOUT = re.compile(
+    r"\b(floor\s*plan|apartment|kitchen|bedroom|bathroom|living\s*room|dining|"
+    r"corridor|entrance|entry|exit|balcony|wardrobe|study|layout|room|ensuite|"
+    r"door|doors|window|access|circulation|foyer|lobby|stair|stairs|zone|zones|"
+    r"furniture|furnishing|fixture|fixtures|facilities|restroom|washroom|lavatory|wc|"
+    r"desk|chair|bed|sofa|couch|table|toilet|sink|shower|workstation|how\s+many|number\s+of|count|points?)\b",
+    re.I,
+)
+
+
+def is_drawing_contextual_layout_query(query: str) -> bool:
+    """Floor-plan / layout questions — answer from extracted text, not vision fallback."""
+    if not is_drawing_content_query(query):
+        return False
+    return bool(_CONTEXTUAL_LAYOUT.search(_normalize(query)))
+
+
+_COUNT_QUERY = re.compile(
+    r"\b(how\s+many|number\s+of|no\.?\s*of|count|total)\b.{0,40}\b("
+    r"chairs?|desks?|doors?|tables?|workstations?|beds?|sofas?|fixtures?|rooms?|"
+    r"entries|exits|entry|exit|points?)\b|"
+    r"\b(chairs?|desks?|doors?|tables?|workstations?|beds?|sofas?|fixtures?|rooms?|"
+    r"entries|exits|entry|exit|points?)\b.{0,40}\b(how\s+many|number\s+of|no\.?\s*of|count)\b",
+    re.I,
+)
+
+
+def is_drawing_count_query(query: str) -> bool:
+    """Counting questions on floor plans (chairs, doors, rooms, etc.)."""
+    q = _normalize(query)
+    if not _COUNT_QUERY.search(q):
+        return False
+    if is_drawing_content_query(query):
+        return True
+    return bool(
+        re.search(r"\b(floor\s*plan|drawing|layout|blueprint|unit|apartment|bedroom)\b", q)
+    )
+
+
+_LAYOUT_IDENT = re.compile(
+    r"\b(what\s+type\s+of\s+room|what\s+kind\s+of\s+room|what\s+does\s+this\s+layout\s+represent|"
+    r"what\s+is\s+this\s+(room|layout|space)|identify\s+the\s+room|room\s+type|"
+    r"what\s+space|layout\s+represent|represent\s+this\s+layout)\b",
+    re.I,
+)
+
+_FURNITURE_INVENTORY = re.compile(
+    r"\b(furniture|furnishing|furnishings|fixtures?|facilities|what\s+is\s+(?:inside|in)\s+the|"
+    r"what\s+(?:furniture|fixtures|facilities)|list\s+(?:the\s+)?(?:furniture|items|fixtures|facilities)|"
+    r"available\s+inside|inside\s+the\s+(?:room|restroom|washroom|bathroom|area)|"
+    r"items\s+in\s+the\s+room)\b",
+    re.I,
+)
+
+_ZONE_FACILITIES = re.compile(
+    r"\b(restroom|washroom|bathroom|toilet\s+area|lavatory|wc|ensuite|shower\s+room)\b",
+    re.I,
+)
+
+
+def is_drawing_zone_facilities_query(query: str) -> bool:
+    """List fixtures/facilities in a named zone (restroom, bathroom, etc.)."""
+    if not is_drawing_content_query(query):
+        return False
+    q = _normalize(query)
+    return bool(_ZONE_FACILITIES.search(q)) and bool(
+        re.search(r"\b(facilities?|fixtures?|available|inside|what)\b", q)
+    )
+
+
+def is_drawing_furniture_inventory_query(query: str) -> bool:
+    """List furniture/fixtures visible on a floor plan."""
+    if not is_drawing_content_query(query):
+        return False
+    return bool(_FURNITURE_INVENTORY.search(_normalize(query)))
+
+
+def is_drawing_layout_identification_query(query: str) -> bool:
+    """Questions asking what room/space type a floor plan shows."""
+    if not is_drawing_content_query(query):
+        return False
+    return bool(_LAYOUT_IDENT.search(_normalize(query)))
+
+
+def is_drawing_vision_first_query(query: str) -> bool:
+    """Layout questions that must read the image — title/metadata may be wrong."""
+    return (
+        is_drawing_count_query(query)
+        or is_drawing_layout_identification_query(query)
+        or is_drawing_furniture_inventory_query(query)
+        or is_drawing_zone_facilities_query(query)
+        or is_drawing_contextual_layout_query(query)
+    )
+
+
+def is_drawing_fact_query(query: str) -> bool:
+    """Factual values from drawing extracted text — use text path, not vision."""
+    if not is_drawing_content_query(query):
+        return False
+    q = _normalize(query)
+    return bool(
+        re.search(r"\b(pile|diameter|piling)\b", q)
+        or re.search(r"\b(span|truss)\b", q)
+        or re.search(r"\b(incomer|rating)\b", q)
+        or is_drawing_contextual_layout_query(query)
+    )
+
+
+def is_drawing_text_first_query(query: str) -> bool:
+    """Drawing questions that must use extracted sheet text (never vision-only fallback)."""
+    return is_drawing_fact_query(query) or is_drawing_contextual_layout_query(query)
+
+
+def is_drawing_content_query(query: str) -> bool:
+    """Question about technical content inside an engineering drawing file."""
+    q = _normalize(query).rstrip("?")
+    if is_file_detail_query(query):
+        return False
+    drawing_no = extract_drawing_no(query)
+    if drawing_no:
+        if re.search(
+            r"\b(pile|piling|diameter|dimension|layout|spacing|length|depth|revision|"
+            r"note|notes|spec|grid|foundation|location|position|where|associated|set\s+out|"
+            r"setting\s+out|sufficient|support|evidence|floor\s*plan|kitchen|bedroom|"
+            r"bathroom|living|dining|corridor|balcony|apartment|room|entry|exit|door|"
+            r"access|how\s+many|visible|what|which|how|find|on|in|from)\b",
+            q,
+        ):
+            return True
+        if query.strip().endswith("?"):
+            return True
+    if re.search(r"\bon\s+(?:drawing|sheet)\b", q):
+        return True
+    if re.search(r"\bdrawing\s+(?:no|number|#)\b", q):
+        return True
+    if re.search(r"\b(floor\s*plan|layout|blueprint)\b", q) and re.search(
+        r"\b(beds?|chairs?|doors?|rooms?|furniture|fixtures?|how\s+many|number\s+of|count)\b",
+        q,
+    ):
+        return True
+    if _COUNT_QUERY.search(q) and re.search(
+        r"\b(floor\s*plan|drawing|layout|unit|apartment|residential)\b", q
+    ):
+        return True
+    return False
+
+
+def is_document_content_query(query: str) -> bool:
+    """Question about text inside an uploaded file (not metadata like size/uploader)."""
+    q = _normalize(query).rstrip("?")
+    if is_file_detail_query(query):
+        return False
+    if is_drawing_content_query(query):
+        return True
+    content_signals = re.search(
+        r"\b(mention|mentioned|say|says|state|states|describe|detail|details|content|"
+        r"conclusion|conclusions|recommendation|recommendations|section|paragraph|"
+        r"what|which|how many|list|summarize|summary|explain|find|inside|within)\b",
+        q,
+    )
+    file_signals = re.search(
+        r"\b(report|document|pdf|docx|xlsx|file|manual|specification|specs|attachment|drawing|sheet)\b",
+        q,
+    )
+    if file_signals and (content_signals or query.strip().endswith("?")):
+        return True
+    return bool(
+        re.search(r"\bproject\s+report\b", q)
+        or re.search(r"\b(in|from|inside|within)\s+(the\s+)?[\w\s-]+\s+(report|document|file)\b", q)
+    )
+
+
+def is_file_content_query(query: str) -> bool:
+    return is_document_content_query(query)
+
+
+def score_drawing_match(query: str, title: str, metadata: Optional[dict] = None) -> float:
+    """Boost drawings whose number/title matches the question."""
+    score = 0.0
+    drawing_no = extract_drawing_no(query)
+    meta = metadata or {}
+    title_l = title.lower()
+    qn = _normalize(query)
+    if drawing_no:
+        if drawing_no.lower() in title_l:
+            score += 60.0
+        if str(meta.get("drawing_no", "")).upper() == drawing_no:
+            score += 70.0
+    for tok in re.findall(r"[a-z0-9]+", qn):
+        if len(tok) > 3 and tok in title_l:
+            score += 4.0
+    # Phrase match: "residential unit floor plan" → ST-009-B title
+    if re.search(r"\bresidential\b", qn) and "residential" in title_l:
+        score += 12.0
+    if re.search(r"\bfloor\s*plan\b", qn) and "floor plan" in title_l:
+        score += 10.0
+    return score
+
+
 def extract_document_name_tokens(query: str) -> List[str]:
     """Tokens from the document name phrase, e.g. after 'of' in a file-size question."""
     q = _normalize(query).rstrip("?")
-    m = re.search(r"\b(?:of|for|named|called)\s+(.+)$", q)
-    phrase = m.group(1) if m else q
+    m = re.search(r"\bin\s+(?:the\s+)?(.+?)\s+(?:report|document|file|pdf|docx)\b", q)
+    if m:
+        phrase = m.group(1).strip()
+    else:
+        m = re.search(r"\bin\s+(?:the\s+)?(.+?)$", q)
+        if m:
+            phrase = m.group(1).strip()
+        else:
+            m = re.search(r"\b(?:of|for|named|called)\s+(.+)$", q)
+            phrase = m.group(1) if m else q
     return [
         t for t in re.findall(r"[a-z0-9]+", phrase)
-        if len(t) > 3 and t not in STOP_WORDS and t not in {"size", "file", "document", "report"}
+        if len(t) > 3 and t not in STOP_WORDS and t not in {"size", "file", "document", "report", "measure", "measures", "safety", "mentioned"}
     ]
+
+
+def is_safety_measures_query(query: str) -> bool:
+    q = _normalize(query)
+    return bool(re.search(r"\bsafety\s+measures?\b|\bmeasures?\s+.*\bsafety\b|\bwhat\s+safety\b", q))
+
+
+def is_handover_workflow_query(query: str) -> bool:
+    """User wants actions / next steps for handover closeout — not a document list."""
+    q = _normalize(query)
+    handover = re.search(
+        r"\bhandover|closeout|close-out|completion certificate|"
+        r"defects liability|dlp|o&?m manual|as-built",
+        q,
+    )
+    procedural = re.search(
+        r"\bnext step|what (?:are|is) the next|what should|what do we|"
+        r"how to proceed|who is responsible|who should|timeline for|"
+        r"action(?:s)? required|what happens next|workflow|process for|"
+        r"still pending|pending handover",
+        q,
+    )
+    return bool(handover and procedural)
+
+
+def score_document_title_match(query: str, title: str) -> float:
+    """Boost documents whose filename matches the report named in the question."""
+    q = _normalize(query).rstrip("?")
+    t = title.replace("_", " ").lower()
+    score = 0.0
+
+    m = re.search(r"\bin\s+(?:the\s+)?(.+?)$", q)
+    phrase = m.group(1).strip() if m else q
+    phrase_norm = phrase.replace("_", " ")
+
+    if "project report" in phrase_norm:
+        if "project report" in t or "project_report" in title.lower():
+            score += 55.0
+        if "budget" in t and "project report" not in t:
+            score -= 45.0
+    if "budget report" in phrase_norm and "budget" in t:
+        score += 25.0
+
+    for tok in extract_document_name_tokens(query):
+        if tok in t:
+            score += 10.0
+    return score
 
 
 def extract_project_qualifier(query: str) -> Optional[str]:
@@ -466,5 +728,52 @@ def rerank_score(item: dict, analysis: QueryAnalysis) -> float:
                 boost += 8.0
         elif ctype in {"project", "timeline", "handover", "report", "safety", "task"}:
             boost -= 15.0
+
+    # Text extracted from blob files (RAG index) — boost for content questions
+    if meta.get("content_source") in ("blob_rag", "drawing_sheet_notes") or meta.get("source") in (
+        "blob_rag",
+        "drawing_sheet_notes",
+    ):
+        if analysis.is_question:
+            boost += 20.0
+        if len(snippet) > 100 and "uploaded by" not in snippet[:90]:
+            boost += 10.0
+
+    if is_document_content_query(analysis.original):
+        if ctype == "document":
+            boost += 28.0
+            boost += score_document_title_match(analysis.original, item.get("title", ""))
+            doc_tokens = extract_document_name_tokens(analysis.original)
+            if doc_tokens:
+                title_hits = sum(1 for t in doc_tokens if t in title.replace("_", " "))
+                snippet_hits = sum(1 for t in doc_tokens if t in snippet.replace("_", " "))
+                boost += min(title_hits * 8.0 + snippet_hits * 4.0, 32.0)
+            # Prefer real uploaded file content over seed/sync placeholders
+            if "buildtrack document id" in snippet:
+                boost -= 40.0
+            if meta.get("content_source") == "blob_rag" and "buildtrack document id" not in snippet:
+                boost += 30.0
+            if meta.get("file_type", "").upper() == "DOCX" and "project report" in analysis.original.lower():
+                boost += 15.0
+        elif ctype == "drawing" and is_drawing_content_query(analysis.original):
+            boost += 35.0
+            boost += score_drawing_match(analysis.original, item.get("title", ""), meta)
+            if meta.get("content_source") in ("blob_rag", "drawing_sheet_notes"):
+                boost += 35.0
+            if extract_drawing_no(analysis.original):
+                boost += 20.0
+        elif ctype in {"project", "safety", "task", "timeline", "handover", "report"}:
+            boost -= 22.0
+
+    if is_drawing_content_query(analysis.original):
+        if ctype == "drawing":
+            boost += 40.0
+            boost += score_drawing_match(analysis.original, item.get("title", ""), meta)
+            if meta.get("content_source") == "blob_rag":
+                boost += 40.0
+        elif ctype == "document" and extract_drawing_no(analysis.original):
+            boost -= 15.0
+        elif ctype in {"project", "safety", "task", "timeline", "handover", "report"}:
+            boost -= 25.0
 
     return base + boost

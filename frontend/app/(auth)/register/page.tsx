@@ -57,7 +57,7 @@ export default function RegisterPage() {
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-1">Create your account</h2>
-          <p className="text-gray-500 text-sm mb-6">Start managing projects smarter today</p>
+          <p className="text-gray-500 text-sm mb-6">Set up your account to get started</p>
 
           {error && (
             <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg px-4 py-3 mb-4">

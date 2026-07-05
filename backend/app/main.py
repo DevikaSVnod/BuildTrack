@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import engine, Base, ping_database
-from app.api.routes import auth, projects, tasks, team, documents, search, operational
+from app.api.routes import auth, projects, tasks, team, documents, search, operational, files
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -82,6 +82,7 @@ app.include_router(team.router, prefix="/api")
 app.include_router(documents.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(operational.router, prefix="/api")
+app.include_router(files.router, prefix="/api")
 
 
 def seed_kpi_if_needed_sync():
@@ -284,6 +285,43 @@ def seed_database_sync():
             doc = Document(**d)
             db.add(doc)
         db.commit()
+
+        if settings.AZURE_STORAGE_CONNECTION_STRING:
+            from sqlalchemy.orm import joinedload
+            from app.storage.document_blob import (
+                blob_name_for_document,
+                generate_document_bytes,
+                is_blob_url,
+                upload_bytes_to_blob,
+            )
+
+            for doc in (
+                db.query(Document)
+                .options(joinedload(Document.project))
+                .filter(Document.file_url.like("/uploads/%"))
+                .all()
+            ):
+                try:
+                    content, content_type = generate_document_bytes(
+                        doc.name,
+                        doc.file_type,
+                        doc.project.name if doc.project else None,
+                        doc.id,
+                    )
+                    url, size = upload_bytes_to_blob(
+                        content,
+                        blob_name_for_document(doc.id, doc.name),
+                        content_type,
+                        document_id=doc.id,
+                        project_id=doc.project_id,
+                        original_filename=doc.name,
+                    )
+                    doc.file_url = url
+                    doc.file_size = size
+                except Exception as blob_err:
+                    logger.warning("Seed blob upload failed for %s: %s", doc.name, blob_err)
+            db.commit()
+
         logger.info("Database seeded successfully!")
 
     except Exception as e:

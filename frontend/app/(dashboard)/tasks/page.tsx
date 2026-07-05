@@ -7,29 +7,22 @@ import Modal from "@/components/ui/Modal";
 import TaskList from "@/components/tasks/TaskList";
 import TaskForm from "@/components/tasks/TaskForm";
 import { tasksApi } from "@/lib/api";
+import { usePageData } from "@/hooks/usePageData";
 import type { Task } from "@/types";
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: tasks, loading, reload } = usePageData<Task[]>(
+    "tasks",
+    () => tasksApi.list().then((r) => r.data),
+  );
+  const list = tasks ?? [];
   const [showModal, setShowModal] = useState(false);
   const [defaultStatus, setDefaultStatus] = useState<Task["status"]>("To Do");
   const [highlightId, setHighlightId] = useState<number | null>(null);
   const searchParams = useSearchParams();
   const highlightRef = useRef<HTMLDivElement>(null);
 
-  const fetchTasks = async () => {
-    setLoading(true);
-    try {
-      const res = await tasksApi.list();
-      setTasks(res.data);
-    } catch {
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchTasks(); }, []);
+  const fetchTasks = () => reload();
 
   useEffect(() => {
     const id = searchParams.get("taskId");
@@ -59,7 +52,7 @@ export default function TasksPage() {
     fetchTasks();
   };
 
-  const totalByStatus = (status: Task["status"]) => tasks.filter((t) => t.status === status).length;
+  const totalByStatus = (status: Task["status"]) => list.filter((t) => t.status === status).length;
 
   return (
     <div className="space-y-6">
@@ -72,7 +65,7 @@ export default function TasksPage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Site Activities</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {tasks.length} total activities · {totalByStatus("Done")} completed · {totalByStatus("In Progress")} in progress
+            {list.length} total activities · {totalByStatus("Done")} completed · {totalByStatus("In Progress")} in progress
           </p>
         </div>
         <Button onClick={() => { setDefaultStatus("To Do"); setShowModal(true); }}>
@@ -108,7 +101,7 @@ export default function TasksPage() {
         </div>
       )}
 
-      {loading ? (
+      {loading && list.length === 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="rounded-xl bg-gray-50 p-4 h-64 animate-pulse" />
@@ -116,7 +109,7 @@ export default function TasksPage() {
         </div>
       ) : (
         <TaskList
-          tasks={tasks}
+          tasks={list}
           onStatusChange={handleStatusChange}
           onAddTask={handleAddTask}
           highlightId={highlightId}

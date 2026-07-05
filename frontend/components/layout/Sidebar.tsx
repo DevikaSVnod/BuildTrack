@@ -3,12 +3,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Building2, ClipboardList,
-  Users, FolderOpen, Calendar, BarChart2,
-  HardHat, LogOut, ShieldCheck, ClipboardCheck,
-  BookOpen, Layers,
+  Users, FolderOpen, Calendar,
+  HardHat, LogOut, ShieldCheck,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearAuth } from "@/lib/auth";
+import { prefetchRoute } from "@/lib/prefetch";
 import { useRouter } from "next/navigation";
 import { useCurrentUser, userInitials } from "@/hooks/useCurrentUser";
 
@@ -26,14 +27,12 @@ const SECTIONS: { heading?: string; items: NavItem[] }[] = [
     items: [
       { href: "/tasks",     label: "Site Activities",  icon: ClipboardList },
       { href: "/timeline",  label: "Timeline",         icon: Calendar },
-      { href: "/reports",   label: "Reports",          icon: BarChart2 },
     ],
   },
   {
     heading: "LMS · LABOUR",
     items: [
       { href: "/team",        label: "Workforce",      icon: Users },
-      { href: "/attendance",  label: "Attendance",     icon: ClipboardCheck },
       { href: "/safety",      label: "Safety & HSE",   icon: ShieldCheck },
     ],
   },
@@ -42,7 +41,6 @@ const SECTIONS: { heading?: string; items: NavItem[] }[] = [
     items: [
       { href: "/documents",   label: "Document Control", icon: FolderOpen },
       { href: "/drawings",    label: "Drawings & Specs",  icon: Layers },
-      { href: "/handover",    label: "Handover Docs",     icon: BookOpen },
     ],
   },
 ];
@@ -55,6 +53,11 @@ export default function Sidebar() {
   const handleLogout = () => {
     clearAuth();
     router.push("/login");
+  };
+
+  const handleNavIntent = (href: string) => {
+    router.prefetch(href);
+    prefetchRoute(href);
   };
 
   return (
@@ -102,6 +105,8 @@ export default function Sidebar() {
                   <Link
                     key={href}
                     href={href}
+                    onMouseEnter={() => handleNavIntent(href)}
+                    onFocus={() => handleNavIntent(href)}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
                       active
@@ -118,13 +123,6 @@ export default function Sidebar() {
           </div>
         ))}
 
-        {/* AI Search hint — inside scroll area so nav links stay reachable */}
-        <div className="mx-1 mb-2 rounded-xl bg-white/5 border border-white/10 px-3 py-3">
-          <p className="text-blue-200 text-[11px] font-semibold mb-1">✦ AI-Powered Search</p>
-          <p className="text-blue-300 text-[11px] leading-relaxed">
-            Use the search bar above to find anything across projects, workforce & documents.
-          </p>
-        </div>
       </nav>
 
       {/* User profile — fixed at bottom */}
