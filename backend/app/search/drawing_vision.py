@@ -862,8 +862,18 @@ def vision_contextual_layout_answer(
         )
         max_tokens = 900
     elif is_drawing_furniture_inventory_query(query):
+        which_hint = ""
+        from app.search.query_intel import is_which_drawing_query
+
+        if is_which_drawing_query(query):
+            which_hint = (
+                f"\nIMPORTANT: The question asks WHICH drawing. Start the answer with: "
+                f"'Drawing {drawing_no or 'shown'}' and state clearly that THIS sheet "
+                "contains (or does not contain) the requested items.\n"
+            )
         prompt = (
             f"Question about floor plan drawing {drawing_no or 'shown'}: {query}\n\n"
+            f"{which_hint}"
             "Inventory ALL furniture and fixtures visible across the ENTIRE drawing image. "
             "Scan every room/unit shown — do not stop at bathrooms or one area only.\n"
             "Include each category you can see with counts:\n"
@@ -1009,6 +1019,166 @@ def vision_contextual_layout_answer(
         return None
 
 
+def drawing_display_label(drawing: dict[str, Any]) -> str:
+    """Human-readable drawing reference for answers and dropdown sync."""
+    meta = drawing.get("metadata") or {}
+    drawing_no = (meta.get("drawing_no") or "").strip()
+    title = (drawing.get("title") or "").strip()
+    if drawing_no and drawing_no.upper() in title.upper():
+        return title
+    if drawing_no and title:
+        short = title.split("–", 1)[-1].strip() if "–" in title else title
+        return f"{drawing_no} – {short}"
+    return title or drawing_no or "this drawing"
+
+
+def ensure_drawing_cited_in_answer(
+    query: str,
+    answer: str,
+    drawing: dict[str, Any],
+) -> str:
+    """Ensure the AI answer names the drawing when the user asks which sheet."""
+    if not answer or not drawing:
+        return answer
+
+    from app.search.query_intel import is_which_drawing_query
+
+    label = drawing_display_label(drawing)
+    meta = drawing.get("metadata") or {}
+    drawing_no = (meta.get("drawing_no") or "").upper()
+    text = answer.strip()
+    upper = text.upper()
+
+    if drawing_no and drawing_no in upper:
+        return text
+    if label.lower() in text.lower():
+        return text
+
+    cite = f"**Drawing:** {label}"
+    if is_which_drawing_query(query):
+        if text.startswith("**Answer:**"):
+            body = text[len("**Answer:**") :].strip()
+            return f"**Answer:**\n{cite}\n\n{body}"
+        return f"{cite}\n\n{text}"
+
+    if drawing_no and cite not in text:
+        if text.startswith("**Answer:**"):
+            rest = text[len("**Answer:**") :].strip()
+            return f"**Answer:**\n{cite}\n\n{rest}"
+        return f"{cite}\n\n{text}"
+    return text
+
+
+def _vision_configured() -> bool:
+    return bool(
+        settings.AZURE_OPENAI_VISION_DEPLOYMENT
+        and settings.AZURE_OPENAI_ENDPOINT
+        and settings.AZURE_OPENAI_KEY
+    )
+
+
+def _vision_answer_is_usable(answer: Optional[str]) -> bool:
+    if not answer or not str(answer).strip():
+        return False
+    return not re.search(
+        r"could not be rasterized|Re-run drawing index sync",
+        str(answer),
+        re.I,
+    )
+
+
+def vision_general_drawing_answer(
+    *,
+    query: str,
+    drawing: dict[str, Any],
+) -> Optional[str]:
+    """
+    General drawing Q&A from the sheet image — geometry, welds, cross-sections,
+    dimensions, annotations, and detail callouts.
+    """
+    deployment = settings.AZURE_OPENAI_VISION_DEPLOYMENT
+    if not _vision_configured():
+        return None
+
+    meta = drawing.get("metadata") or {}
+    drawing_no = (meta.get("drawing_no") or "").strip()
+
+    try:
+        content, content_type, loaded_no = _load_drawing_image_for_vision(drawing)
+        if loaded_no:
+            drawing_no = loaded_no
+        data_url = _data_url_from_bytes(content, content_type)
+    except FileNotFoundError:
+        return None
+    except Exception as exc:
+        logger.warning("General vision: failed to load image: %s", exc)
+        return None
+
+    user_text = (
+        f"Drawing reference for disambiguation only (NOT visible evidence): "
+        f"drawing_no={drawing_no}.\n"
+        f"Question: {query}\n\n"
+        "Analyze the full drawing image. Read geometry, cross-sections, weld symbols, "
+        "dimension chains, section cuts, detail bubbles, title block, and annotations.\n"
+        'Return JSON: {"answer": "...", "evidence": ["visible item 1", ...], '
+        '"limitations": "what is unclear or not visible on the sheet"}'
+    )
+    system = (
+        "You are BuildTrack AI, an engineering drawing assistant. "
+        "Answer ONLY from what is explicitly visible in the drawing image. "
+        "Read geometry, cross-sections, weld details, dimensions, symbols, and notes. "
+        "Quote visible labels and values. If something is not on the sheet, say so clearly. "
+        "Do not invent coordinates, dimensions, or details."
+    )
+
+    try:
+        from openai import AzureOpenAI
+
+        client = AzureOpenAI(
+            azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+            api_key=settings.AZURE_OPENAI_KEY,
+            api_version="2024-02-01",
+        )
+        resp = client.chat.completions.create(
+            model=deployment,
+            messages=[
+                {"role": "system", "content": system},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": user_text},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": data_url, "detail": "high"},
+                        },
+                    ],
+                },
+            ],
+            max_tokens=800,
+            temperature=0.0,
+            response_format={"type": "json_object"},
+        )
+        raw = (resp.choices[0].message.content or "{}").strip()
+        payload = json.loads(raw)
+        answer = str(payload.get("answer") or "").strip()
+        if not answer:
+            return None
+
+        evidence = payload.get("evidence") or []
+        limitations = str(payload.get("limitations") or "").strip()
+        parts = [f"**Answer:** {answer}"]
+        if isinstance(evidence, list) and evidence:
+            bullets = "\n".join(f"- {e}" for e in evidence if str(e).strip())
+            if bullets:
+                parts.append(f"**Evidence:**\n{bullets}")
+        if limitations:
+            parts.append(f"**Limitations:** {limitations}")
+        return "\n\n".join(parts)
+    except Exception as exc:
+        logger.warning("General vision failed: %s", exc)
+        return None
+
+
 def vision_answer_for_drawing(
     *,
     query: str,
@@ -1016,52 +1186,25 @@ def vision_answer_for_drawing(
 ) -> Optional[str]:
     """
     Return an evidence-backed answer string from vision, or None if unavailable.
+    Supports raster files and DWG via preview image.
     """
     deployment = settings.AZURE_OPENAI_VISION_DEPLOYMENT
-    if not deployment:
-        return None
-    if not settings.AZURE_OPENAI_ENDPOINT or not settings.AZURE_OPENAI_KEY:
+    if not _vision_configured():
         return None
 
     meta = drawing.get("metadata") or {}
-    if (meta.get("file_type") or "").upper() == "DWG":
-        return None
-
-    file_url = ""
-    drawing_no_sql = (meta.get("drawing_no") or "").strip()
-    drawing_id = meta.get("drawing_id")
-    if drawing_no_sql or drawing_id is not None:
-        try:
-            from app.core.database import SessionLocal
-            from app.models.operational import EngineeringDrawing
-
-            db = SessionLocal()
-            try:
-                q = db.query(EngineeringDrawing)
-                if drawing_no_sql:
-                    row = q.filter(EngineeringDrawing.drawing_no == drawing_no_sql).first()
-                else:
-                    row = q.filter(EngineeringDrawing.id == int(drawing_id)).first()
-                if row and row.file_url:
-                    file_url = str(row.file_url)
-            finally:
-                db.close()
-        except Exception:
-            file_url = ""
-
-    if not file_url:
-        file_url = meta.get("file_url") or ""
-    if not file_url:
-        return None
+    drawing_no = (meta.get("drawing_no") or "").strip()
 
     try:
-        content, content_type = fetch_blob_bytes(file_url)
+        content, content_type, loaded_no = _load_drawing_image_for_vision(drawing)
+        if loaded_no:
+            drawing_no = loaded_no
         data_url = _data_url_from_bytes(content, content_type)
+    except FileNotFoundError:
+        return None
     except Exception as exc:
         logger.warning("Vision: failed to load drawing image: %s", exc)
         return None
-
-    drawing_no = meta.get("drawing_no") or drawing_no_sql or ""
 
     user_text = (
         f"Drawing reference for disambiguation only (NOT visible evidence — do not cite in answer): "
@@ -1070,6 +1213,7 @@ def vision_answer_for_drawing(
         "Respond in JSON with answer, evidence, derivation, limitations, confidence, "
         "confidence_aspects. Evidence and derivation must come only from the image."
     )
+    image_url_payload: dict[str, Any] = {"url": data_url, "detail": "high"}
 
     try:
         from openai import AzureOpenAI
@@ -1124,3 +1268,33 @@ def vision_answer_for_drawing(
         if is_drawing_location_query(query):
             return _conservative_location_fallback(drawing_no, query)
         return None
+
+
+def answer_drawing_vision_first(
+    *,
+    query: str,
+    drawing: dict[str, Any],
+) -> Optional[str]:
+    """
+    Vision-first answer for any drawing content question.
+    Returns None only when vision is unavailable — caller should fall back to extracted text.
+    """
+    if not _vision_configured():
+        return None
+
+    answer: Optional[str] = None
+
+    if is_drawing_vision_first_query(query) or is_drawing_count_query(query):
+        answer = vision_contextual_layout_answer(query=query, drawing=drawing)
+    elif is_drawing_engineering_reasoning_query(query):
+        answer = vision_answer_for_drawing(query=query, drawing=drawing)
+        if not _vision_answer_is_usable(answer):
+            return drawing_vision_fallback(query=query, drawing=drawing)
+    else:
+        answer = vision_general_drawing_answer(query=query, drawing=drawing)
+        if not _vision_answer_is_usable(answer):
+            answer = vision_answer_for_drawing(query=query, drawing=drawing)
+
+    if _vision_answer_is_usable(answer):
+        return ensure_drawing_cited_in_answer(query, answer or "", drawing)
+    return answer

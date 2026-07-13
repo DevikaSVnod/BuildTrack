@@ -396,9 +396,21 @@ _FURNITURE_INVENTORY = re.compile(
     r"\b(furniture|furnishing|furnishings|fixtures?|facilities|what\s+is\s+(?:inside|in)\s+the|"
     r"what\s+(?:furniture|fixtures|facilities)|list\s+(?:the\s+)?(?:furniture|items|fixtures|facilities)|"
     r"available\s+inside|inside\s+the\s+(?:room|restroom|washroom|bathroom|area)|"
-    r"items\s+in\s+the\s+room)\b",
+    r"items\s+in\s+the\s+room|contains?\s+(?:office\s+)?(?:furniture|fixtures|workstations?))\b",
     re.I,
 )
+
+
+def is_which_drawing_query(query: str) -> bool:
+    """User asks which drawing(s) match a description — answer must name the sheet."""
+    q = _normalize(query)
+    if re.search(r"\b(which|what)\s+drawing\b", q):
+        return True
+    return bool(
+        re.search(r"\bdrawing\b", q)
+        and re.search(r"\b(which|what)\b", q)
+        and re.search(r"\b(contains?|shows?|has|includes?|with)\b", q)
+    )
 
 _ZONE_FACILITIES = re.compile(
     r"\b(restroom|washroom|bathroom|toilet\s+area|lavatory|wc|ensuite|shower\s+room)\b",
@@ -490,6 +502,12 @@ def is_drawing_content_query(query: str) -> bool:
         r"\b(floor\s*plan|drawing|layout|unit|apartment|residential)\b", q
     ):
         return True
+    if re.search(r"\bdrawing\b", q) and re.search(
+        r"\b(find|show|which|locate|that shows|with a|residential|apartment|"
+        r"floor\s*plan|layout|studio|bedroom)\b",
+        q,
+    ):
+        return True
     return False
 
 
@@ -540,8 +558,35 @@ def score_drawing_match(query: str, title: str, metadata: Optional[dict] = None)
     # Phrase match: "residential unit floor plan" → ST-009-B title
     if re.search(r"\bresidential\b", qn) and "residential" in title_l:
         score += 12.0
+    if re.search(r"\bapartment\b", qn) and ("apartment" in title_l or "unit" in title_l):
+        score += 14.0
+    if re.search(r"\bstudio\b", qn) and "studio" in title_l:
+        score += 14.0
     if re.search(r"\bfloor\s*plan\b", qn) and "floor plan" in title_l:
         score += 10.0
+    if re.search(r"\bmaster\s*plan\b", qn) and "master plan" in title_l:
+        score += 12.0
+    if re.search(r"\bconveyor\b", qn) and "conveyor" in title_l:
+        score += 16.0
+    if re.search(r"\boffice\b", qn) and ("office" in title_l or "workstation" in title_l):
+        score += 20.0
+    if re.search(r"\bfurniture\b", qn) and (
+        "workstation" in title_l or "office" in title_l or "furniture" in title_l
+    ):
+        score += 14.0
+    if re.search(r"\bworkstation\b", qn) and "workstation" in title_l:
+        score += 18.0
+    if re.search(r"\bconference\b", qn) and "conference" in title_l:
+        score += 14.0
+    # Penalise obvious mismatches for descriptive find queries
+    if re.search(r"\b(apartment|residential|studio|bedroom)\b", qn):
+        if re.search(r"\b(conveyor|master\s*plan|screw|site\s*plan)\b", title_l):
+            score -= 25.0
+    if re.search(r"\b(office|workstation|furniture|conference)\b", qn):
+        if re.search(r"\b(residential|apartment|studio|bedroom|site\s*master)\b", title_l):
+            score -= 22.0
+        if "master plan" in title_l and "office" not in title_l:
+            score -= 18.0
     return score
 
 

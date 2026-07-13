@@ -6,12 +6,7 @@ from app.search.query_intel import (
     is_question,
     is_document_content_query,
     is_drawing_content_query,
-    is_drawing_fact_query,
     is_drawing_contextual_layout_query,
-    is_drawing_count_query,
-    is_drawing_count_query,
-    is_drawing_vision_first_query,
-    is_drawing_text_first_query,
     is_safety_measures_query,
     is_handover_workflow_query,
     score_document_title_match,
@@ -50,7 +45,7 @@ _HANDOVER_STATUS_ACTIONS: Dict[str, str] = {
 def _cache_key(query: str, results_fingerprint: str) -> str:
     raw = f"{query.strip().lower()}|{results_fingerprint}"
     if is_drawing_content_query(query):
-        raw += "|drawing-structured-v6"
+        raw += "|drawing-vision-first-v1"
     return hashlib.md5(raw.encode()).hexdigest()
 
 
@@ -656,6 +651,24 @@ def _answer_says_not_found(answer: str) -> bool:
     return "could not find" in lower or "couldn't find" in lower or "no information" in lower
 
 
+def _best_drawing_result(
+    query: str, results: List[Dict[str, Any]]
+) -> Optional[Dict[str, Any]]:
+    """Pick the drawing that best matches the question (not just search rank)."""
+    drawings = [r for r in results if r.get("content_type") == "drawing"]
+    if not drawings:
+        return None
+    if len(drawings) == 1:
+        return drawings[0]
+
+    def rank(r: Dict[str, Any]) -> float:
+        meta = r.get("metadata") or {}
+        return score_drawing_match(query, r.get("title", ""), meta)
+
+    drawings.sort(key=rank, reverse=True)
+    return drawings[0]
+
+
 def generate_answer(
     query: str,
     search_results: List[Dict[str, Any]],
@@ -683,105 +696,44 @@ def generate_answer(
     if not settings.AZURE_OPENAI_ENDPOINT or not settings.AZURE_OPENAI_KEY:
         return _fallback_answer(query, ordered, analysis)
 
-    # Drawing answers: extracted text first; vision only for PNG spatial/engineering reasoning.
-    top_drawing = next((r for r in ordered if r.get("content_type") == "drawing"), None)
+    # Drawing answers: vision-first on best-matching drawing, extracted text as fallback.
+    top_drawing = _best_drawing_result(query, ordered)
     if is_drawing_content_query(query) and top_drawing:
         from app.search.drawing_vision import (
             _drawing_followups,
+            answer_drawing_vision_first,
             drawing_vision_fallback,
-            is_drawing_engineering_reasoning_query,
-            is_structured_drawing_answer,
-            vision_answer_for_drawing,
         )
 
-        meta = top_drawing.get("metadata") or {}
-        is_dwg = (meta.get("file_type") or "").upper() == "DWG"
-
-        # Count questions: try sheet_notes text first (fast), then vision on image.
-        if is_drawing_count_query(query) and not is_dwg:
-            from app.search.drawing_vision import vision_contextual_layout_answer
-
-            text_answer = _answer_drawing_from_extracted_text(query, ordered)
-            if text_answer and not _drawing_text_answer_is_weak(text_answer):
-                if re.search(r"\b\d+\b", text_answer):
-                    result = (text_answer, _contextual_drawing_followups(query))
-                    _set_cached(key, *result)
-                    return result
-            vision_ctx = vision_contextual_layout_answer(
-                query=query, drawing=top_drawing
+        vision_answer = answer_drawing_vision_first(query=query, drawing=top_drawing)
+        if vision_answer:
+            followups = (
+                _contextual_drawing_followups(query)
+                if is_drawing_contextual_layout_query(query)
+                else _drawing_followups(query)
             )
-            if vision_ctx:
-                result = (vision_ctx, _contextual_drawing_followups(query))
-                _set_cached(key, *result)
-                return result
-
-        # Vision-first for layout questions on PNG/PDF — image content beats title/metadata.
-        if is_drawing_vision_first_query(query) and not is_drawing_count_query(query) and not is_dwg:
-            from app.search.drawing_vision import vision_contextual_layout_answer
-
-            vision_ctx = vision_contextual_layout_answer(
-                query=query, drawing=top_drawing
-            )
-            if vision_ctx:
-                result = (vision_ctx, _contextual_drawing_followups(query))
-                _set_cached(key, *result)
-                return result
-
-        if is_drawing_text_first_query(query) or is_dwg:
-            from app.search.drawing_vision import vision_contextual_layout_answer
-
-            text_answer = (
-                _answer_drawing_from_extracted_text(query, ordered)
-                or _extractive_document_answer(query, ordered)
-            )
-            # Text fallback only if vision unavailable (e.g. DWG without preview)
-            if is_drawing_contextual_layout_query(query) and (
-                not text_answer or _drawing_text_answer_is_weak(text_answer)
-            ):
-                vision_ctx = vision_contextual_layout_answer(
-                    query=query, drawing=top_drawing
-                )
-                if vision_ctx:
-                    result = (vision_ctx, _contextual_drawing_followups(query))
-                    _set_cached(key, *result)
-                    return result
-            if text_answer and not _drawing_text_answer_is_weak(text_answer):
-                followups = (
-                    _contextual_drawing_followups(query)
-                    if is_drawing_contextual_layout_query(query)
-                    else _drawing_followups(query)
-                )
-                result = (text_answer, followups)
-                _set_cached(key, *result)
-                return result
-
-        v: Optional[str] = None
-        if (
-            settings.AZURE_OPENAI_VISION_DEPLOYMENT
-            and not is_dwg
-            and not is_drawing_vision_first_query(query)
-        ):
-            try:
-                v = vision_answer_for_drawing(query=query, drawing=top_drawing)
-            except Exception as exc:
-                logger.debug("Vision path skipped: %s", exc)
-
-        if is_drawing_engineering_reasoning_query(query):
-            if not v or not is_structured_drawing_answer(v):
-                v = drawing_vision_fallback(query=query, drawing=top_drawing)
-            if v:
-                result = (v, _drawing_followups(query))
-                _set_cached(key, *result)
-                return result
-        elif (
-            v
-            and not re.search(
-                r"\bnot visible\b|\bcan(?:not|'t)\s+find\b|\bnot found\b", v, re.I
-            )
-        ):
-            result = (v, _drawing_followups(query))
+            result = (vision_answer, followups)
             _set_cached(key, *result)
             return result
+
+        text_answer = (
+            _answer_drawing_from_extracted_text(query, ordered)
+            or _extractive_document_answer(query, ordered)
+        )
+        if text_answer and not _drawing_text_answer_is_weak(text_answer):
+            followups = (
+                _contextual_drawing_followups(query)
+                if is_drawing_contextual_layout_query(query)
+                else _drawing_followups(query)
+            )
+            result = (text_answer, followups)
+            _set_cached(key, *result)
+            return result
+
+        fallback = drawing_vision_fallback(query=query, drawing=top_drawing)
+        result = (fallback, _drawing_followups(query))
+        _set_cached(key, *result)
+        return result
 
     if is_safety_measures_query(query):
         extractive = _extractive_document_answer(query, ordered)
@@ -860,48 +812,6 @@ def generate_answer(
             if workflow:
                 answer = workflow
                 suggested = _handover_workflow_followups()
-
-        if is_drawing_content_query(query) and top_drawing:
-            from app.search.drawing_vision import (
-                _drawing_followups,
-                drawing_vision_fallback,
-                is_drawing_engineering_reasoning_query,
-                is_structured_drawing_answer,
-                has_unsupported_sheet_claims,
-            )
-
-            meta = top_drawing.get("metadata") or {}
-            is_dwg = (meta.get("file_type") or "").upper() == "DWG"
-            use_vision_fallback = (
-                not is_drawing_vision_first_query(query)
-                and (
-                    (
-                        is_drawing_engineering_reasoning_query(query)
-                        and not is_drawing_contextual_layout_query(query)
-                        and not is_dwg
-                    )
-                    or (
-                        not is_drawing_contextual_layout_query(query)
-                        and not is_dwg
-                        and (
-                            not is_structured_drawing_answer(answer)
-                            or has_unsupported_sheet_claims(answer)
-                        )
-                    )
-                )
-            )
-
-            if use_vision_fallback:
-                answer = drawing_vision_fallback(query=query, drawing=top_drawing)
-                suggested = _drawing_followups(query)
-            elif is_drawing_contextual_layout_query(query) or is_dwg:
-                text_answer = (
-                    _answer_drawing_from_extracted_text(query, ordered)
-                    or _extractive_document_answer(query, ordered)
-                )
-                if text_answer:
-                    answer = text_answer
-                    suggested = _contextual_drawing_followups(query)
 
         result = (answer, suggested[:3])
         _set_cached(key, *result)
