@@ -14,7 +14,7 @@ from app.search.query_intel import (
     score_drawing_match,
 )
 
-_DRAWING_NO_RE = re.compile(r"\b[A-Z]{2}-\d{3}-[A-Z]\b", re.I)
+_DRAWING_NO_RE = re.compile(r"\b[A-Z]{2}-\d{3}-[A-Z0-9]\b", re.I)
 
 _QUERY_STOP = frozenset({
     "find", "show", "list", "tell", "give", "what", "which", "where", "when",
@@ -162,6 +162,156 @@ def _entity_matches_result(entity: str, result: Dict[str, Any]) -> bool:
     return False
 
 
+def _blob_body_text(result: Dict[str, Any]) -> str:
+    meta = result.get("metadata") or {}
+    return (meta.get("blob_chunk") or result.get("snippet") or "").strip()
+
+
+def _is_internal_crawl_sidecar(result: Dict[str, Any]) -> bool:
+    """
+    RAG text sidecars (e.g. AR-113-9_sheet_content.txt) are for search indexing only.
+    Users should see the real drawing/document file in the dropdown, not the sidecar.
+    """
+    title = (result.get("title") or "").lower()
+    meta = result.get("metadata") or {}
+    filename = str(
+        meta.get("filename")
+        or meta.get("original_filename")
+        or meta.get("blob_name")
+        or ""
+    ).lower()
+    blob = str(meta.get("blob_url") or meta.get("file_url") or "").lower()
+    hay = " ".join([title, filename, blob])
+    if "_sheet_content.txt" in hay or " sheet content.txt" in hay:
+        return True
+    if meta.get("sidecar") in ("drawing_crawl", "document_body", "sheet_content"):
+        return True
+    if "sheet content" in title and extract_drawing_no(title):
+        return True
+    return False
+
+
+def _matches_drawing_number(result: Dict[str, Any], drawing_no: str) -> bool:
+    if not drawing_no:
+        return False
+    meta = result.get("metadata") or {}
+    dno = str(meta.get("drawing_no") or "").upper()
+    title = (result.get("title") or "").upper()
+    return dno == drawing_no or drawing_no in title
+
+
+def _prefer_drawing_rows(results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Drop crawl sidecars; when a real drawing row exists, show only that."""
+    visible = [r for r in results if not _is_internal_crawl_sidecar(r)]
+    drawings = [r for r in visible if r.get("content_type") == "drawing"]
+    return drawings if drawings else visible
+
+
+def _filter_to_named_drawing(
+    query: str, results: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """When the user names a drawing number, keep only that drawing file."""
+    named = extract_drawing_no(query)
+    if not named:
+        return []
+    matched = [r for r in results if _matches_drawing_number(r, named)]
+    return _prefer_drawing_rows(matched)
+
+
+def _filter_by_answer_drawing_numbers(
+    answer: str, results: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    numbers = {m.group(0).upper() for m in _DRAWING_NO_RE.finditer(answer or "")}
+    if not numbers:
+        return []
+
+    matched: List[Dict[str, Any]] = []
+    for r in results:
+        if any(_matches_drawing_number(r, num) for num in numbers):
+            matched.append(r)
+    return _prefer_drawing_rows(matched)
+
+
+def _extract_evidence_terms(answer: str) -> Set[str]:
+    """Terms from the AI answer that should appear in the source file body."""
+    terms: Set[str] = set()
+    if not answer:
+        return terms
+
+    for match in re.finditer(r"\*\*([^*]+)\*\*", answer):
+        text = match.group(1).strip()
+        if text.lower() in {"source", "drawing"} or text.lower().startswith("source"):
+            continue
+        if len(text) > 2:
+            terms.add(text.lower())
+
+    for match in re.finditer(r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b", answer):
+        terms.add(match.group(1).lower())
+
+    for match in re.finditer(
+        r"\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|"
+        r"jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|"
+        r"dec(?:ember)?)\.?\s+\d{1,2},?\s+\d{4}\b",
+        answer,
+        re.I,
+    ):
+        terms.add(match.group(0).lower())
+
+    for line in answer.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(("-", "•", "*")) and len(stripped) > 4:
+            item = re.sub(r"^[-•*]\s*", "", stripped)
+            item = re.sub(r"\*\*([^*]+)\*\*", r"\1", item).strip()
+            if len(item) > 3:
+                terms.add(item.lower())
+
+    return {t for t in terms if len(t) > 3 and t not in _GENERIC_ENTITIES}
+
+
+def filter_by_blob_evidence(
+    answer: str, results: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """
+    Keep only file hits whose indexed body text supports the AI answer.
+    Returns best match(es) first — typically the single source document.
+    """
+    terms = _extract_evidence_terms(answer)
+    if not terms:
+        return []
+
+    strong = {t for t in terms if len(t.split()) >= 2 or re.search(r"\d{4}", t)}
+
+    scored: list[tuple[int, int, float, Dict[str, Any]]] = []
+    for r in results:
+        if _is_internal_crawl_sidecar(r):
+            continue
+        ctype = r.get("content_type")
+        if ctype not in ("document", "drawing"):
+            continue
+        body = _blob_body_text(r).lower()
+        if len(body) < 30:
+            continue
+        if "upload or sync a real pdf" in body:
+            continue
+
+        hits = sum(1 for t in terms if t in body)
+        strong_hits = sum(1 for t in strong if t in body)
+        if strong_hits >= 1 or hits >= 2:
+            scored.append((strong_hits, hits, float(r.get("score") or 0), r))
+
+    if not scored:
+        return []
+
+    scored.sort(key=lambda x: (x[0], x[1], x[2]), reverse=True)
+    best_strong, best_hits, _, _ = scored[0]
+    matched = [
+        r
+        for sh, h, _, r in scored
+        if sh == best_strong and h == best_hits
+    ]
+    return _prefer_drawing_rows(matched)
+
+
 def _filter_by_answer_entities(
     answer: str, results: List[Dict[str, Any]]
 ) -> List[Dict[str, Any]]:
@@ -283,23 +433,6 @@ def _filter_by_query_relevance(
     return filtered if filtered else [scored[0][0]]
 
 
-def _filter_by_answer_drawing_numbers(
-    answer: str, results: List[Dict[str, Any]]
-) -> List[Dict[str, Any]]:
-    numbers = {m.group(0).upper() for m in _DRAWING_NO_RE.finditer(answer or "")}
-    if not numbers:
-        return []
-
-    matched: List[Dict[str, Any]] = []
-    for r in results:
-        meta = r.get("metadata") or {}
-        drawing_no = str(meta.get("drawing_no") or "").upper()
-        title = (r.get("title") or "").upper()
-        if drawing_no in numbers or any(num in title for num in numbers):
-            matched.append(r)
-    return matched
-
-
 def _filter_by_team_role(
     results: List[Dict[str, Any]], role_slug: str, project_qualifier: Optional[str] = None
 ) -> List[Dict[str, Any]]:
@@ -336,6 +469,11 @@ def filter_results_for_query(
     if is_structured_filter_query(query) or is_workforce_aggregate_query(query):
         return results
 
+    # Explicit drawing number in the query → only that sheet in the dropdown
+    named_only = _filter_to_named_drawing(query, results)
+    if named_only:
+        return named_only
+
     role = extract_team_role_filter(query)
     if role:
         project_qual = extract_project_qualifier(query)
@@ -368,6 +506,7 @@ def _answer_says_not_found(answer: str) -> bool:
         re.search(
             r"\b(could not find|couldn't find|cannot find|can't find|"
             r"no information|not found|not mentioned|not stated|not visible|"
+            r"do(?:es)? not specify|don(?:'|')t specify|excerpts do not specify|"
             r"no (?:evidence|record|data|results?))\b",
             lower,
         )
@@ -387,6 +526,11 @@ def filter_results_for_display(
     if is_workforce_aggregate_query(query):
         return results
 
+    # Explicit drawing number → only that drawing (even before blob evidence)
+    named_only = _filter_to_named_drawing(query, results)
+    if named_only:
+        return named_only
+
     role = extract_team_role_filter(query)
     if role:
         project_qual = extract_project_qualifier(query)
@@ -398,9 +542,17 @@ def filter_results_for_display(
         if _answer_says_not_found(answer):
             return []
 
+        # Answer cites specific drawing number(s) → only those sheets
         drawing_filtered = _filter_by_answer_drawing_numbers(answer, results)
         if drawing_filtered:
             return drawing_filtered
+
+        from app.search.query_intel import is_document_content_query, is_drawing_content_query
+
+        if is_document_content_query(query) or is_drawing_content_query(query):
+            evidence_filtered = filter_by_blob_evidence(answer, results)
+            if evidence_filtered:
+                return evidence_filtered
 
         entity_filtered = _filter_by_answer_entities(answer, results)
         if entity_filtered:

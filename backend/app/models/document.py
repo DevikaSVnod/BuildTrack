@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, BigInteger, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, BigInteger, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -14,6 +14,7 @@ class Document(Base):
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
     uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     file_size = Column(BigInteger, default=0)
+    body_text = Column(Text, nullable=True)  # extracted file text for search/Q&A
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     project = relationship("Project", back_populates="documents")

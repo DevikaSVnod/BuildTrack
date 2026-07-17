@@ -75,7 +75,7 @@ _OCR_AMBIGUOUS_CAP = re.compile(r"\bPA5\b", re.I)
 _PILE_CAP_LABEL = re.compile(r"\b(P[A-Z]{1,4}|PB\d+)\b", re.I)
 _LEVEL_ANNOTATION = re.compile(r"\bFL\+?[\d.]+m?\b", re.I)
 
-_DRAWING_NO = re.compile(r"\b[A-Z]{2}-\d{3}-[A-Z]\b", re.I)
+_DRAWING_NO = re.compile(r"\b[A-Z]{2}-\d{3}-[A-Z0-9]\b", re.I)
 _ELEMENT_REF = re.compile(r"\b(D\d+|P[A-Z]{1,4}|PB\d+)\b", re.I)
 
 
@@ -689,7 +689,7 @@ def _finalize_drawing_answer(query: str, answer: str, drawing: dict[str, Any]) -
 
 
 def _load_drawing_image_for_vision(drawing: dict[str, Any]) -> tuple[bytes, str, str]:
-    """Load raster image bytes for vision (PNG/JPG or DWG preview)."""
+    """Load raster image bytes for vision (PNG/JPG, DWG preview, or PDF page)."""
     meta = drawing.get("metadata") or {}
     drawing_no_sql = (meta.get("drawing_no") or "").strip()
     drawing_id = meta.get("drawing_id")
@@ -697,7 +697,7 @@ def _load_drawing_image_for_vision(drawing: dict[str, Any]) -> tuple[bytes, str,
     try:
         from app.core.database import SessionLocal
         from app.models.operational import EngineeringDrawing
-        from app.storage.drawing_content import resolve_drawing_image_bytes
+        from app.storage.drawing_raster import ensure_drawing_raster_bytes
 
         db = SessionLocal()
         try:
@@ -709,10 +709,8 @@ def _load_drawing_image_for_vision(drawing: dict[str, Any]) -> tuple[bytes, str,
             else:
                 row = None
             if row:
-                loaded = resolve_drawing_image_bytes(row)
-                if loaded:
-                    content, content_type = loaded
-                    return content, content_type, drawing_no_sql or row.drawing_no
+                content, content_type = ensure_drawing_raster_bytes(row, db=db)
+                return content, content_type, drawing_no_sql or row.drawing_no
         finally:
             db.close()
     except Exception as exc:
@@ -754,6 +752,68 @@ def _validate_bed_count_payload(query: str, payload: dict[str, Any]) -> dict[str
     return payload
 
 
+def _validate_furniture_count_payload(query: str, payload: dict[str, Any]) -> dict[str, Any]:
+    """Ensure breakdown sums match total for chairs/tables/desks when possible."""
+    element_m = re.search(
+        r"\b(chairs?|desks?|tables?|workstations?)\b",
+        query or "",
+        re.I,
+    )
+    if not element_m:
+        return payload
+    breakdown = payload.get("breakdown") or []
+    if not isinstance(breakdown, list) or not breakdown:
+        return payload
+    nums: list[int] = []
+    for line in breakdown:
+        m = re.search(r"(\d+)", str(line))
+        if m:
+            nums.append(int(m.group(1)))
+    if not nums:
+        return payload
+    summed = sum(nums)
+    total = payload.get("total")
+    try:
+        if total is None or int(total) != summed:
+            payload["total"] = summed
+            el = element_m.group(1).lower()
+            payload["answer"] = f"There are {summed} {el} in total."
+    except (TypeError, ValueError):
+        pass
+    return payload
+
+
+def _live_tiled_count_answer(
+    *,
+    query: str,
+    content: bytes,
+    content_type: str,
+    drawing_no: str,
+    element: str,
+) -> Optional[str]:
+    """Recount dense furniture via tiles when answering without stored inventory."""
+    from app.search.object_inventory import (
+        _normalize_item_name,
+        extract_object_inventory,
+        format_inventory_answer,
+        lookup_count,
+    )
+
+    if _normalize_item_name(element) not in {"chair", "desk", "table", "bed"}:
+        return None
+    try:
+        inventory = extract_object_inventory(content, content_type, use_tiling=True)
+        if not inventory or not inventory.get("objects"):
+            return None
+        total = lookup_count(inventory, element)
+        if total is None:
+            return None
+        return format_inventory_answer(query, inventory, drawing_label=drawing_no or "")
+    except Exception as exc:
+        logger.warning("Live tiled count failed: %s", exc)
+        return None
+
+
 def vision_contextual_layout_answer(
     *,
     query: str,
@@ -792,6 +852,16 @@ def vision_contextual_layout_answer(
         )
         if m:
             element = m.group(1).lower()
+        # Prefer tiled recount for dense furniture (more accurate than single full-image pass)
+        tiled = _live_tiled_count_answer(
+            query=query,
+            content=content,
+            content_type=content_type,
+            drawing_no=drawing_no or "",
+            element=element,
+        )
+        if tiled:
+            return tiled
         bed_hint = ""
         if re.search(r"\bbeds?\b", query, re.I):
             bed_hint = (
@@ -871,6 +941,19 @@ def vision_contextual_layout_answer(
                 f"'Drawing {drawing_no or 'shown'}' and state clearly that THIS sheet "
                 "contains (or does not contain) the requested items.\n"
             )
+        # Prefer full inventory+tiles for "what objects" style questions
+        from app.search.object_inventory import extract_object_inventory, format_inventory_answer
+
+        try:
+            inventory = extract_object_inventory(content, content_type, use_tiling=True)
+            formatted = format_inventory_answer(
+                query, inventory, drawing_label=drawing_no or ""
+            )
+            if formatted:
+                return formatted
+        except Exception as exc:
+            logger.warning("Live inventory extraction failed: %s", exc)
+
         prompt = (
             f"Question about floor plan drawing {drawing_no or 'shown'}: {query}\n\n"
             f"{which_hint}"
@@ -944,6 +1027,7 @@ def vision_contextual_layout_answer(
         payload = json.loads(raw)
         if is_drawing_count_query(query):
             payload = _validate_bed_count_payload(query, payload)
+            payload = _validate_furniture_count_payload(query, payload)
         answer = str(payload.get("answer") or "").strip()
         limitations = str(payload.get("limitations") or "").strip()
         if not answer:
@@ -1277,10 +1361,28 @@ def answer_drawing_vision_first(
 ) -> Optional[str]:
     """
     Vision-first answer for any drawing content question.
-    Returns None only when vision is unavailable — caller should fall back to extracted text.
+    Prefers stored sheet intel (scale/views/dims) and object inventory,
+    then live vision. Returns None only when vision is unavailable —
+    caller should fall back to extracted text.
     """
+    from app.search.drawing_sheet_intel import answer_from_stored_sheet_intel
+    from app.search.object_inventory import answer_from_stored_inventory
+
     if not _vision_configured():
-        return None
+        return (
+            answer_from_stored_sheet_intel(query=query, drawing=drawing)
+            or answer_from_stored_inventory(query=query, drawing=drawing)
+        )
+
+    # Prefer upload-time structured sheet intel (scale, views, dimensions, title block)
+    sheet = answer_from_stored_sheet_intel(query=query, drawing=drawing)
+    if sheet:
+        return ensure_drawing_cited_in_answer(query, sheet, drawing)
+
+    # Prefer upload-time object inventory for object/count questions
+    stored = answer_from_stored_inventory(query=query, drawing=drawing)
+    if stored:
+        return ensure_drawing_cited_in_answer(query, stored, drawing)
 
     answer: Optional[str] = None
 

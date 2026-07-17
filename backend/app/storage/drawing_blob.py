@@ -64,6 +64,8 @@ def upload_drawing_crawl_sidecar(drawing) -> Optional[str]:
         project_name=project_name,
         status=drawing.status,
         sheet_notes=drawing.sheet_notes,
+        object_inventory=getattr(drawing, "object_inventory", None),
+        sheet_intel=getattr(drawing, "sheet_intel", None),
     )
     sidecar = sidecar_filename(drawing.drawing_no)
     blob_name = blob_name_for_drawing(drawing.id, drawing.drawing_no, sidecar)

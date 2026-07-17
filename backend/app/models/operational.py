@@ -37,6 +37,8 @@ class EngineeringDrawing(Base):
     file_type = Column(String(20), nullable=True)
     file_size = Column(BigInteger, nullable=True)
     sheet_notes = Column(Text, nullable=True)
+    object_inventory = Column(Text, nullable=True)  # JSON: scene + objects[{type,count,location}]
+    sheet_intel = Column(Text, nullable=True)  # JSON: scale, views, dims, title_block
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     project = relationship("Project", backref="engineering_drawings")

@@ -260,6 +260,11 @@ def analyze_query(query: str, default_top_k: int = 8) -> QueryAnalysis:
             content_types = ["document", *content_types]
         top_k = max(top_k, 12)
 
+    if is_document_content_query(q):
+        if "document" not in content_types:
+            content_types = ["document", *content_types]
+        top_k = max(top_k, 12)
+
     # Filter queries (progress/status) must return every match, not top-K relevance picks.
     if parse_progress_filter(q) is not None or parse_status_filter(q) is not None:
         top_k = 50
@@ -338,7 +343,7 @@ def is_file_detail_query(query: str) -> bool:
     )
 
 
-DRAWING_NO_PATTERN = re.compile(r"\b([A-Z]{2}-\d{3}-[A-Z])\b", re.IGNORECASE)
+DRAWING_NO_PATTERN = re.compile(r"\b([A-Z]{2}-\d{3}-[A-Z0-9])\b", re.IGNORECASE)
 
 
 def extract_drawing_no(query: str) -> Optional[str]:
@@ -374,14 +379,20 @@ _COUNT_QUERY = re.compile(
 
 
 def is_drawing_count_query(query: str) -> bool:
-    """Counting questions on floor plans (chairs, doors, rooms, etc.)."""
+    """Counting questions on floor plans / images (chairs, doors, rooms, etc.)."""
     q = _normalize(query)
     if not _COUNT_QUERY.search(q):
         return False
     if is_drawing_content_query(query):
         return True
+    if is_drawing_object_query(query):
+        return True
     return bool(
-        re.search(r"\b(floor\s*plan|drawing|layout|blueprint|unit|apartment|bedroom)\b", q)
+        re.search(
+            r"\b(floor\s*plan|drawing|layout|blueprint|unit|apartment|bedroom|"
+            r"image|photo|picture|hall|room|conference)\b",
+            q,
+        )
     )
 
 
@@ -399,6 +410,25 @@ _FURNITURE_INVENTORY = re.compile(
     r"items\s+in\s+the\s+room|contains?\s+(?:office\s+)?(?:furniture|fixtures|workstations?))\b",
     re.I,
 )
+
+_OBJECT_QUERY = re.compile(
+    r"\b(what\s+(?:all\s+)?objects?|objects?\s+(?:are\s+)?(?:there\s+)?in|"
+    r"what\s+(?:can\s+you\s+)?see\s+in\s+(?:the\s+)?(?:image|photo|picture|drawing)|"
+    r"identify\s+(?:the\s+)?objects?|list\s+(?:the\s+)?objects?|"
+    r"objects?\s+in\s+(?:this\s+|the\s+)?(?:image|photo|picture|drawing)|"
+    r"what\s+is\s+in\s+(?:this\s+|the\s+)?(?:image|photo|picture))\b",
+    re.I,
+)
+
+
+def is_drawing_object_query(query: str) -> bool:
+    """Questions about objects visible in an uploaded image/drawing."""
+    q = _normalize(query)
+    if not _OBJECT_QUERY.search(q):
+        return False
+    # Treat as drawing/image content even without explicit "drawing" keyword
+    # when the user clearly asks about image objects.
+    return True
 
 
 def is_which_drawing_query(query: str) -> bool:
@@ -429,7 +459,9 @@ def is_drawing_zone_facilities_query(query: str) -> bool:
 
 
 def is_drawing_furniture_inventory_query(query: str) -> bool:
-    """List furniture/fixtures visible on a floor plan."""
+    """List furniture/fixtures/objects visible on a floor plan or image."""
+    if is_drawing_object_query(query):
+        return True
     if not is_drawing_content_query(query):
         return False
     return bool(_FURNITURE_INVENTORY.search(_normalize(query)))
@@ -449,6 +481,7 @@ def is_drawing_vision_first_query(query: str) -> bool:
         or is_drawing_layout_identification_query(query)
         or is_drawing_furniture_inventory_query(query)
         or is_drawing_zone_facilities_query(query)
+        or is_drawing_object_query(query)
         or is_drawing_contextual_layout_query(query)
     )
 
@@ -476,6 +509,16 @@ def is_drawing_content_query(query: str) -> bool:
     q = _normalize(query).rstrip("?")
     if is_file_detail_query(query):
         return False
+    if is_drawing_object_query(query):
+        return True
+    from app.search.drawing_sheet_intel import is_sheet_intel_query
+
+    if is_sheet_intel_query(query):
+        return True
+    if _COUNT_QUERY.search(q) and re.search(
+        r"\b(image|photo|picture|hall|conference|room|chairs?|tables?)\b", q
+    ):
+        return True
     drawing_no = extract_drawing_no(query)
     if drawing_no:
         if re.search(
@@ -483,7 +526,8 @@ def is_drawing_content_query(query: str) -> bool:
             r"note|notes|spec|grid|foundation|location|position|where|associated|set\s+out|"
             r"setting\s+out|sufficient|support|evidence|floor\s*plan|kitchen|bedroom|"
             r"bathroom|living|dining|corridor|balcony|apartment|room|entry|exit|door|"
-            r"access|how\s+many|visible|what|which|how|find|on|in|from)\b",
+            r"access|how\s+many|visible|what|which|how|find|on|in|from|scale|isometric|"
+            r"perspective|section|elevation|weight|units?|2d|3d|view)\b",
             q,
         ):
             return True
@@ -521,14 +565,33 @@ def is_document_content_query(query: str) -> bool:
     content_signals = re.search(
         r"\b(mention|mentioned|say|says|state|states|describe|detail|details|content|"
         r"conclusion|conclusions|recommendation|recommendations|section|paragraph|"
-        r"what|which|how many|list|summarize|summary|explain|find|inside|within)\b",
+        r"what|which|how many|how much|list|summarize|summary|explain|find|inside|within|"
+        r"who|when|where|why|issues?|findings?|equipment|inspected|inspector)\b",
         q,
     )
     file_signals = re.search(
-        r"\b(report|document|pdf|docx|xlsx|file|manual|specification|specs|attachment|drawing|sheet)\b",
+        r"\b(report|document|pdf|docx|xlsx|file|manual|specification|specs|attachment|"
+        r"drawing|sheet|plan|inspection|handover)\b",
         q,
     )
     if file_signals and (content_signals or query.strip().endswith("?")):
+        return True
+    # Facts usually live inside uploaded PDFs/DOCX even when the user omits "document"
+    if re.search(r"\b(who|what|when|which|how many|how much|where|why)\b", q) and re.search(
+        r"\b(inspect(ed|or|ion)?|inspector|equipment|machinery|crane|milestone|risk|finding|findings|"
+        r"leed|elevator|parking|site plan|bridge|tower|hse|materials?|concrete|steel|asphalt|"
+        r"ev charging|meeting rooms?|floor plate|budget spent|work package|tenant|"
+        r"issues?|progress|schedule|safety measures?|ppe|scope|cost|budget)\b",
+        q,
+    ):
+        return True
+    if content_signals and re.search(
+        r"\b(bridge|highway|tower|metro|commercial tower|project)\b", q
+    ):
+        return True
+    if query.strip().endswith("?") and re.search(
+        r"\b(bridge|highway|tower|metro|inspection|handover|budget|safety|equipment)\b", q
+    ):
         return True
     return bool(
         re.search(r"\bproject\s+report\b", q)
@@ -612,6 +675,16 @@ def extract_document_name_tokens(query: str) -> List[str]:
 def is_safety_measures_query(query: str) -> bool:
     q = _normalize(query)
     return bool(re.search(r"\bsafety\s+measures?\b|\bmeasures?\s+.*\bsafety\b|\bwhat\s+safety\b", q))
+
+
+def is_inspector_query(query: str) -> bool:
+    q = _normalize(query)
+    return bool(
+        re.search(
+            r"\bwho\s+inspect(?:ed|ion)?\b|\bwhich\s+inspector\b|\binspector(?:\s+name)?\b",
+            q,
+        )
+    )
 
 
 def is_handover_workflow_query(query: str) -> bool:
@@ -775,9 +848,14 @@ def rerank_score(item: dict, analysis: QueryAnalysis) -> float:
             boost -= 15.0
 
     # Text extracted from blob files (RAG index) — boost for content questions
-    if meta.get("content_source") in ("blob_rag", "drawing_sheet_notes") or meta.get("source") in (
+    if meta.get("content_source") in (
         "blob_rag",
         "drawing_sheet_notes",
+        "document_body_text",
+    ) or meta.get("source") in (
+        "blob_rag",
+        "drawing_sheet_notes",
+        "document_body_text",
     ):
         if analysis.is_question:
             boost += 20.0
@@ -796,8 +874,10 @@ def rerank_score(item: dict, analysis: QueryAnalysis) -> float:
             # Prefer real uploaded file content over seed/sync placeholders
             if "buildtrack document id" in snippet:
                 boost -= 40.0
-            if meta.get("content_source") == "blob_rag" and "buildtrack document id" not in snippet:
+            if meta.get("content_source") in ("blob_rag", "document_body_text") and "buildtrack document id" not in snippet:
                 boost += 30.0
+            if meta.get("body_text") and len(str(meta.get("body_text") or "")) > 80:
+                boost += 12.0
             if meta.get("file_type", "").upper() == "DOCX" and "project report" in analysis.original.lower():
                 boost += 15.0
         elif ctype == "drawing" and is_drawing_content_query(analysis.original):
@@ -814,7 +894,7 @@ def rerank_score(item: dict, analysis: QueryAnalysis) -> float:
         if ctype == "drawing":
             boost += 40.0
             boost += score_drawing_match(analysis.original, item.get("title", ""), meta)
-            if meta.get("content_source") == "blob_rag":
+            if meta.get("content_source") in ("blob_rag", "drawing_sheet_notes"):
                 boost += 40.0
         elif ctype == "document" and extract_drawing_no(analysis.original):
             boost -= 15.0

@@ -10,12 +10,14 @@ import {
 import Button from "@/components/ui/Button";
 import DocumentList from "@/components/documents/DocumentList";
 import { documentsApi } from "@/lib/api";
+import { downloadFile } from "@/lib/fileAccess";
 import { usePageData } from "@/hooks/usePageData";
 import { cachedProjectsOrFetch } from "@/lib/cachedFetch";
 import type { Document, Project } from "@/types";
 
 const Modal = dynamic(() => import("@/components/ui/Modal"), { ssr: false });
 const DocumentUpload = dynamic(() => import("@/components/documents/DocumentUpload"), { ssr: false });
+const FilePreviewModal = dynamic(() => import("@/components/files/FilePreviewModal"), { ssr: false });
 
 const FILE_TYPES = ["All", "PDF", "DWG", "XLSX", "JPG", "PNG"];
 
@@ -35,6 +37,7 @@ export default function DocumentsPage() {
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("All");
   const [highlightId, setHighlightId] = useState<number | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
   const searchParams = useSearchParams();
   const highlightRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +54,17 @@ export default function DocumentsPage() {
       return () => clearTimeout(timer);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const id = searchParams.get("docId");
+    const open = searchParams.get("open");
+    if (open !== "view" || !id || documents.length === 0) return;
+    const doc = documents.find((d) => d.id === Number(id));
+    if (doc) {
+      setPreviewDoc(doc);
+      setHighlightId(doc.id);
+    }
+  }, [searchParams, documents]);
 
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this document?")) return;
@@ -178,6 +192,20 @@ export default function DocumentsPage() {
           onCancel={() => setShowUpload(false)}
         />
       </Modal>
+
+      {previewDoc && (
+        <FilePreviewModal
+          open={!!previewDoc}
+          onClose={() => setPreviewDoc(null)}
+          title={previewDoc.name}
+          resource="documents"
+          lookup={{ kind: "id", id: previewDoc.id }}
+          fileType={previewDoc.file_type}
+          onDownload={async () => {
+            await downloadFile("documents", { kind: "id", id: previewDoc.id }, previewDoc.name);
+          }}
+        />
+      )}
     </div>
   );
 }

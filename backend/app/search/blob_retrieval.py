@@ -193,17 +193,73 @@ def should_search_blob_content(
         return False
     # Count/layout on drawings — vision reads the image; blob crawl is redundant here.
     from app.search.query_intel import (
-        is_drawing_content_query,
         is_drawing_count_query,
         is_drawing_vision_first_query,
         is_file_content_query,
+        is_question,
     )
 
     if is_drawing_count_query(query) or is_drawing_vision_first_query(query):
         return False
-    if not is_file_content_query(query) and not is_drawing_content_query(query):
-        return False
-    return True
+    # Always try blob/RAG for document-content questions and general questions
+    # (body_text injection still helps when RAG is empty).
+    if is_file_content_query(query):
+        return True
+    if is_question(query) and filter_type in (None, "", "all", "documents"):
+        return True
+    return False
+
+
+def _inject_drawing_sheet_notes(item: dict[str, Any]) -> dict[str, Any]:
+    """Attach sheet_notes as crawl text when no blob/RAG chunk is available yet."""
+    meta = dict(item.get("metadata") or {})
+    if meta.get("blob_chunk") and meta.get("content_source") == "blob_rag":
+        return item
+    notes = (meta.get("sheet_notes") or "").strip()
+    if not notes and not meta.get("blob_chunk"):
+        return item
+    patched = dict(item)
+    text = (meta.get("blob_chunk") or notes).strip()
+    meta["blob_chunk"] = text[:3500]
+    if meta.get("content_source") != "blob_rag":
+        meta["content_source"] = "drawing_sheet_notes"
+        meta["source"] = "drawing_sheet_notes"
+    patched["metadata"] = meta
+    patched["snippet"] = text[:500]
+    return patched
+
+
+def _inject_document_body_text(item: dict[str, Any]) -> dict[str, Any]:
+    """Attach extracted body_text when no blob/RAG chunk is available yet."""
+    meta = dict(item.get("metadata") or {})
+    if meta.get("blob_chunk") and meta.get("content_source") == "blob_rag":
+        return item
+    body = (meta.get("body_text") or "").strip()
+    if not body and not meta.get("blob_chunk"):
+        return item
+    patched = dict(item)
+    text = (meta.get("blob_chunk") or body).strip()
+    meta["blob_chunk"] = text[:3500]
+    if meta.get("content_source") != "blob_rag":
+        meta["content_source"] = "document_body_text"
+        meta["source"] = "document_body_text"
+    patched["metadata"] = meta
+    patched["snippet"] = text[:500]
+    return patched
+
+
+def enrich_drawing_hits_with_crawl_text(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Ensure drawing/document hits carry crawlable text from notes/body or blob chunks."""
+    out: list[dict[str, Any]] = []
+    for h in hits:
+        ctype = h.get("content_type")
+        if ctype == "drawing":
+            out.append(_inject_drawing_sheet_notes(h))
+        elif ctype == "document":
+            out.append(_inject_document_body_text(h))
+        else:
+            out.append(h)
+    return out
 
 
 def _row_to_hit(row: dict[str, Any]) -> dict[str, Any]:
@@ -519,30 +575,6 @@ def search_blob_content(
     return collapsed
 
 
-def _inject_drawing_sheet_notes(item: dict[str, Any]) -> dict[str, Any]:
-    """Attach sheet_notes as crawl text when no blob/RAG chunk is available yet."""
-    meta = dict(item.get("metadata") or {})
-    if meta.get("blob_chunk") and meta.get("content_source") == "blob_rag":
-        return item
-    notes = (meta.get("sheet_notes") or "").strip()
-    if not notes and not meta.get("blob_chunk"):
-        return item
-    patched = dict(item)
-    text = (meta.get("blob_chunk") or notes).strip()
-    meta["blob_chunk"] = text[:3500]
-    if meta.get("content_source") != "blob_rag":
-        meta["content_source"] = "drawing_sheet_notes"
-        meta["source"] = "drawing_sheet_notes"
-    patched["metadata"] = meta
-    patched["snippet"] = text[:500]
-    return patched
-
-
-def enrich_drawing_hits_with_crawl_text(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Ensure every drawing hit carries crawlable text from sheet notes or blob chunks."""
-    return [_inject_drawing_sheet_notes(h) if h.get("content_type") == "drawing" else h for h in hits]
-
-
 def merge_sql_and_blob_hits(
     sql_hits: list[dict[str, Any]],
     blob_hits: list[dict[str, Any]],
@@ -558,6 +590,10 @@ def merge_sql_and_blob_hits(
         doc_id = meta.get("doc_id")
         if doc_id is not None:
             blob_by_doc_id[f"document-{doc_id}"] = hit
+        # Sidecar / blob metadata may carry document_id instead of doc_id
+        alt_doc_id = meta.get("document_id")
+        if alt_doc_id is not None and f"document-{alt_doc_id}" not in blob_by_doc_id:
+            blob_by_doc_id[f"document-{alt_doc_id}"] = hit
         drawing_id = meta.get("drawing_id")
         if drawing_id is not None:
             blob_by_drawing_id[f"drawing-{drawing_id}"] = hit
@@ -608,6 +644,8 @@ def merge_sql_and_blob_hits(
             merged.append(patched)
         elif ctype == "drawing":
             merged.append(_inject_drawing_sheet_notes(item))
+        elif ctype == "document":
+            merged.append(_inject_document_body_text(item))
         else:
             merged.append(item)
 

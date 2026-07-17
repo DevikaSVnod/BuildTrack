@@ -19,3 +19,6 @@ azure-storage-blob==12.20.0
 aiofiles==23.2.1
 email-validator==2.1.1
 aspose-cad==24.12.0
+Pillow==10.3.0
+pypdfium2==4.30.0
+PyMuPDF==1.24.5

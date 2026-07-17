@@ -56,6 +56,13 @@ def resolve_document_bytes(
 
     if file_url and is_blob_url(file_url):
         content, content_type = fetch_blob_bytes(file_url)
+        ext = os.path.splitext(filename)[1].lower()
+        if ext == ".docx":
+            content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        elif ext in (".xlsx", ".xls"):
+            content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        elif ext == ".pdf":
+            content_type = "application/pdf"
         return content, content_type, filename
 
     content, content_type = generate_document_bytes(name, file_type, project_name, document_id)

@@ -88,7 +88,7 @@ LEFT JOIN dbo.users assignee ON assignee.id = t.assignee_id
 
 UNION ALL
 
--- Documents (metadata from SQL; file body indexed separately via Blob indexer)
+-- Documents (metadata + extracted body_text; blob RAG still used as supplemental)
 SELECT
     CONCAT('document-', d.id) AS id,
     d.name AS title,
@@ -106,7 +106,8 @@ SELECT
             WHEN ISNULL(d.file_size, 0) >= 1024
                 THEN CONCAT(CAST(CAST(d.file_size AS FLOAT) / 1024.0 AS DECIMAL(10,1)), ' KB')
             ELSE 'unknown size'
-        END
+        END, ' ',
+        ISNULL(d.body_text, '')
     ) AS content,
     'document' AS content_type,
     CONCAT('/documents?docId=', d.id) AS url,
@@ -127,7 +128,8 @@ SELECT
                 ELSE 'unknown size'
             END AS file_size_display,
             CONVERT(NVARCHAR(10), d.created_at, 23) AS upload_date,
-            FORMAT(d.created_at, 'MMMM d yyyy') AS upload_date_display
+            FORMAT(d.created_at, 'MMMM d yyyy') AS upload_date_display,
+            LEFT(ISNULL(d.body_text, ''), 3500) AS body_text
         FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
     ) AS metadata
 FROM dbo.documents d

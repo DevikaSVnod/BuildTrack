@@ -13,6 +13,8 @@ def build_crawl_text(
     project_name: Optional[str] = None,
     status: Optional[str] = None,
     sheet_notes: Optional[str] = None,
+    object_inventory: Optional[str] = None,
+    sheet_intel: Optional[str] = None,
 ) -> str:
     """Plain-text representation of a drawing sheet for blob/RAG indexing."""
     notes = (sheet_notes or "").strip()
@@ -29,6 +31,12 @@ def build_crawl_text(
         "SHEET CONTENT:",
         notes,
     ]
+    inv = (object_inventory or "").strip()
+    if inv and "OBJECT INVENTORY" not in notes.upper():
+        lines.extend(["", "OBJECT INVENTORY JSON:", inv])
+    intel = (sheet_intel or "").strip()
+    if intel and "SHEET INTEL" not in notes.upper():
+        lines.extend(["", "SHEET INTEL JSON:", intel])
     return "\n".join(line for line in lines if line is not None).strip() + "\n"
 
 

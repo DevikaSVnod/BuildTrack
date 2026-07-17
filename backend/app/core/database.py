@@ -50,6 +50,7 @@ def ping_database() -> bool:
 
 
 _columns_checked = False
+_document_columns_checked = False
 
 
 def ensure_drawing_file_columns() -> None:
@@ -71,6 +72,10 @@ def ensure_drawing_file_columns() -> None:
         "ALTER TABLE dbo.engineering_drawings ADD sheet_notes NVARCHAR(MAX) NULL",
         "IF COL_LENGTH('dbo.engineering_drawings', 'preview_url') IS NULL "
         "ALTER TABLE dbo.engineering_drawings ADD preview_url NVARCHAR(1000) NULL",
+        "IF COL_LENGTH('dbo.engineering_drawings', 'object_inventory') IS NULL "
+        "ALTER TABLE dbo.engineering_drawings ADD object_inventory NVARCHAR(MAX) NULL",
+        "IF COL_LENGTH('dbo.engineering_drawings', 'sheet_intel') IS NULL "
+        "ALTER TABLE dbo.engineering_drawings ADD sheet_intel NVARCHAR(MAX) NULL",
     ]
     try:
         with engine.begin() as conn:
@@ -80,3 +85,25 @@ def ensure_drawing_file_columns() -> None:
         logger.warning("Could not ensure drawing file columns: %s", exc)
     finally:
         _columns_checked = True
+
+
+def ensure_document_columns() -> None:
+    """Add body_text to documents if missing (Azure SQL)."""
+    global _document_columns_checked
+    if _document_columns_checked:
+        return
+    if not settings.DATABASE_URL.startswith("mssql"):
+        _document_columns_checked = True
+        return
+    alters = [
+        "IF COL_LENGTH('dbo.documents', 'body_text') IS NULL "
+        "ALTER TABLE dbo.documents ADD body_text NVARCHAR(MAX) NULL",
+    ]
+    try:
+        with engine.begin() as conn:
+            for stmt in alters:
+                conn.execute(text(stmt))
+    except Exception as exc:
+        logger.warning("Could not ensure document columns: %s", exc)
+    finally:
+        _document_columns_checked = True

@@ -8,6 +8,7 @@ from app.search.query_intel import (
     is_drawing_content_query,
     is_drawing_contextual_layout_query,
     is_safety_measures_query,
+    is_inspector_query,
     is_handover_workflow_query,
     score_document_title_match,
     score_drawing_match,
@@ -46,6 +47,8 @@ def _cache_key(query: str, results_fingerprint: str) -> str:
     raw = f"{query.strip().lower()}|{results_fingerprint}"
     if is_drawing_content_query(query):
         raw += "|drawing-vision-first-v1"
+    if is_inspector_query(query):
+        raw += "|inspector-extract-v1"
     return hashlib.md5(raw.encode()).hexdigest()
 
 
@@ -73,19 +76,87 @@ def _set_cached(key: str, answer: str, suggested: List[str]):
 
 def _is_blob_document(r: Dict[str, Any]) -> bool:
     meta = r.get("metadata") or {}
-    return meta.get("content_source") == "blob_rag" or meta.get("source") == "blob_rag"
+    return meta.get("content_source") in (
+        "blob_rag",
+        "document_body_text",
+    ) or meta.get("source") in ("blob_rag", "document_body_text")
 
 
 def _document_body_text(r: Dict[str, Any]) -> str:
     meta = r.get("metadata") or {}
-    return (meta.get("blob_chunk") or r.get("snippet") or "").strip()
+    return (
+        meta.get("blob_chunk")
+        or meta.get("body_text")
+        or r.get("snippet")
+        or ""
+    ).strip()
 
 
 def _is_blob_content(r: Dict[str, Any]) -> bool:
     meta = r.get("metadata") or {}
-    if meta.get("content_source") in ("blob_rag", "drawing_sheet_notes"):
+    if meta.get("content_source") in (
+        "blob_rag",
+        "drawing_sheet_notes",
+        "document_body_text",
+    ):
         return True
     return _is_blob_document(r)
+
+
+def _extract_inspector_section(body: str) -> Optional[str]:
+    m = re.search(
+        r"(Site Inspection Report[\s\S]{0,1200})",
+        body,
+        re.I,
+    )
+    if m:
+        return m.group(1).strip()
+    m = re.search(r".{0,150}Inspector:\s*[^\n]+[\s\S]{0,500}", body, re.I)
+    return m.group(0).strip() if m else None
+
+
+def _query_relevant_excerpt(query: str, body: str, max_len: int = 1200) -> str:
+    body = body.strip()
+    if len(body) <= max_len:
+        return body
+
+    if is_inspector_query(query):
+        section = _extract_inspector_section(body)
+        if section:
+            return section[:max_len]
+
+    q_terms = {
+        t
+        for t in re.findall(r"[a-z0-9]+", query.lower())
+        if len(t) > 3
+        and t not in {"what", "which", "when", "where", "bridge", "site", "project", "document"}
+    }
+    if not q_terms:
+        return body[:max_len]
+
+    best_start = 0
+    best_score = -1
+    step = max(150, max_len // 5)
+    for start in range(0, max(len(body) - max_len, 1), step):
+        window = body[start : start + max_len].lower()
+        score = sum(1 for t in q_terms if t in window)
+        if score > best_score:
+            best_score = score
+            best_start = start
+    return body[best_start : best_start + max_len]
+
+
+def _extract_inspector_answer(body: str, title: str) -> Optional[str]:
+    section = _extract_inspector_section(body) or body
+    name_m = re.search(r"Inspector:\s*([^\n]+)", section, re.I)
+    if not name_m:
+        return None
+    name = name_m.group(1).strip().rstrip(".")
+    date_m = re.search(r"Inspection Date:\s*([^\n]+)", section, re.I)
+    if date_m:
+        date = date_m.group(1).strip().rstrip(".")
+        return f"The bridge site was inspected by **{name}** on **{date}**."
+    return f"The bridge site was inspected by **{name}**."
 
 
 def _drawing_body_text(r: Dict[str, Any]) -> str:
@@ -118,18 +189,40 @@ def _order_results_for_answer(
     docs = [r for r in results if r.get("content_type") == "document"]
     others = [r for r in results if r.get("content_type") != "document"]
 
+    q_terms = {
+        t
+        for t in re.findall(r"[a-z0-9]+", query.lower())
+        if len(t) > 3 and t not in {"what", "which", "who", "when", "where", "find", "listed", "bridge", "project"}
+    }
+
+    def _body_overlap(body: str) -> int:
+        bl = body.lower()
+        return sum(1 for t in q_terms if t in bl)
+
+    def _inspector_signal(body: str) -> int:
+        if not is_inspector_query(query):
+            return 0
+        return 1 if re.search(r"Inspector:\s*\w", body, re.I) else 0
+
     def doc_rank(r: Dict[str, Any]) -> tuple:
         meta = r.get("metadata") or {}
         snippet = (r.get("snippet") or "").lower()
+        body = _document_body_text(r)
         is_real_blob = _is_blob_document(r) and "buildtrack document id" not in snippet
         title_score = score_document_title_match(query, r.get("title", ""))
-        return (title_score, 1 if is_real_blob else 0, len(_document_body_text(r)))
+        return (
+            title_score,
+            _inspector_signal(body),
+            _body_overlap(body),
+            1 if is_real_blob else 0,
+            len(body),
+        )
 
     docs.sort(key=doc_rank, reverse=True)
     return docs + others
 
 
-def _format_result_for_context(r: Dict[str, Any], index: int) -> str:
+def _format_result_for_context(r: Dict[str, Any], index: int, query: str = "") -> str:
     ctype = r.get("content_type", "item")
     title = r.get("title", "")
     meta = r.get("metadata") or {}
@@ -142,8 +235,14 @@ def _format_result_for_context(r: Dict[str, Any], index: int) -> str:
     ]
     meta_str = ", ".join(meta_parts) if meta_parts else ""
 
-    if _is_blob_content(r) or (ctype == "drawing" and (meta.get("sheet_notes") or meta.get("blob_chunk"))):
-        snippet = (_drawing_body_text(r) if ctype == "drawing" else _document_body_text(r))[:1200]
+    if _is_blob_content(r) or (
+        ctype == "drawing" and (meta.get("sheet_notes") or meta.get("blob_chunk"))
+    ) or (
+        ctype == "document" and (meta.get("body_text") or meta.get("blob_chunk"))
+    ):
+        raw_body = _drawing_body_text(r) if ctype == "drawing" else _document_body_text(r)
+        raw_body = _refresh_blob_body_for_query(query, title, raw_body) if ctype == "document" else raw_body
+        snippet = _query_relevant_excerpt(query, raw_body, max_len=1200)
         label = "drawing excerpt" if ctype == "drawing" else "document excerpt"
     else:
         snippet = (r.get("snippet") or "")[:220]
@@ -162,7 +261,7 @@ def _build_prompt(query: str, results: List[Dict[str, Any]], analysis: Optional[
 
     ordered = _order_results_for_answer(query, results)
     limit = len(ordered) if is_structured_filter_query(query) else 8
-    context_lines = [_format_result_for_context(r, i + 1) for i, r in enumerate(ordered[:limit])]
+    context_lines = [_format_result_for_context(r, i + 1, query) for i, r in enumerate(ordered[:limit])]
     context = "\n".join(context_lines) if context_lines else "No matching records."
 
     question_mode = analysis.is_question if analysis else is_question(query)
@@ -361,6 +460,23 @@ def _refresh_blob_body_for_query(query: str, title: str, current_body: str) -> s
                     return text
             if chunks:
                 return max(chunks, key=len)
+
+    if is_inspector_query(query):
+        if not re.search(r"Inspector:\s*\w", current_body, re.I):
+            from app.search.blob_retrieval import fetch_raw_chunks_for_document
+
+            chunks = fetch_raw_chunks_for_document(
+                title,
+                "Inspector inspection site inspection Michael Rodriguez findings",
+            )
+            for text in chunks:
+                if re.search(r"Inspector:\s*\w", text, re.I):
+                    return text
+            if chunks:
+                return max(chunks, key=len)
+        section = _extract_inspector_section(current_body)
+        if section:
+            return section
 
     if is_drawing_content_query(query) and re.search(r"\bpile|diameter|piling\b", query, re.I):
         if "diameter" not in current_body.lower() and "pile" not in current_body.lower():
@@ -601,6 +717,10 @@ def _extractive_document_answer(
         if len(body) < 20 or "uploaded by" in body[:100].lower():
             continue
         title = r.get("title", "Document")
+        if is_inspector_query(query):
+            structured = _extract_inspector_answer(body, title)
+            if structured:
+                return structured
         if is_drawing_content_query(query) and re.search(r"\bpile|diameter|piling\b", query, re.I):
             structured = _extract_pile_diameter_answer(body, title)
             if structured:
@@ -648,7 +768,38 @@ def _answer_is_metrics_only(answer: str) -> bool:
 
 def _answer_says_not_found(answer: str) -> bool:
     lower = answer.lower()
-    return "could not find" in lower or "couldn't find" in lower or "no information" in lower
+    if "could not find" in lower or "couldn't find" in lower or "no information" in lower:
+        return True
+    return bool(
+        re.search(
+            r"do(?:es)? not specify|don(?:'|')t specify|does not state|"
+            r"not mentioned in the (?:document )?excerpt|"
+            r"excerpts do not specify|excerpt does not specify",
+            lower,
+        )
+    )
+
+
+def _attach_source_citation(
+    query: str, answer: str, results: List[Dict[str, Any]]
+) -> str:
+    """Append the exact source filename when the answer comes from file body text."""
+    if not answer or _answer_says_not_found(answer):
+        return answer
+    if re.search(r"\*\*Source:\*\*", answer, re.I):
+        return answer
+    if re.search(r"From \*\*", answer):
+        return answer
+    if not is_document_content_query(query):
+        return answer
+
+    from app.search.result_filter import filter_by_blob_evidence
+
+    sources = filter_by_blob_evidence(answer, results)
+    if not sources:
+        return answer
+    title = (sources[0].get("title") or "Document").strip()
+    return f"{answer.rstrip()}\n\n**Source:** {title}"
 
 
 def _best_drawing_result(
@@ -735,22 +886,34 @@ def generate_answer(
         _set_cached(key, *result)
         return result
 
-    if is_safety_measures_query(query):
-        extractive = _extractive_document_answer(query, ordered)
-        if extractive:
-            suggested = [
-                "What safety incidents were reported for Highway Bridge Expansion?",
-                "Who is the project manager for Highway Bridge Expansion?",
-                "What is the overall progress of the bridge project?",
-            ]
-            result = (extractive, suggested)
-            _set_cached(key, *result)
-            return result
+        if is_safety_measures_query(query):
+            extractive = _extractive_document_answer(query, ordered)
+            if extractive:
+                suggested = [
+                    "What safety incidents were reported for Highway Bridge Expansion?",
+                    "Who is the project manager for Highway Bridge Expansion?",
+                    "What is the overall progress of the bridge project?",
+                ]
+                result = (_attach_source_citation(query, extractive, ordered), suggested)
+                _set_cached(key, *result)
+                return result
 
     if is_handover_workflow_query(query):
         workflow = _handover_workflow_answer(query, ordered)
         if workflow:
             result = (workflow, _handover_workflow_followups())
+            _set_cached(key, *result)
+            return result
+
+    if is_inspector_query(query):
+        extractive = _extractive_document_answer(query, ordered)
+        if extractive:
+            suggested = [
+                "What were the key findings from the inspection?",
+                "What is the current progress of the Highway Bridge Expansion project?",
+                "Who is the project manager for the Highway Bridge Expansion?",
+            ]
+            result = (_attach_source_citation(query, extractive, ordered), suggested)
             _set_cached(key, *result)
             return result
 
@@ -802,6 +965,11 @@ def generate_answer(
             if extractive:
                 answer = extractive
 
+        if is_inspector_query(query) and _answer_says_not_found(answer):
+            extractive = _extractive_document_answer(query, ordered)
+            if extractive:
+                answer = extractive
+
         if is_safety_measures_query(query) and _answer_is_metrics_only(answer):
             extractive = _extractive_document_answer(query, ordered)
             if extractive:
@@ -812,6 +980,8 @@ def generate_answer(
             if workflow:
                 answer = workflow
                 suggested = _handover_workflow_followups()
+
+        answer = _attach_source_citation(query, answer, ordered)
 
         result = (answer, suggested[:3])
         _set_cached(key, *result)

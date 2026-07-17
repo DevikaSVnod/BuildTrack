@@ -36,14 +36,19 @@ def enrich_document(doc: Document) -> dict:
     }
 
 
-async def upload_to_azure(file: UploadFile, filename: str) -> tuple[str, int]:
-    """Upload file bytes to Azure Blob. Returns (url, size_in_bytes)."""
+async def upload_to_azure(
+    file: UploadFile,
+    filename: str,
+    *,
+    document_id: Optional[int] = None,
+) -> tuple[str, int, bytes]:
+    """Upload file bytes to Azure Blob. Returns (url, size_in_bytes, content)."""
+    content = await file.read()
+    size = len(content)
     if not settings.AZURE_STORAGE_CONNECTION_STRING:
-        return f"/uploads/{filename}", 0
+        return f"/uploads/{filename}", size, content
     try:
         from azure.storage.blob import BlobServiceClient, ContentSettings
-        content = await file.read()
-        size = len(content)
         blob_service = BlobServiceClient.from_connection_string(
             settings.AZURE_STORAGE_CONNECTION_STRING
         )
@@ -56,21 +61,24 @@ async def upload_to_azure(file: UploadFile, filename: str) -> tuple[str, int]:
             ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             ".dwg": "application/octet-stream",
         }.get(ext, "application/octet-stream")
+        metadata = {
+            "original_filename": file.filename or filename,
+            "content_type": ext.lstrip(".").upper(),
+            "size_bytes": str(size),
+        }
+        if document_id is not None:
+            metadata["document_id"] = str(document_id)
         await asyncio.to_thread(
             blob_client.upload_blob,
             content,
             overwrite=True,
-            metadata={
-                "original_filename": file.filename or filename,
-                "content_type": ext.lstrip(".").upper(),
-                "size_bytes": str(size),
-            },
+            metadata=metadata,
             content_settings=ContentSettings(content_type=content_type),
         )
-        return blob_client.url, size
+        return blob_client.url, size, content
     except Exception as e:
         logger.warning(f"Blob upload failed, using local path: {e}")
-        return f"/uploads/{filename}", file.size or 0
+        return f"/uploads/{filename}", size or file.size or 0, content
 
 
 @router.get("/", response_model=List[DocumentResponse])
@@ -93,19 +101,51 @@ async def upload_document(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    ext = os.path.splitext(file.filename)[1].upper().lstrip(".")
-    unique_name = f"{uuid.uuid4()}_{file.filename}"
-    file_url, file_size = await upload_to_azure(file, unique_name)
+    from app.core.database import ensure_document_columns
+    from app.search.document_text_extract import extract_document_body_text
+    from app.storage.document_crawl import upload_document_crawl_sidecar
+
+    ensure_document_columns()
+    ext = os.path.splitext(file.filename or "")[1].upper().lstrip(".")
+    # Create row first so blob metadata can carry document_id
     doc = Document(
         name=file.filename,
         file_type=ext or "UNKNOWN",
-        file_url=file_url,
+        file_url=None,
         project_id=project_id,
         uploaded_by=current_user.id,
-        file_size=file_size,
+        file_size=0,
     )
     db.add(doc)
     db.commit()
+    db.refresh(doc)
+
+    unique_name = f"{uuid.uuid4()}_{file.filename}"
+    file_url, file_size, content = await upload_to_azure(
+        file, unique_name, document_id=doc.id
+    )
+    doc.file_url = file_url
+    doc.file_size = file_size
+
+    # Extract + persist body text (drawing sheet_notes equivalent)
+    try:
+        body = extract_document_body_text(
+            content=content,
+            file_type=doc.file_type or "",
+            filename=doc.name or "",
+        )
+        if body:
+            doc.body_text = body
+    except Exception as exc:
+        logger.warning("Document text extraction failed for %s: %s", doc.id, exc)
+
+    db.commit()
+
+    try:
+        upload_document_crawl_sidecar(doc)
+    except Exception as exc:
+        logger.warning("Document crawl sidecar failed for %s: %s", doc.id, exc)
+
     doc = (
         db.query(Document)
         .options(joinedload(Document.project), joinedload(Document.uploader))

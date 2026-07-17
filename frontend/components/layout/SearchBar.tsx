@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search, Sparkles, Building2, CheckSquare,
-  FileText, Users, X, Clock, ArrowRight, Loader2,
+  FileText, Users, X, Clock, ArrowRight, Loader2, ExternalLink,
   LayoutDashboard, ChevronRight, BookOpen, Layers,
   ShieldCheck, ClipboardCheck, TrendingUp, Calendar,
 } from "lucide-react";
@@ -12,6 +12,12 @@ import { searchApi } from "@/lib/api";
 import type { SearchResponse, SearchResultItem } from "@/types";
 import { cn } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/auth";
+import {
+  isSearchResultFile,
+  openSearchResultFile,
+  resolveSearchResultFile,
+  searchResultFilePageUrl,
+} from "@/lib/fileAccess";
 
 const RECENT_KEY = "buildtrack_recent_searches";
 
@@ -23,6 +29,19 @@ function saveRecent(q: string) {
   if (typeof window === "undefined") return;
   const list = [q, ...getRecent().filter((s) => s !== q)].slice(0, 3);
   localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+}
+
+function renderAiAnswer(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={i} className="font-semibold text-gray-900">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
 }
 
 type FilterType = "all" | "project" | "task" | "document" | "team" | "handover" | "drawing" | "safety" | "attendance";
@@ -137,6 +156,7 @@ export default function SearchBar() {
   const [sessionAnswer, setSessionAnswer] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [openingFileId, setOpeningFileId] = useState<string | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -345,7 +365,43 @@ export default function SearchBar() {
     router.push(url);
   };
 
-  const handleResultClick = (result: SearchResultItem) => {
+  const handleResultClick = async (result: SearchResultItem) => {
+    const fileRef = resolveSearchResultFile(result);
+    if (fileRef) {
+      if (openingFileId) return;
+      setOpeningFileId(result.id);
+      try {
+        const mode = await openSearchResultFile(result);
+        if (mode === "page") {
+          const pageUrl = searchResultFilePageUrl(result);
+          if (pageUrl) {
+            setOpen(false);
+            setQuery("");
+            router.push(pageUrl);
+          }
+        }
+        saveRecent(query.trim());
+      } catch (err: unknown) {
+        const pageUrl = searchResultFilePageUrl(result);
+        if (pageUrl) {
+          setOpen(false);
+          setQuery("");
+          router.push(pageUrl);
+          return;
+        }
+        const message = err instanceof Error ? err.message : "Could not open file";
+        window.alert(message);
+      } finally {
+        setOpeningFileId(null);
+      }
+      return;
+    }
+
+    if (result.url?.startsWith("http")) {
+      window.alert("This file is not linked to Document Control yet. Open it from the Documents page.");
+      return;
+    }
+
     setOpen(false);
     setQuery("");
     router.push(result.url);
@@ -645,7 +701,7 @@ export default function SearchBar() {
                             <span className="text-xs text-gray-400">{results.search_time_ms}ms</span>
                           </div>
                           <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                            {results.ai_answer}
+                            {renderAiAnswer(results.ai_answer)}
                           </p>
                         </div>
                       </div>
@@ -691,11 +747,17 @@ export default function SearchBar() {
                           </button>
                         </div>
                         <div className="space-y-0.5">
-                          {showItems.map((r) => (
+                          {showItems.map((r) => {
+                            const isFile = isSearchResultFile(r);
+                            const isOpening = openingFileId === r.id;
+                            return (
                             <button
                               key={r.id}
+                              type="button"
                               onClick={() => handleResultClick(r)}
-                              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors group text-left"
+                              disabled={isOpening}
+                              title={isFile ? "Open file in new tab" : undefined}
+                              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors group text-left disabled:opacity-70"
                             >
                               <div className={cn("p-1.5 rounded-lg flex-shrink-0", cfg.bg)}>
                                 <Icon size={13} className={cfg.color} />
@@ -721,9 +783,16 @@ export default function SearchBar() {
                                     : r.snippet}
                                 </p>
                               </div>
-                              <ArrowRight size={13} className="text-gray-200 group-hover:text-primary flex-shrink-0 transition-colors" />
+                              {isOpening ? (
+                                <Loader2 size={13} className="text-primary flex-shrink-0 animate-spin" />
+                              ) : isFile ? (
+                                <ExternalLink size={13} className="text-gray-300 group-hover:text-primary flex-shrink-0 transition-colors" />
+                              ) : (
+                                <ArrowRight size={13} className="text-gray-200 group-hover:text-primary flex-shrink-0 transition-colors" />
+                              )}
                             </button>
-                          ))}
+                            );
+                          })}
                         </div>
                         {hasMore && (
                           <button

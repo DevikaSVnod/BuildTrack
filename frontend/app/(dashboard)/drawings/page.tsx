@@ -1,9 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Layers, CheckCircle2, Clock, XCircle, Search, Trash2, Loader2 } from "lucide-react";
 import { operationalApi } from "@/lib/api";
 import { usePageData } from "@/hooks/usePageData";
+import { downloadFile } from "@/lib/fileAccess";
+import { cn } from "@/lib/utils";
 
 const FileActionButtons = dynamic(() => import("@/components/files/FileActionButtons"), {
   ssr: false,
@@ -11,6 +14,7 @@ const FileActionButtons = dynamic(() => import("@/components/files/FileActionBut
 });
 const Modal = dynamic(() => import("@/components/ui/Modal"), { ssr: false });
 const DrawingUpload = dynamic(() => import("@/components/drawings/DrawingUpload"), { ssr: false });
+const FilePreviewModal = dynamic(() => import("@/components/files/FilePreviewModal"), { ssr: false });
 
 interface Drawing {
   id: number;
@@ -48,7 +52,26 @@ export default function DrawingsPage() {
     reload,
   } = usePageData<Drawing[]>("drawings", () => operationalApi.drawings().then((r) => r.data));
   const [showUpload, setShowUpload] = useState(false);
+  const [previewDrawing, setPreviewDrawing] = useState<Drawing | null>(null);
+  const [highlightId, setHighlightId] = useState<number | null>(null);
+  const searchParams = useSearchParams();
   const rows = drawings ?? [];
+
+  useEffect(() => {
+    const open = searchParams.get("open");
+    if (open !== "view" || rows.length === 0) return;
+    const drawingId = searchParams.get("drawingId");
+    const drawingNo = searchParams.get("drawingNo");
+    const match = drawingId
+      ? rows.find((d) => d.id === Number(drawingId))
+      : drawingNo
+        ? rows.find((d) => d.drawingNo.toLowerCase() === drawingNo.toLowerCase())
+        : undefined;
+    if (match) {
+      setPreviewDrawing(match);
+      setHighlightId(match.id);
+    }
+  }, [searchParams, rows]);
 
   const handleDelete = async (id: number, drawingNo: string) => {
     if (!confirm(`Delete drawing ${drawingNo}? This cannot be undone.`)) return;
@@ -139,7 +162,7 @@ export default function DrawingsPage() {
               const s = STATUS_STYLE[d.status] || STATUS_STYLE["Under Review"];
               const StatusIcon = s.icon;
               return (
-                <tr key={d.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={d.id} className={cn("hover:bg-gray-50 transition-colors", highlightId === d.id && "bg-primary/5 ring-2 ring-inset ring-primary/30")}>
                   <td className="px-6 py-4 text-sm font-mono font-semibold text-primary">{d.drawingNo}</td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900 max-w-xs truncate">{d.title}</td>
                   <td className="px-6 py-4">
@@ -190,6 +213,24 @@ export default function DrawingsPage() {
           onCancel={() => setShowUpload(false)}
         />
       </Modal>
+
+      {previewDrawing && (
+        <FilePreviewModal
+          open={!!previewDrawing}
+          onClose={() => setPreviewDrawing(null)}
+          title={`${previewDrawing.drawingNo} – ${previewDrawing.title}`}
+          resource="drawings"
+          lookup={{ kind: "drawingNo", drawingNo: previewDrawing.drawingNo }}
+          fileType={previewDrawing.file_type || "PNG"}
+          onDownload={async () => {
+            await downloadFile(
+              "drawings",
+              { kind: "drawingNo", drawingNo: previewDrawing.drawingNo },
+              `${previewDrawing.drawingNo}_${previewDrawing.title}.${(previewDrawing.file_type || "png").toLowerCase()}`
+            );
+          }}
+        />
+      )}
     </div>
   );
 }

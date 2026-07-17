@@ -94,9 +94,13 @@ export interface SearchResultMetadata {
   category?: string;
   signed_by?: string;
   // Drawing
+  drawing_id?: number;
   drawing_no?: string;
   discipline?: string;
   revision?: string;
+  content_source?: string;
+  source?: string;
+  blob_chunk?: string;
   // Safety
   incident_type?: string;
   severity?: string;

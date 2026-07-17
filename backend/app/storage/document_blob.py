@@ -171,8 +171,86 @@ def _xml_escape(text: str) -> str:
     )
 
 
+def _bridge_expansion_site_plan_lines(project: str, document_id: int) -> list[str]:
+    return [
+        "Highway Bridge Expansion Project",
+        f"Project: {project}",
+        f"BuildTrack document ID: {document_id}",
+        "Project Manager: Sarah Chen",
+        "Location: Interstate I-95, Miami, Florida",
+        "Budget: $45,000,000 | Progress: 62%",
+        "Project Description: widening the bridge corridor, structural reinforcement, drainage upgrades, safety features.",
+        "Work Status Summary:",
+        "Structural Reinforcement - Completed (100%)",
+        "Bridge Deck Expansion - In Progress (75%)",
+        "Drainage and Utilities - In Progress (55%)",
+        "Safety and Traffic Management - In Progress (40%)",
+        "Site Inspection Report",
+        "Inspection Date: April 18, 2025",
+        "Inspector: Michael Rodriguez",
+        "Key Findings:",
+        "Concrete curing quality met project standards.",
+        "Minor corrosion observed on temporary steel supports near Pier P-12.",
+        "Drainage trench excavation delayed due to heavy rainfall.",
+        "Traffic diversion signs require replacement.",
+        "No major structural defects identified.",
+        "Major Equipment:",
+        "2 Tower Cranes, 3 Concrete Pumps, 5 Excavators, 8 Dump Trucks",
+        "Key Materials:",
+        "2,400 Tons Reinforcing Steel, 18,000 m3 Concrete, 12,000 Tons Asphalt, 32 Expansion Joints",
+        "Project Risks:",
+        "Weather delays, material supply disruptions, and traffic congestion.",
+        "Upcoming Milestones:",
+        "Deck Expansion Completion - Aug 15, 2025",
+        "Drainage Completion - Sep 10, 2025",
+        "Safety System Installation - Oct 05, 2025",
+        "Final Inspection - Nov 20, 2025",
+    ]
+
+
+def _commercial_tower_floor_plans_lines(project: str, document_id: int) -> list[str]:
+    return [
+        "Commercial Tower Phase 2 - Floor Plans and Project Documentation",
+        f"Project: {project}",
+        f"BuildTrack document ID: {document_id}",
+        "Project ID: BT-2024-CTR-002",
+        "Location: 1200 Main Street, Houston, TX",
+        "Client: Houston Downtown Development Authority",
+        "Project Manager: Priya Nair",
+        "Total Budget: $120,000,000 (USD)",
+        "Overall Progress: 10%",
+        "LEED Gold certification target.",
+        "Total gross floor area for Phase 2: 580,000 square feet.",
+        "Typical floor plate: 32,000 sq ft per floor.",
+        "Parking Capacity: 450 vehicles across 4 levels.",
+        "Elevator Count: 14 Passenger + 4 Service Elevators",
+        "Typical Floor Space Program:",
+        "Open Office Area 21,500 sq ft, 8 meeting rooms, Central Core with elevators and MEP.",
+        "Parking Structure: 450 spaces including EV charging and ADA accessible parking.",
+        "Project Team:",
+        "Priya Nair - Project Manager",
+        "James Whitfield - Structural Engineer",
+        "Maria Gonzalez - Architect",
+        "Kevin Chan - MEP Engineer",
+        "Sarah Thompson - HSE Officer",
+        "David Park - Procurement Lead",
+        "Risk Register:",
+        "Building permit delays, steel and material price escalation, subcontractor availability.",
+        "Key Milestones:",
+        "Building permit received - August 1, 2026",
+        "Curtain wall subcontract awarded - July 1, 2026",
+        "Construction start Floor 18 - September 1, 2026",
+        "Prepared by: Priya Nair. Reviewed by: Anita Desai.",
+    ]
+
+
 def _document_body_lines(name: str, project: str, document_id: int) -> list[str]:
-    """Metadata-only placeholder when no real file bytes are available yet."""
+    """Searchable body text for demo documents; generic placeholder for others."""
+    lower = name.lower()
+    if "bridge expansion" in lower or ("site plan" in lower and "bridge" in lower):
+        return _bridge_expansion_site_plan_lines(project, document_id)
+    if "commercial tower" in lower and "floor plan" in lower:
+        return _commercial_tower_floor_plans_lines(project, document_id)
     return [
         name,
         f"BuildTrack document ID: {document_id}",
