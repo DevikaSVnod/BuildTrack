@@ -390,7 +390,7 @@ def is_drawing_count_query(query: str) -> bool:
     return bool(
         re.search(
             r"\b(floor\s*plan|drawing|layout|blueprint|unit|apartment|bedroom|"
-            r"image|photo|picture|hall|room|conference)\b",
+            r"image|photo|picture|hall|room|conference|site\s*plan|grading\s*plan|campus)\b",
             q,
         )
     )
@@ -408,6 +408,14 @@ _FURNITURE_INVENTORY = re.compile(
     r"what\s+(?:furniture|fixtures|facilities)|list\s+(?:the\s+)?(?:furniture|items|fixtures|facilities)|"
     r"available\s+inside|inside\s+the\s+(?:room|restroom|washroom|bathroom|area)|"
     r"items\s+in\s+the\s+room|contains?\s+(?:office\s+)?(?:furniture|fixtures|workstations?))\b",
+    re.I,
+)
+
+_SITE_INVENTORY = re.compile(
+    r"\b(buildings?|structures?|blocks?|hostels?|roads?|utilities?|campus|site\s+features?|"
+    r"grading\s+control|gcp|legend|what\s+(?:is|are)\s+on\s+(?:this\s+)?site|"
+    r"list\s+(?:the\s+)?(?:buildings?|structures?|roads?|site\s+features?)|"
+    r"what\s+(?:buildings?|roads?|facilities?)\s+(?:are|is)\s+(?:on|shown|visible))\b",
     re.I,
 )
 
@@ -467,6 +475,19 @@ def is_drawing_furniture_inventory_query(query: str) -> bool:
     return bool(_FURNITURE_INVENTORY.search(_normalize(query)))
 
 
+def is_drawing_site_inventory_query(query: str) -> bool:
+    """List buildings, roads, utilities, or site features on a civil/site plan."""
+    if not is_drawing_content_query(query):
+        return False
+    q = _normalize(query)
+    if _SITE_INVENTORY.search(q):
+        return True
+    return bool(
+        re.search(r"\b(site\s+plan|grading\s+plan|campus\s+plan|master\s+plan)\b", q)
+        and re.search(r"\b(what|list|show|name|identify)\b", q)
+    )
+
+
 def is_drawing_layout_identification_query(query: str) -> bool:
     """Questions asking what room/space type a floor plan shows."""
     if not is_drawing_content_query(query):
@@ -480,6 +501,7 @@ def is_drawing_vision_first_query(query: str) -> bool:
         is_drawing_count_query(query)
         or is_drawing_layout_identification_query(query)
         or is_drawing_furniture_inventory_query(query)
+        or is_drawing_site_inventory_query(query)
         or is_drawing_zone_facilities_query(query)
         or is_drawing_object_query(query)
         or is_drawing_contextual_layout_query(query)

@@ -27,10 +27,81 @@ _COUNT_ELEMENT = re.compile(
     r"toilets?|sinks?|showers?|projectors?|screens?|"
     r"motors?|sprockets?|washers?|nuts?|screws?|bolts?|cabinets?|"
     r"roller\s+chains?|support\s+legs?|conveyors?|staircases?|windows?|"
-    r"entries|exits|entry|exit)\b",
+    r"entries|exits|entry|exit|"
+    r"gcp|grading\s+control\s+points?|buildings?|roads?|hostels?)\b",
     re.I,
 )
 
+_SITE_OBJECT_HINTS = (
+    "building",
+    "hostel",
+    "road",
+    "gcp",
+    "grading control",
+    "water tank",
+    "playground",
+    "play ground",
+    "sports complex",
+    "guest house",
+    "green belt",
+    "plot boundary",
+    "ht line",
+    "utility",
+    "campus",
+    "grading plan",
+    "site grading",
+)
+
+_INTERIOR_FURNITURE = frozenset(
+    {"chair", "bed", "desk", "sofa", "toilet", "shower", "table"}
+)
+
+_GENERIC_SITE_TYPES = frozenset(
+    {
+        "building",
+        "buildings",
+        "structure",
+        "structures",
+        "block",
+        "blocks",
+        "facility",
+        "facilities",
+        "site feature",
+        "site features",
+        "area",
+        "areas",
+    }
+)
+
+_VAGUE_SITE_LOCATIONS = frozenset(
+    {
+        "north",
+        "south",
+        "east",
+        "west",
+        "center",
+        "centre",
+        "central",
+        "left",
+        "right",
+        "top",
+        "bottom",
+        "across site",
+        "site",
+        "campus",
+        "unknown",
+    }
+)
+
+_SITE_LEGEND_PHRASES = (
+    "plot boundary",
+    "finished ground",
+    "finished road",
+    "grading control point",
+    "legend",
+    "line type",
+    "symbol",
+)
 
 def _vision_ready() -> bool:
     return bool(
@@ -38,7 +109,6 @@ def _vision_ready() -> bool:
         and settings.AZURE_OPENAI_ENDPOINT
         and settings.AZURE_OPENAI_KEY
     )
-
 
 def _client():
     from openai import AzureOpenAI
@@ -49,11 +119,9 @@ def _client():
         api_version="2024-02-01",
     )
 
-
 def _data_url(content: bytes, content_type: str) -> str:
     mime = content_type if content_type.startswith("image/") else "image/png"
     return f"data:{mime};base64,{base64.b64encode(content).decode('ascii')}"
-
 
 def _normalize_item_name(name: str) -> str:
     n = (name or "").strip().lower()
@@ -81,6 +149,10 @@ def _normalize_item_name(name: str) -> str:
         return n[:-2]
     if n.endswith("s") and not n.endswith("ss"):
         return n[:-1]
+    if n in {"gcp", "grading point", "grading control point", "control point"}:
+        return "grading control point"
+    if re.match(r"^gcp[\s-]?\d", n):
+        return "grading control point"
     return n
 
 
@@ -420,6 +492,423 @@ def _is_mechanical_drawing(scene: str, objects: list[dict[str, Any]]) -> bool:
     if any("screw" in t or "sprocket" in t or "conveyor" in t or "motor" in t for t in raw):
         return True
     return False
+
+
+def _has_interior_furniture_focus(objects: list[dict[str, Any]]) -> bool:
+    """True when the inventory is dominated by interior floor-plan furniture."""
+    types = {_normalize_item_name(str(o.get("type"))) for o in objects}
+    return len(types & _INTERIOR_FURNITURE) >= 2
+
+
+def _site_object_signal(objects: list[dict[str, Any]]) -> int:
+    """Count site/civil hints in object types and locations."""
+    hits = 0
+    for row in objects:
+        hay = f"{row.get('type') or ''} {row.get('location') or ''}".lower()
+        if any(h in hay for h in _SITE_OBJECT_HINTS):
+            hits += 1
+    return hits
+
+
+def _is_site_plan(scene: str, objects: list[dict[str, Any]]) -> bool:
+    """
+    Detect civil / site / campus grading plans.
+    Conservative: requires site keywords or multiple site features, and rejects
+    interior furniture-heavy sheets so floor-plan paths stay unchanged.
+    """
+    s = (scene or "").lower()
+    if _has_interior_furniture_focus(objects):
+        return False
+
+    strong_site = (
+        "site grading",
+        "grading plan",
+        "site plan",
+        "campus plan",
+        "campus layout",
+        "topographic",
+        "topography",
+        "civil site",
+        "site layout",
+        "land development",
+        "site development",
+        "grading control",
+    )
+    if any(k in s for k in strong_site):
+        if ("floor plan" in s or "floor-plan" in s) and not any(
+            k in s for k in ("site", "campus", "grading")
+        ):
+            return False
+        return True
+
+    # "master plan" alone is ambiguous — require a site feature signal too
+    if "master plan" in s and _site_object_signal(objects) >= 1:
+        return True
+
+    site_hits = _site_object_signal(objects)
+    if site_hits >= 2:
+        return True
+    if site_hits >= 1 and any(k in s for k in ("campus", "site", "grading", "civil")):
+        return True
+    return False
+
+
+def _is_generic_site_type(name: str) -> bool:
+    n = (name or "").strip().lower()
+    return n in _GENERIC_SITE_TYPES or n in {"road", "utility", "utilities"}
+
+
+def _is_site_legend_row(row: dict[str, Any]) -> bool:
+    hay = f"{row.get('type') or ''} {row.get('location') or ''}".lower()
+    return any(p in hay for p in _SITE_LEGEND_PHRASES)
+
+
+def _promote_site_row(row: dict[str, Any]) -> dict[str, Any]:
+    """Use printed label fields when vision returned a generic type like 'building'."""
+    item = str(
+        row.get("type") or row.get("name") or row.get("label") or row.get("item") or ""
+    ).strip()
+    loc = str(row.get("location") or row.get("zone") or "").strip()
+    alt = str(row.get("label") or row.get("title") or row.get("name") or "").strip()
+
+    if alt and _is_generic_site_type(item) and not _is_generic_site_type(alt):
+        item = alt
+    elif _is_generic_site_type(item) and loc:
+        loc_l = loc.lower()
+        if loc_l not in _VAGUE_SITE_LOCATIONS and len(loc) > 4:
+            if not re.match(r"^(north|south|east|west|central|left|right|top|bottom)\b", loc_l):
+                item = loc
+                loc = ""
+
+    item_l = item.lower()
+    if item_l in {"gcp", "grading point", "grading control point"} or re.match(
+        r"^gcp[\s-]?\d", item_l, re.I
+    ):
+        item = "grading control point"
+
+    try:
+        count = int(row.get("count"))
+    except (TypeError, ValueError):
+        count = 1
+    return {"type": item, "count": max(0, count), "location": loc}
+
+
+def _normalize_site_objects(raw_objects: Any) -> list[dict[str, Any]]:
+    """Normalize site-plan inventory rows; preserve building/road names in type."""
+    out: list[dict[str, Any]] = []
+    if not isinstance(raw_objects, list):
+        return out
+    for row in raw_objects:
+        if not isinstance(row, dict):
+            continue
+        promoted = _promote_site_row(row)
+        item = promoted.get("type") or ""
+        if not str(item).strip():
+            continue
+        if _is_site_legend_row(promoted) and _is_generic_site_type(str(item)):
+            continue
+        out.append(promoted)
+    return out
+
+
+def _generic_building_count(objects: list[dict[str, Any]]) -> int:
+    return sum(
+        1
+        for o in objects
+        if str(o.get("type") or "").strip().lower() in {"building", "buildings", "structure", "structures"}
+    )
+
+
+def _site_building_names_pass(
+    client,
+    deployment: str,
+    content: bytes,
+    content_type: str,
+) -> list[dict[str, Any]]:
+    """Second pass when vision returns generic 'building' instead of printed labels."""
+    prompt = (
+        "This is a site / campus / grading plan. List every NAMED building or block "
+        "with its EXACT printed label on the drawing.\n\n"
+        "Examples of good names: 'Girls Hostel', 'Boys Hostel', "
+        "'Instructional & Administrative Block', 'Indoor Sports Complex', "
+        "'Guest House', 'Water Tank', 'AC Plant RM', 'Play Ground'.\n\n"
+        "Rules:\n"
+        "- NEVER use the generic word 'building' alone as the name.\n"
+        "- Copy the label text from the plan exactly.\n"
+        "- One row per distinct labeled building footprint (count=1 each).\n"
+        "- Skip roads, GCP markers, legend symbols, and plot boundary lines.\n\n"
+        'Return JSON: {"buildings":[{"name":"Girls Hostel","location":"optional zone"},...], '
+        '"confidence":"high|medium|low","limitations":""}'
+    )
+    system = (
+        "You read building labels on civil site plans. Each name must be the printed "
+        "label, not the generic word building. Return valid JSON only."
+    )
+    try:
+        payload = _vision_json(
+            client=client,
+            deployment=deployment,
+            system=system,
+            prompt=prompt,
+            image_bytes=content,
+            content_type=content_type,
+            max_tokens=1200,
+            detail="high",
+        )
+    except Exception as exc:
+        logger.warning("Site building name pass failed: %s", exc)
+        return []
+
+    rows: list[dict[str, Any]] = []
+    for entry in payload.get("buildings") or []:
+        if not isinstance(entry, dict):
+            continue
+        name = str(entry.get("name") or entry.get("type") or entry.get("label") or "").strip()
+        if not name or _is_generic_site_type(name):
+            continue
+        loc = str(entry.get("location") or entry.get("zone") or "").strip()
+        rows.append({"type": name, "count": 1, "location": loc})
+    return rows
+
+
+def _polish_site_objects(
+    objects: list[dict[str, Any]],
+    *,
+    client=None,
+    deployment: str = "",
+    content: bytes | None = None,
+    content_type: str = "image/png",
+) -> list[dict[str, Any]]:
+    """Drop legend noise; replace generic building rows with named labels when possible."""
+    cleaned: list[dict[str, Any]] = []
+    for row in objects:
+        promoted = _promote_site_row(row)
+        t = str(promoted.get("type") or "").strip()
+        if not t:
+            continue
+        t_l = t.lower()
+        if _is_site_legend_row(promoted) and t_l not in {"grading control point"}:
+            continue
+        cleaned.append(promoted)
+
+    if _generic_building_count(cleaned) >= 2 and client and deployment and content:
+        named = _site_building_names_pass(client, deployment, content, content_type)
+        if named:
+            non_generic = [
+                o
+                for o in cleaned
+                if str(o.get("type") or "").strip().lower()
+                not in {"building", "buildings", "structure", "structures", "block", "blocks"}
+            ]
+            cleaned = non_generic + named
+
+    # Dedupe by type label (case-insensitive)
+    by_key: dict[str, dict[str, Any]] = {}
+    for row in cleaned:
+        key = str(row.get("type") or "").strip().lower()
+        if not key:
+            continue
+        prev = by_key.get(key)
+        if prev is None:
+            by_key[key] = dict(row)
+        else:
+            try:
+                prev["count"] = max(int(prev.get("count") or 0), int(row.get("count") or 0))
+            except (TypeError, ValueError):
+                pass
+            if not prev.get("location") and row.get("location"):
+                prev["location"] = row.get("location")
+    return list(by_key.values())
+
+
+def _site_display_label(row: dict[str, Any]) -> str:
+    """User-facing label for a site inventory row."""
+    item = str(row.get("type") or "").strip()
+    loc = str(row.get("location") or "").strip()
+    if _is_generic_site_type(item) and loc and loc.lower() not in _VAGUE_SITE_LOCATIONS:
+        return loc
+    return item
+
+
+def _is_site_building_row(row: dict[str, Any]) -> bool:
+    hay = _site_display_label(row).lower()
+    if _is_site_legend_row(row) and "grading control" not in hay:
+        return False
+    if hay in {"grading control point", "gcp"}:
+        return False
+    if _is_generic_site_type(hay):
+        return False
+    return bool(
+        re.search(
+            r"building|hostel|block|complex|house|tank|playground|play\s+ground|"
+            r"sports|admin|guest|plant|school|library|auditorium|cafeteria|"
+            r"warehouse|factory|tower|hall|dormitory|dorm",
+            hay,
+        )
+    )
+
+
+def _is_site_road_row(row: dict[str, Any]) -> bool:
+    hay = _site_display_label(row).lower()
+    return bool(re.search(r"\broad\b|carriageway|street|avenue|drive|belt|circulation", hay))
+
+
+def _site_gcp_tile_count(
+    client,
+    deployment: str,
+    content: bytes,
+    content_type: str,
+) -> int:
+    """Tile-based recount for dense grading control point (GCP) symbols."""
+    tiles = _tile_image(content, grid=3, overlap=0.0)
+    if not tiles:
+        return 0
+
+    system = (
+        "You count grading control point (GCP) symbols on a civil/site plan crop. "
+        "Count each visible GCP circle/marker labeled GCP-XX or matching the legend "
+        "grading-control-point symbol. Count only in THIS crop. Return JSON only."
+    )
+    total = 0
+    for tile_bytes, tile_type, label in tiles:
+        prompt = (
+            f"This is crop {label} of a larger site grading / campus plan.\n"
+            "Count every visible grading control point (GCP) marker in this crop.\n"
+            'Return JSON: {"gcp_count": N}'
+        )
+        try:
+            payload = _vision_json(
+                client=client,
+                deployment=deployment,
+                system=system,
+                prompt=prompt,
+                image_bytes=tile_bytes,
+                content_type=tile_type,
+                max_tokens=200,
+                detail="high",
+            )
+            total += max(0, int(payload.get("gcp_count") or 0))
+        except Exception as exc:
+            logger.warning("Site GCP tile count failed for %s: %s", label, exc)
+    return total
+
+
+def _site_plan_inventory(
+    client,
+    deployment: str,
+    content: bytes,
+    content_type: str,
+    *,
+    use_tiling: bool = True,
+) -> dict[str, Any]:
+    """
+    Civil / site / campus grading plans: buildings, roads, utilities, GCPs.
+    Separate from interior floor-plan furniture paths.
+    """
+    prompt = (
+        "This is a CIVIL / SITE / CAMPUS engineering drawing (site plan, grading plan, "
+        "master plan, or campus layout) — NOT an interior furniture floor plan.\n\n"
+        "Inventory SITE FEATURES only. For each row, set \"type\" to the EXACT printed "
+        "label on the drawing — NEVER the generic word \"building\" alone.\n\n"
+        "Good examples:\n"
+        '- {"type":"Girls Hostel","count":1,"location":"central-left"}\n'
+        '- {"type":"Instructional & Administrative Block","count":1,"location":"center"}\n'
+        '- {"type":"Proposed 26.0M Wide Road","count":1,"location":"west edge"}\n'
+        '- {"type":"Play Ground","count":1,"location":"center"}\n'
+        '- {"type":"grading control point","count":42,"location":"across site"}\n\n'
+        "Include when visible:\n"
+        "- Named buildings/blocks (hostels, admin block, sports complex, guest house, water tank, etc.)\n"
+        "- Roads / carriageways (include width in the type if labeled)\n"
+        "- Open areas (playground, parking, green belt)\n"
+        "- Utilities (HT line, AC plant, etc.)\n"
+        "- One aggregate row for all GCP / grading control point markers\n\n"
+        "Put legend symbol definitions (plot boundary line type, hatching meanings) in "
+        "legend_notes — NOT as separate building rows.\n"
+        "Do NOT count interior furniture. Do NOT guess GCP count.\n"
+        'Return JSON: {"scene":"site grading plan - ...", "objects":[...], '
+        '"legend_notes":["..."], "confidence":"high|medium|low", "limitations":""}'
+    )
+    system = (
+        "You build a structured site/civil plan inventory. Each object type must be the "
+        "printed label from the plan, never the generic word building. Return valid JSON only."
+    )
+    payload = _vision_json(
+        client=client,
+        deployment=deployment,
+        system=system,
+        prompt=prompt,
+        image_bytes=content,
+        content_type=content_type,
+        max_tokens=1600,
+        detail="high",
+    )
+    objects = _normalize_site_objects(payload.get("objects"))
+    objects = _polish_site_objects(
+        objects,
+        client=client,
+        deployment=deployment,
+        content=content,
+        content_type=content_type,
+    )
+    scene = str(payload.get("scene") or "site plan").strip() or "site plan"
+    confidence = str(payload.get("confidence") or "medium").lower()
+    limitations = str(payload.get("limitations") or "").strip()
+    legend_notes = payload.get("legend_notes") or []
+    if isinstance(legend_notes, list) and legend_notes:
+        lim_extra = "Legend: " + "; ".join(str(x).strip() for x in legend_notes[:6] if str(x).strip())
+        limitations = f"{limitations} {lim_extra}".strip() if limitations else lim_extra
+
+    gcp_full = 0
+    for row in objects:
+        if _normalize_item_name(str(row.get("type"))) == "grading control point":
+            try:
+                gcp_full = int(row.get("count") or 0)
+            except (TypeError, ValueError):
+                gcp_full = 0
+            break
+
+    gcp_tiled = 0
+    if use_tiling and (gcp_full >= 8 or gcp_full == 0):
+        try:
+            gcp_tiled = _site_gcp_tile_count(client, deployment, content, content_type)
+        except Exception as exc:
+            logger.warning("Site GCP tiling failed: %s", exc)
+
+    if gcp_tiled > 0:
+        best_gcp = gcp_tiled
+        if gcp_full > 0 and gcp_full < gcp_tiled * 0.6:
+            note = f"GCP count uses 3×3 tile recount ({gcp_tiled}); full-sheet pass saw {gcp_full}."
+        elif gcp_full > gcp_tiled * 1.4:
+            best_gcp = gcp_full
+            note = f"GCP count uses full-sheet pass ({gcp_full}); tiles summed {gcp_tiled}."
+        else:
+            best_gcp = max(gcp_full, gcp_tiled)
+            note = ""
+        updated = False
+        for row in objects:
+            if _normalize_item_name(str(row.get("type"))) == "grading control point":
+                row["count"] = best_gcp
+                row["location"] = str(row.get("location") or "across site").strip() or "across site"
+                updated = True
+                break
+        if not updated:
+            objects.append(
+                {
+                    "type": "grading control point",
+                    "count": best_gcp,
+                    "location": "across site (tiled recount)",
+                }
+            )
+        if note:
+            limitations = f"{limitations} {note}".strip() if limitations else note
+
+    return {
+        "scene": scene,
+        "objects": sorted(objects, key=lambda x: (-int(x.get("count") or 0), str(x.get("type")))),
+        "confidence": confidence,
+        "limitations": limitations,
+        "method": "site_plan",
+    }
 
 
 def _normalize_bom_type(name: str) -> str:
@@ -1278,6 +1767,17 @@ def _is_office_plan(scene: str, objects: list[dict[str, Any]]) -> bool:
     return False
 
 
+def _is_conference_plan(scene: str, objects: list[dict[str, Any]]) -> bool:
+    """Conference / meeting room floor plans (table + chairs, not office desks)."""
+    if _is_residential_plan(scene, objects) or _is_office_plan(scene, objects):
+        return False
+    s = (scene or "").lower()
+    if any(k in s for k in ("conference", "meeting room", "boardroom", "meeting")):
+        return True
+    types = {_normalize_item_name(str(o.get("type"))) for o in objects}
+    return "table" in types and "chair" in types and "bed" not in types and "desk" not in types
+
+
 def _office_inventory(
     client,
     deployment: str,
@@ -1522,6 +2022,67 @@ def _reconcile_workstation_chairs(
     return list(by.values())
 
 
+def _parse_conference_table_chairs(location: str) -> Optional[int]:
+    m = re.search(r"around\s+(?:conference\s+)?table:\s*(\d+)", location or "", re.I)
+    if not m:
+        return None
+    try:
+        return int(m.group(1))
+    except (TypeError, ValueError):
+        return None
+
+
+def _reconcile_conference_chairs(objects: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Cap inflated conference chair totals; trust table-verify breakdown in location."""
+    by: dict[str, dict[str, Any]] = {}
+    for row in objects:
+        t = _normalize_item_name(str(row.get("type") or ""))
+        if not t:
+            continue
+        by[t] = {
+            "type": t,
+            "count": int(row.get("count") or 0),
+            "location": str(row.get("location") or "").strip(),
+        }
+    tables = int(by.get("table", {}).get("count") or 0)
+    desks = int(by.get("desk", {}).get("count") or 0)
+    if tables <= 0 or desks > 0:
+        return list(by.values())
+
+    chair_row = by.get("chair")
+    if not chair_row:
+        return list(by.values())
+
+    chairs = int(chair_row.get("count") or 0)
+    loc = chair_row.get("location") or ""
+    table_ch = _parse_conference_table_chairs(loc)
+    wall_sum = 0
+    for part in re.split(r";\s*", loc):
+        part = part.strip()
+        if not part or re.search(r"around\s+(conference\s+)?table", part, re.I):
+            continue
+        m = re.search(r":\s*(\d+)\s*$", part)
+        if m:
+            wall_sum += int(m.group(1))
+
+    if table_ch is not None:
+        expected = table_ch + wall_sum
+        if expected > 0 and chairs > expected + 1:
+            chair_row = {
+                **chair_row,
+                "count": expected,
+                "location": f"{loc} (table+wall reconciled)".strip(),
+            }
+            by["chair"] = chair_row
+    elif chairs > max(16, tables * 12):
+        by["chair"] = {
+            **chair_row,
+            "count": min(chairs, 16),
+            "location": f"{loc} (conference cap)".strip(),
+        }
+    return list(by.values())
+
+
 def _tile_counts_for_types(
     client,
     deployment: str,
@@ -1586,6 +2147,17 @@ def _tile_counts_for_types(
     return totals
 
 
+def _finalize_extraction(
+    inventory: dict[str, Any],
+    content: bytes,
+    content_type: str,
+) -> dict[str, Any]:
+    """Validate and optionally vision-verify inventory before persisting."""
+    from app.search.inventory_validate import finalize_inventory
+
+    return finalize_inventory(inventory, content, content_type)
+
+
 def extract_object_inventory(
     content: bytes,
     content_type: str = "image/png",
@@ -1611,12 +2183,30 @@ def extract_object_inventory(
             try:
                 bom_inv = _bom_inventory(client, deployment, content, content_type)
                 if bom_inv and bom_inv.get("objects"):
-                    return bom_inv
+                    return _finalize_extraction(bom_inv, content, content_type)
             except Exception as exc:
                 logger.warning("BOM inventory failed: %s", exc)
 
+        # Civil / site / campus grading plans — before interior floor-plan routing
+        if _is_site_plan(str(scene), objects):
+            try:
+                site_inv = _site_plan_inventory(
+                    client,
+                    deployment,
+                    content,
+                    content_type,
+                    use_tiling=use_tiling,
+                )
+                if site_inv and site_inv.get("objects"):
+                    return _finalize_extraction(site_inv, content, content_type)
+            except Exception as exc:
+                logger.warning("Site plan inventory failed: %s", exc)
+
         is_residential = _is_residential_plan(str(scene), objects)
         is_office = (not is_residential) and _is_office_plan(str(scene), objects)
+        is_conference = (not is_residential and not is_office) and _is_conference_plan(
+            str(scene), objects
+        )
 
         zone_inv: dict[str, Any] | None = None
         residential_inv: dict[str, Any] | None = None
@@ -1672,19 +2262,10 @@ def extract_object_inventory(
                         logger.warning("Office inventory failed: %s", exc)
                     zone_inv = None
 
-        # Verify conference-table chairs only for conference-style plans
-        if (
-            zone_inv
-            and not is_residential
-            and not is_office
-            and any(
-                _normalize_item_name(str(o.get("type"))) == "chair"
-                for o in (zone_inv.get("objects") or [])
-            )
-            and any(
-                _normalize_item_name(str(o.get("type"))) == "table"
-                for o in (zone_inv.get("objects") or objects)
-            )
+        # Verify conference-table chairs for conference-style plans
+        if zone_inv and is_conference and any(
+            _normalize_item_name(str(o.get("type"))) == "chair"
+            for o in (zone_inv.get("objects") or [])
         ):
             verified = _verify_conference_table_chairs(
                 client, deployment, content, content_type
@@ -1744,8 +2325,18 @@ def extract_object_inventory(
                 zone_inv["method"] = "zone_breakdown+table_verify"
 
         tile_totals: dict[str, int] = {}
-        # Skip tiling for residential/office — tiles often double-count dense furniture
-        if use_tiling and not is_residential and not is_office and not office_inv:
+        zone_verified = str((zone_inv or {}).get("method") or "").startswith(
+            "zone_breakdown+table_verify"
+        )
+        # Skip tiling for residential/office/conference — tiles double-count dense furniture
+        if (
+            use_tiling
+            and not is_residential
+            and not is_office
+            and not is_conference
+            and not office_inv
+            and not zone_verified
+        ):
             dense_types = ["chair", "table", "desk", "door", "bed"]
             try:
                 tile_totals = _tile_counts_for_types(
@@ -1809,6 +2400,7 @@ def extract_object_inventory(
             note = "Counts use full-sheet residential inventory (no left/right zone sum)."
             inventory["limitations"] = f"{lim} {note}".strip() if lim else note
         elif zone_inv and zone_inv.get("objects"):
+            zone_method = str(zone_inv.get("method") or "zone_breakdown")
             for z in zone_inv["objects"]:
                 t = _normalize_item_name(str(z.get("type")))
                 if not t:
@@ -1816,7 +2408,12 @@ def extract_object_inventory(
                 full_n = int(by_type.get(t, {}).get("count") or 0)
                 zone_n = int(z.get("count") or 0)
                 tile_n = int(tile_totals.get(t) or 0)
-                best, src = _pick_better_count(full_n, zone_n, tile_n)
+                if zone_method.startswith("zone_breakdown+table_verify") and t == "chair":
+                    best = zone_n
+                elif is_conference and t == "chair":
+                    best = zone_n if zone_n > 0 else full_n
+                else:
+                    best, _src = _pick_better_count(full_n, zone_n, tile_n)
                 if best <= 0:
                     continue
                 loc = str(z.get("location") or "").strip() or (
@@ -1824,10 +2421,14 @@ def extract_object_inventory(
                 )
                 by_type[t] = {"type": t, "count": best, "location": loc}
             scene = zone_inv.get("scene") or scene
-            inventory["method"] = "zone_breakdown"
+            inventory["method"] = zone_method
             inventory["confidence"] = zone_inv.get("confidence") or inventory.get("confidence")
             lim = str(zone_inv.get("limitations") or "").strip()
-            note = "Counts use zone breakdown (table chairs + wall chairs counted separately)."
+            note = (
+                "Counts use verified conference table breakdown."
+                if zone_method.startswith("zone_breakdown+table_verify")
+                else "Counts use zone breakdown (table chairs + wall chairs counted separately)."
+            )
             inventory["limitations"] = f"{lim} {note}".strip() if lim else note
         elif tile_totals:
             for t, n in tile_totals.items():
@@ -1849,8 +2450,9 @@ def extract_object_inventory(
                 "location": "tiled recount",
             }
 
-        # Final workstation safety: chairs should not be ~2× desks
+        # Final safety reconcilers
         reconciled = _reconcile_workstation_chairs(list(by_type.values()))
+        reconciled = _reconcile_conference_chairs(reconciled)
         by_type = {_normalize_item_name(str(o.get("type"))): dict(o) for o in reconciled}
 
         inventory["scene"] = scene
@@ -1858,7 +2460,7 @@ def extract_object_inventory(
             by_type.values(),
             key=lambda x: (-int(x.get("count") or 0), str(x.get("type"))),
         )
-        return inventory
+        return _finalize_extraction(inventory, content, content_type)
     except Exception as exc:
         logger.warning("Object inventory extraction failed: %s", exc)
         return empty_inventory()
@@ -1872,6 +2474,33 @@ def lookup_count(inventory: dict[str, Any], element: str) -> Optional[int]:
 
     objects = inventory.get("objects") or []
     is_bom = str(inventory.get("method") or "") == "bom_table"
+    is_site = str(inventory.get("method") or "") == "site_plan"
+
+    if is_site and target in {"building", "buildings", "structure", "structures", "block", "blocks"}:
+        total = 0
+        found = False
+        for row in objects:
+            if not _is_site_building_row(row):
+                continue
+            try:
+                total += max(1, int(row.get("count") or 1))
+                found = True
+            except (TypeError, ValueError):
+                continue
+        return total if found else None
+
+    if is_site and target in {"road", "roads", "carriageway", "carriageways"}:
+        total = 0
+        found = False
+        for row in objects:
+            raw = str(row.get("type") or "").strip().lower()
+            if "road" in raw or "carriageway" in raw or "street" in raw:
+                try:
+                    total += max(1, int(row.get("count") or 1))
+                    found = True
+                except (TypeError, ValueError):
+                    continue
+        return total if found else None
 
     if is_bom:
         # Prefer rolled-up aggregate rows for family queries (screws, washers, …)
@@ -1947,40 +2576,77 @@ def format_inventory_answer(
         rows = []
         target = _normalize_item_name(element)
         for row in objects:
+            if str(inventory.get("method") or "") == "site_plan" and target in {
+                "building",
+                "buildings",
+                "structure",
+                "structures",
+            }:
+                if not _is_site_building_row(row):
+                    continue
+                label = _site_display_label(row)
+                cnt = row.get("count")
+                loc = str(row.get("location") or "").strip()
+                rows.append(f"{label}: {cnt}" + (f" ({loc})" if loc else ""))
+                continue
             name = _normalize_item_name(str(row.get("type") or ""))
             if name == target or target in name or name in target:
                 loc = str(row.get("location") or "").strip()
                 cnt = row.get("count")
-                rows.append(f"{name}: {cnt}" + (f" ({loc})" if loc else ""))
+                display = _site_display_label(row) if str(inventory.get("method") or "") == "site_plan" else name
+                rows.append(f"{display}: {cnt}" + (f" ({loc})" if loc else ""))
         if len(rows) > 1:
             parts.append("**Breakdown:**\n" + "\n".join(f"- {r}" for r in rows))
         if scene:
             parts.append(f"**Scene:** {scene}")
         if limitations:
             parts.append(f"**Note:** {limitations}")
+        from app.search.inventory_validate import validation_note_for_answer
+
+        vnote = validation_note_for_answer(inventory)
+        if vnote:
+            parts.append(f"**Validation:** {vnote}")
         parts.append("*Source: structured object inventory (upload-time analysis).*")
         return "\n\n".join(parts)
 
-    # General object / furniture inventory
+    # General object / furniture / site inventory
     lines = []
+    site_method = str(inventory.get("method") or "") == "site_plan"
+    building_q = bool(re.search(r"\b(buildings?|structures?|blocks?|hostels?)\b", q, re.I))
+    road_q = bool(re.search(r"\b(roads?|carriageways?|streets?)\b", q, re.I))
     for row in objects:
-        item = str(row.get("type") or "").strip()
-        if not item:
+        if site_method and building_q and not _is_site_building_row(row):
+            continue
+        if site_method and road_q and not _is_site_road_row(row):
+            continue
+        item = _site_display_label(row) if site_method else str(row.get("type") or "").strip()
+        if not item or (site_method and _is_generic_site_type(item)):
+            continue
+        if site_method and _is_site_legend_row(row) and "grading control" not in item.lower():
             continue
         count = row.get("count")
         loc = str(row.get("location") or "").strip()
         line = f"{item}: {count}" if count is not None else item
-        if loc:
+        if loc and loc.lower() not in item.lower():
             line += f" ({loc})"
         lines.append(line)
+
+    if not lines and site_method and building_q:
+        for row in objects:
+            if _is_site_building_row(row):
+                lines.append(f"{_site_display_label(row)}: {row.get('count', 1)}")
 
     if not lines:
         return None
 
     summary = (
-        f"{prefix}the image shows a **{scene or 'space'}** with these objects:"
-        if scene
-        else f"{prefix}these objects are visible:"
+        f"{prefix}the site plan shows a **{scene or 'campus/site layout'}** with these features:"
+        if site_method and scene
+        else (
+            f"{prefix}the image shows a **{scene or 'space'}** with these objects:"
+            if scene
+            else f"{prefix}these objects are visible:"
+        )
     )
     parts = [
         f"**Answer:** {summary}",
@@ -1988,9 +2654,13 @@ def format_inventory_answer(
     ]
     if limitations:
         parts.append(f"**Note:** {limitations}")
+    from app.search.inventory_validate import validation_note_for_answer
+
+    vnote = validation_note_for_answer(inventory)
+    if vnote:
+        parts.append(f"**Validation:** {vnote}")
     parts.append("*Source: structured object inventory (upload-time analysis).*")
     return "\n\n".join(parts)
-
 
 def answer_from_stored_inventory(
     *,
@@ -2002,17 +2672,28 @@ def answer_from_stored_inventory(
         is_drawing_count_query,
         is_drawing_furniture_inventory_query,
         is_drawing_object_query,
+        is_drawing_site_inventory_query,
     )
 
     if not (
         is_drawing_count_query(query)
         or is_drawing_furniture_inventory_query(query)
         or is_drawing_object_query(query)
+        or is_drawing_site_inventory_query(query)
     ):
         return None
 
     inventory = resolve_drawing_inventory(drawing)
     if not inventory:
+        return None
+
+    from app.search.inventory_validate import inventory_trustworthy_for_answer
+
+    if not inventory_trustworthy_for_answer(inventory):
+        logger.info(
+            "Stored inventory failed validation — deferring to live vision for: %s",
+            (query or "")[:80],
+        )
         return None
 
     label = ""

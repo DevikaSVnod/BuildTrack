@@ -12,7 +12,6 @@ from app.storage.document_blob import _sanitize_pdf_text
 
 logger = logging.getLogger(__name__)
 
-
 def build_document_crawl_text(document) -> str:
     body = (getattr(document, "body_text", None) or "").strip()
     lines = [

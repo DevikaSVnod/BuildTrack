@@ -18,8 +18,9 @@ import {
   resolveSearchResultFile,
   searchResultFilePageUrl,
 } from "@/lib/fileAccess";
+import { BUILDTRACK_RECENT_KEY, buildTrackSearchConfig } from "@/lib/global-search";
 
-const RECENT_KEY = "buildtrack_recent_searches";
+const RECENT_KEY = BUILDTRACK_RECENT_KEY;
 
 function getRecent(): string[] {
   if (typeof window === "undefined") return [];

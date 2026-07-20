@@ -46,6 +46,11 @@ async def lifespan(app: FastAPI):
         asyncio.create_task(asyncio.to_thread(_init_database_sync))
         asyncio.create_task(_run_seed_tasks())
 
+    from app.plugins import register_all_plugins
+
+    register_all_plugins()
+    logger.info("Global Search plugins registered")
+
     if settings.DATABASE_URL.startswith("mssql"):
         keepalive_task = asyncio.create_task(_db_keepalive_loop())
         asyncio.create_task(asyncio.to_thread(ping_database))
