@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import {
   canPreviewInline,
   loadPreviewBlob,
+  lookupKey,
   type FileLookup,
   type FileResource,
 } from "@/lib/fileAccess";
@@ -32,11 +33,15 @@ export default function FilePreviewModal({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Parents pass inline lookup objects — stabilize so we don't re-download on every render.
+  const lookupStable = useMemo(() => lookupKey(lookup), [lookup]);
+  const fileTypeKey = (fileType || "").toUpperCase();
 
   useEffect(() => {
     if (!open) {
       setPreviewUrl(null);
       setError(null);
+      setLoading(false);
       return;
     }
 
@@ -47,32 +52,36 @@ export default function FilePreviewModal({
       return;
     }
 
-    let revoked: string | null = null;
+    let cancelled = false;
     setLoading(true);
     setError(null);
 
     loadPreviewBlob(resource, lookup)
       .then((url) => {
-        revoked = url;
-        setPreviewUrl(url);
+        if (!cancelled) setPreviewUrl(url);
       })
       .catch((err: unknown) => {
+        if (cancelled) return;
         const message = err instanceof Error ? err.message : "Could not load file";
         setError(message);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
     return () => {
-      if (revoked) URL.revokeObjectURL(revoked);
+      cancelled = true;
+      // Do not revoke — previewCache reuses the object URL across opens.
     };
-  }, [open, resource, lookup, fileType]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- lookupStable stands in for lookup identity
+  }, [open, resource, lookupStable, fileTypeKey]);
 
   const previewable = canPreviewInline(fileType);
 
   return (
     <Modal open={open} onClose={onClose} title={title} size="xl">
       {loading && (
-        <div className="flex items-center justify-center gap-2 py-16 text-gray-500">
+        <div className="flex items-center gap-2 justify-center py-16 text-gray-500">
           <Loader2 size={20} className="animate-spin" />
           Loading preview...
         </div>
@@ -100,28 +109,28 @@ export default function FilePreviewModal({
         />
       )}
 
-      {!loading && !error && previewUrl && previewable && fileType?.toUpperCase() !== "PDF" && (
-        <img
-          src={previewUrl}
-          alt={title}
-          className="max-h-[70vh] w-full object-contain rounded-lg border border-gray-100 bg-gray-50"
-        />
-      )}
+      {!loading &&
+        !error &&
+        previewUrl &&
+        previewable &&
+        ["PNG", "JPG", "JPEG", "WEBP", "GIF"].includes(fileType?.toUpperCase() || "") && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={previewUrl}
+            alt={title}
+            className="max-h-[70vh] mx-auto rounded-lg border border-gray-100"
+          />
+        )}
 
       {!loading && !error && !previewable && (
         <div className="text-center py-12">
-          <p className="text-sm text-gray-600 mb-2">
-            Inline preview is not available for {(fileType || "this file type").toUpperCase()} files.
-          </p>
-          <p className="text-xs text-gray-500 mb-4">
-            {fileType?.toUpperCase() === "DWG"
-              ? "Download the drawing to open it in AutoCAD or another CAD viewer."
-              : "Download the file to open it in the appropriate application."}
+          <p className="text-sm text-gray-500 mb-4">
+            Inline preview is not available for {fileType || "this file type"}.
           </p>
           {onDownload && (
             <button
               onClick={onDownload}
-              className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90"
+              className="text-sm font-medium text-primary hover:underline"
             >
               Download file
             </button>

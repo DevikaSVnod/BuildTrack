@@ -25,7 +25,7 @@ def _add_vector(doc: Dict[str, Any]) -> Dict[str, Any]:
     return doc
 
 
-def get_search_client():
+def get_search_client(index_name: Optional[str] = None):
     if not settings.AZURE_SEARCH_ENDPOINT or not settings.AZURE_SEARCH_KEY:
         return None
     try:
@@ -33,7 +33,7 @@ def get_search_client():
         from azure.core.credentials import AzureKeyCredential
         return SearchClient(
             endpoint=settings.AZURE_SEARCH_ENDPOINT,
-            index_name=settings.AZURE_SEARCH_INDEX,
+            index_name=index_name or settings.AZURE_SEARCH_INDEX,
             credential=AzureKeyCredential(settings.AZURE_SEARCH_KEY),
         )
     except Exception as e:
@@ -56,7 +56,7 @@ def get_index_client():
         return None
 
 
-def ensure_index_exists() -> bool:
+def ensure_index_exists(index_name: Optional[str] = None) -> bool:
     """
     Create the index or add new fields to an existing index.
     Azure does not allow changing attributes on existing fields (e.g. adding facetable).
@@ -65,6 +65,7 @@ def ensure_index_exists() -> bool:
     client = get_index_client()
     if not client:
         return False
+    target = index_name or settings.AZURE_SEARCH_INDEX
     try:
         from azure.core.exceptions import ResourceNotFoundError
         from azure.search.documents.indexes.models import (
@@ -119,14 +120,14 @@ def ensure_index_exists() -> bool:
                 )],
             )
             return SearchIndex(
-                name=settings.AZURE_SEARCH_INDEX,
+                name=target,
                 fields=fields,
                 semantic_search=SemanticSearch(configurations=[semantic_config]),
                 vector_search=vector_search,
             )
 
         try:
-            existing = client.get_index(settings.AZURE_SEARCH_INDEX)
+            existing = client.get_index(target)
             names = {f.name for f in existing.fields}
             added = [f.name for f in filter_fields if f.name not in names]
             if added:
@@ -134,27 +135,28 @@ def ensure_index_exists() -> bool:
                     if f.name not in names:
                         existing.fields.append(f)
                 client.create_or_update_index(existing)
-                logger.info("Search index updated — added fields: %s", ", ".join(added))
+                logger.info("Search index %s updated — added fields: %s", target, ", ".join(added))
             else:
-                logger.info("Search index already has filter fields")
+                logger.info("Search index %s already ready", target)
             return True
         except ResourceNotFoundError:
             client.create_or_update_index(_full_index())
-            logger.info("Search index created successfully")
+            logger.info("Search index %s created successfully", target)
             return True
     except Exception as e:
-        logger.error(f"Failed to create/update index: {e}")
+        logger.error(f"Failed to create/update index {target}: {e}")
         return False
 
 
-def index_has_filter_fields() -> bool:
+def index_has_filter_fields(index_name: Optional[str] = None) -> bool:
     """True when progress_pct exists on the live index (indexer may map it)."""
     client = get_index_client()
     if not client:
         return False
+    target = index_name or settings.AZURE_SEARCH_INDEX
     try:
         from azure.core.exceptions import ResourceNotFoundError
-        index = client.get_index(settings.AZURE_SEARCH_INDEX)
+        index = client.get_index(target)
         return "progress_pct" in {f.name for f in index.fields}
     except ResourceNotFoundError:
         return False
@@ -162,15 +164,19 @@ def index_has_filter_fields() -> bool:
         return False
 
 
-def index_documents(documents: List[Dict[str, Any]], embed: bool = True):
+def index_documents(
+    documents: List[Dict[str, Any]],
+    embed: bool = True,
+    index_name: Optional[str] = None,
+):
     """
-    DEPRECATED for application runtime — use Azure SQL Indexer only.
-    Kept for one-off setup/debug scripts; do not call from API routes or upload handlers.
+    Push documents into an Azure AI Search index (used for satellite DBs that
+    cannot use the Azure SQL Indexer, e.g. SQLite assets).
     """
-    client = get_search_client()
+    client = get_search_client(index_name)
     if not client:
         logger.warning("Azure Search not configured — skipping indexing")
-        return
+        return {"ok": 0, "failed": 0}
 
     # Add vectors (gracefully skipped if OpenAI not configured)
     if embed:
@@ -194,8 +200,9 @@ def index_documents(documents: List[Dict[str, Any]], embed: bool = True):
                     logger.error(f"Failed to index doc '{r.key}': {r.error_message}")
         except Exception as e:
             logger.error(f"Batch upload error (batch {i // batch_size}): {e}")
-    logger.info(f"Indexed {total_ok} docs OK, {total_fail} failed")
-
+            total_fail += len(batch)
+    logger.info(f"Indexed {total_ok} docs OK, {total_fail} failed into {index_name or settings.AZURE_SEARCH_INDEX}")
+    return {"ok": total_ok, "failed": total_fail}
 
 def build_project_doc(project) -> Dict[str, Any]:
     pm_name = ""

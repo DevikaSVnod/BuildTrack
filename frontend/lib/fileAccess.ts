@@ -100,6 +100,42 @@ export async function fetchFileBlob(
   return { blob: res.data as Blob, contentType };
 }
 
+const previewCache = new Map<string, { url: string; at: number }>();
+const PREVIEW_TTL_MS = 5 * 60 * 1000;
+
+function previewCacheKey(resource: FileResource, lookup: FileLookup): string {
+  if (lookup.kind === "drawingNo") {
+    return `${resource}:no:${lookup.drawingNo.toLowerCase()}`;
+  }
+  return `${resource}:id:${lookup.id}`;
+}
+
+export function lookupKey(lookup: FileLookup): string {
+  return lookup.kind === "drawingNo"
+    ? `no:${lookup.drawingNo}`
+    : `id:${lookup.id}`;
+}
+
+/** Reuse object URLs so reopening the same preview is instant. */
+export async function loadPreviewBlob(
+  resource: FileResource,
+  lookup: FileLookup
+): Promise<string> {
+  const key = previewCacheKey(resource, lookup);
+  const hit = previewCache.get(key);
+  if (hit && Date.now() - hit.at < PREVIEW_TTL_MS) {
+    return hit.url;
+  }
+  if (hit) {
+    URL.revokeObjectURL(hit.url);
+    previewCache.delete(key);
+  }
+  const { blob, contentType } = await fetchFileBlob(resource, lookup, false);
+  const url = URL.createObjectURL(new Blob([blob], { type: contentType }));
+  previewCache.set(key, { url, at: Date.now() });
+  return url;
+}
+
 export async function openSearchResultFile(result: SearchResultItem): Promise<"tab" | "page"> {
   const fileRef = resolveSearchResultFile(result);
   if (!fileRef) {
@@ -169,12 +205,4 @@ export async function downloadFile(
   anchor.download = filename;
   anchor.click();
   URL.revokeObjectURL(url);
-}
-
-export async function loadPreviewBlob(
-  resource: FileResource,
-  lookup: FileLookup
-): Promise<string> {
-  const { blob, contentType } = await fetchFileBlob(resource, lookup, false);
-  return URL.createObjectURL(new Blob([blob], { type: contentType }));
 }

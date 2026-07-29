@@ -7,6 +7,7 @@ import {
   writePageCache,
   clearPageCache,
   PAGE_STALE_MS,
+  isStaleEmptyList,
 } from "@/lib/pageCache";
 
 export function usePageData<T>(
@@ -23,7 +24,7 @@ export function usePageData<T>(
   fetcherRef.current = fetcher;
   dataRef.current = data;
 
-  // Restore cache before first paint (client only, after hydration).
+  // Restore cache before paint (after hydration) so back-navigation skips the empty skeleton.
   useLayoutEffect(() => {
     const cached = readPageCache<T>(key);
     if (cached) {
@@ -58,7 +59,11 @@ export function usePageData<T>(
         writePageCache(key, fresh);
         setData(fresh);
       } catch {
-        if (!cached) setError("Could not load data. Please try again.");
+        if (!cached && !dataRef.current) {
+          setError("Could not load data. Please try again.");
+        } else if (isStaleEmptyList(dataRef.current)) {
+          setError("Could not load data. Please try again.");
+        }
       } finally {
         setLoading(false);
         setRefreshing(false);

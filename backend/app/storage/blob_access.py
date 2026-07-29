@@ -1,13 +1,26 @@
 """Read files from Azure Blob (or generate placeholders for legacy /uploads paths)."""
 from __future__ import annotations
 
+import logging
 import mimetypes
 import os
+import time
 import urllib.parse
+from threading import Lock
 from typing import Optional
 
 from app.core.config import settings
 from app.storage.document_blob import generate_document_bytes, is_blob_url
+
+logger = logging.getLogger(__name__)
+
+_blob_service = None
+_blob_lock = Lock()
+
+# Short in-process cache so opening the same preview twice is instant.
+_FILE_CACHE_TTL = 180.0
+_file_bytes_cache: dict[str, tuple[float, bytes, str]] = {}
+_file_cache_lock = Lock()
 
 
 def _guess_content_type(filename: str, fallback: str = "application/octet-stream") -> str:
@@ -25,22 +38,50 @@ def parse_blob_url(file_url: str) -> tuple[str, str]:
     return container, blob_name
 
 
-def fetch_blob_bytes(file_url: str) -> tuple[bytes, str]:
+def _get_blob_service():
+    global _blob_service
+    if _blob_service is not None:
+        return _blob_service
     if not settings.AZURE_STORAGE_CONNECTION_STRING:
         raise RuntimeError("Azure Storage is not configured")
-    from azure.storage.blob import BlobServiceClient
+    with _blob_lock:
+        if _blob_service is not None:
+            return _blob_service
+        from azure.storage.blob import BlobServiceClient
+
+        _blob_service = BlobServiceClient.from_connection_string(
+            settings.AZURE_STORAGE_CONNECTION_STRING
+        )
+        return _blob_service
+
+
+def fetch_blob_bytes(file_url: str) -> tuple[bytes, str]:
+    now = time.time()
+    with _file_cache_lock:
+        cached = _file_bytes_cache.get(file_url)
+        if cached and now - cached[0] < _FILE_CACHE_TTL:
+            return cached[1], cached[2]
 
     container, blob_name = parse_blob_url(file_url)
-    client = BlobServiceClient.from_connection_string(settings.AZURE_STORAGE_CONNECTION_STRING)
+    client = _get_blob_service()
     blob = client.get_blob_client(container=container, blob=blob_name)
     props = blob.get_blob_properties()
-    content_type = (props.content_settings.content_type if props.content_settings else None) or _guess_content_type(blob_name)
+    content_type = (
+        props.content_settings.content_type if props.content_settings else None
+    ) or _guess_content_type(blob_name)
     # Some uploads may have incorrect content-type metadata; for vision calls we must
     # provide an image/* MIME when the blob name indicates an image.
     guessed = _guess_content_type(blob_name)
     if guessed and guessed.startswith("image/"):
         content_type = guessed
-    return blob.download_blob().readall(), content_type
+    content = blob.download_blob().readall()
+
+    with _file_cache_lock:
+        _file_bytes_cache[file_url] = (time.time(), content, content_type)
+        if len(_file_bytes_cache) > 40:
+            for stale, _ in sorted(_file_bytes_cache.items(), key=lambda x: x[1][0])[:10]:
+                _file_bytes_cache.pop(stale, None)
+    return content, content_type
 
 
 def resolve_document_bytes(

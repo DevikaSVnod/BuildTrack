@@ -41,12 +41,19 @@ def _get_query_vector(text: str) -> Optional[List[float]]:
 _search_cache: Dict[str, tuple] = {}
 SEARCH_CACHE_TTL = 120
 
-# Limit parallel Azure calls so login/API stay responsive
-_executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="search")
+# Each source's deep search submits 3 tasks (embed + semantic + keyword), so the
+# pool must fit every configured source or the multi-DB fan-out serializes here.
+_executor = ThreadPoolExecutor(max_workers=8, thread_name_prefix="search")
 
 
-def _search_cache_key(query: str, filter_type: Optional[str], top_k: int, analysis_key: str) -> str:
-    raw = f"{query.strip().lower()}|{filter_type}|{top_k}|{analysis_key}"
+def _search_cache_key(
+    query: str,
+    filter_type: Optional[str],
+    top_k: int,
+    analysis_key: str,
+    search_index: Optional[str] = None,
+) -> str:
+    raw = f"{query.strip().lower()}|{filter_type}|{top_k}|{analysis_key}|{search_index or ''}"
     return hashlib.md5(raw.encode()).hexdigest()
 
 
@@ -67,6 +74,7 @@ def hybrid_search(
     filter_type: Optional[str] = None,
     top_k: int = 8,
     analysis: Optional[QueryAnalysis] = None,
+    search_index: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     if analysis is None:
         analysis = analyze_query(query, default_top_k=top_k)
@@ -75,20 +83,27 @@ def hybrid_search(
     effective_top = plan.max_results if plan.is_exhaustive() else (
         analysis.top_k if filter_type in (None, "all", "") else top_k
     )
-    key = _search_cache_key(query, filter_type, effective_top, analysis.cache_suffix())
+    key = _search_cache_key(
+        query, filter_type, effective_top, analysis.cache_suffix(), search_index
+    )
     if key in _search_cache:
         ts, cached = _search_cache[key]
         if time.time() - ts < SEARCH_CACHE_TTL:
             return cached
 
-    client = get_search_client()
+    client = get_search_client(search_index)
     if not client:
         return _fallback_results(query)
 
     try:
         # Exhaustive modes — filter / list-all (never top-K truncation)
         if plan.is_exhaustive() and plan.mode != QueryMode.WORKFORCE:
-            exhaustive = execute_exhaustive_plan(plan)
+            exhaustive = execute_exhaustive_plan(plan, search_index=search_index)
+            if exhaustive is None and plan.manager:
+                # "Projects managed by X" is answered by project records alone.
+                # An index without them (e.g. the assets DB) must return nothing —
+                # a semantic fallback here answers a different question.
+                exhaustive = []
             if exhaustive is not None:
                 _search_cache[key] = (time.time(), exhaustive)
                 return exhaustive
@@ -103,13 +118,9 @@ def hybrid_search(
             }
             mapped = type_map.get(filter_type, filter_type)
             filter_expr = f"content_type eq '{mapped}'"
-        elif (
-            analysis.content_types == ["team"]
-            and not filter_type
-            and extract_project_qualifier(query)
-        ):
-            # Project-specific workforce query (e.g. "Core Members in Metro Station")
-            # → restrict to team docs only so all result slots go to finding members
+        elif analysis.content_types == ["team"] and not filter_type:
+            # Workforce / role queries ("Who are the project managers?") must
+            # not compete with document/project hits for result slots.
             filter_expr = "content_type eq 'team'"
 
         # Decide whether to embed this query.
@@ -350,11 +361,45 @@ def get_cached_results(
     filter_type: Optional[str] = None,
     top_k: int = 8,
     analysis: Optional[QueryAnalysis] = None,
+    source_ids: Optional[List[str]] = None,
 ) -> Optional[List[Dict[str, Any]]]:
     """Return cached search results if /results was called moments before /answer."""
     if analysis is None:
         analysis = analyze_query(query, default_top_k=top_k)
     effective_top = analysis.top_k if filter_type in (None, "all", "") else top_k
+
+    # Prefer multi-DB merged cache when multiple sources are configured.
+    try:
+        from app.core.data_sources import get_enabled_sources
+
+        sources = get_enabled_sources(source_ids)
+        if len(sources) > 1:
+            multi_key = _search_cache_key(
+                query,
+                filter_type,
+                top_k,
+                analysis.cache_suffix(),
+                search_index="multi:" + ",".join(s.id for s in sources),
+            )
+            if multi_key in _search_cache:
+                ts, cached = _search_cache[multi_key]
+                if time.time() - ts < SEARCH_CACHE_TTL:
+                    return cached
+        elif len(sources) == 1:
+            single_key = _search_cache_key(
+                query,
+                filter_type,
+                effective_top,
+                analysis.cache_suffix(),
+                sources[0].search_index,
+            )
+            if single_key in _search_cache:
+                ts, cached = _search_cache[single_key]
+                if time.time() - ts < SEARCH_CACHE_TTL:
+                    return cached
+    except Exception:
+        pass
+
     key = _search_cache_key(query, filter_type, effective_top, analysis.cache_suffix())
     if key in _search_cache:
         ts, cached = _search_cache[key]

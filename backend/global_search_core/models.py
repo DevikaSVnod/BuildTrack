@@ -10,6 +10,8 @@ class SearchRequest(BaseModel):
     query: str
     filter_type: Optional[str] = "all"
     top_k: int = Field(default=5, ge=1, le=50)
+    # Optional subset of configured database ids. None / empty = search all enabled.
+    source_ids: Optional[list[str]] = None
 
 
 class SearchResultItem(BaseModel):
@@ -29,6 +31,8 @@ class SearchResponse(BaseModel):
     search_time_ms: int = 0
     total_results: int = 0
     is_question: bool = False
+    # Database ids that were queried for this response.
+    sources_searched: list[str] = Field(default_factory=list)
 
 
 # Loose dict shape used inside connectors before mapping to SearchResultItem.

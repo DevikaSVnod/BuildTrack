@@ -141,6 +141,11 @@ export const operationalApi = {
   siteActivity: () => apiClient.get("/operational/dashboard/site-activity"),
 };
 
+// Site Assets & Procurement (buildtrack_assets)
+export const assetsApi = {
+  overview: () => apiClient.get("/assets/overview"),
+};
+
 function looksLikeQuestion(q: string): boolean {
   const s = q.trim().toLowerCase();
   if (!s) return false;

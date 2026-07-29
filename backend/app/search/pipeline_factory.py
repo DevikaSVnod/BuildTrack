@@ -12,6 +12,12 @@ from app.plugins import register_all_plugins
 @lru_cache(maxsize=1)
 def get_search_pipeline() -> SearchPipeline:
     register_all_plugins()
+
+    def _generate_answer(q, r, analysis=None):
+        from app.search.answer import generate_answer
+
+        return generate_answer(q, r, analysis=analysis)
+
     return SearchPipeline(
         connector=get_connector(),
         analyze_query=lambda query, top_k: __import__(
@@ -23,10 +29,8 @@ def get_search_pipeline() -> SearchPipeline:
         filter_for_display=lambda q, ans, r, a: __import__(
             "app.search.result_filter", fromlist=["filter_results_for_display"]
         ).filter_results_for_display(q, ans, r, a),
-        generate_answer=lambda q, r, a=None: __import__(
-            "app.search.answer", fromlist=["generate_answer"]
-        ).generate_answer(q, r, analysis=a),
-        get_cached_results=lambda q, ft, k, a: __import__(
+        generate_answer=_generate_answer,
+        get_cached_results=lambda q, ft, k, a, source_ids=None: __import__(
             "app.search.retrieval", fromlist=["get_cached_results"]
-        ).get_cached_results(q, ft, k, a),
+        ).get_cached_results(q, ft, k, a, source_ids),
     )

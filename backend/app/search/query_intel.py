@@ -3,7 +3,7 @@ Query understanding: detect questions, domain intent, status filters, and search
 """
 import re
 from dataclasses import dataclass, field
-from typing import List, Optional, Set
+from typing import Any, List, Optional, Set
 
 # Natural-language → Azure content_type
 DOMAIN_SIGNALS: dict[str, list[str]] = {
@@ -38,7 +38,7 @@ DOMAIN_SIGNALS: dict[str, list[str]] = {
         "team member", "team members", "core members", "core team",
         "workforce", "personnel", "staff", "members of", "member in",
         "project manager", "site engineer", "contractor", "engineers",
-        "who is", "who are", "who work",
+        "who is", "who are", "who work", "working for", "working on",
     ],
 }
 
@@ -118,9 +118,37 @@ def is_workforce_aggregate_query(query: str) -> bool:
     return False
 
 
+def is_workforce_people_query(query: str) -> bool:
+    """Who/role questions that must hit BuildTrack team records, not document RAG."""
+    q = _normalize(query)
+    if is_workforce_aggregate_query(q):
+        return True
+    if is_asset_to_people_hop_query(q):
+        return True
+    if re.search(
+        r"\b(project\s+managers?|site\s+engineers?|contractors?|"
+        r"core\s+members?|team\s+members?|workforce|personnel|staff)\b",
+        q,
+    ):
+        return True
+    if re.search(
+        r"\bwho\s+(is|are|works?|working)\b",
+        q,
+    ) and not re.search(
+        r"\b(report|document|pdf|docx|file|drawing|sheet|manual)\b",
+        q,
+    ):
+        return True
+    return False
+
+
 def detect_content_types(query: str) -> List[str]:
     q = _normalize(query)
     if is_workforce_aggregate_query(q):
+        return ["team"]
+    # Role / people questions: team only — "project manager" must not also
+    # pull "project" or document content types.
+    if is_workforce_people_query(q) and not is_asset_to_people_hop_query(q):
         return ["team"]
     found: List[str] = []
     for ctype, signals in DOMAIN_SIGNALS.items():
@@ -192,6 +220,61 @@ def parse_status_filter(query: str) -> Optional[str]:
     return None
 
 
+# "projects managed by <person>" — ownership questions must enumerate every
+# project the person manages, so they are routed to an exhaustive metadata filter
+# instead of competing with document body text that names the same manager.
+_MANAGER_QUERY_PATTERNS = (
+    r"\b(?:managed|handled|overseen|supervised|led|run)\s+by\s+(?P<name>.+)$",
+    r"\b(?:does|do)\s+(?P<name>.+?)\s+(?:manage|handle|oversee|lead|run)\b",
+    r"\bprojects?\s+(?:that\s+|which\s+)?(?P<name>.+?)\s+"
+    r"(?:manages|handles|oversees|leads|is\s+managing)\b",
+    r"\bprojects?\s+(?:under|assigned\s+to|owned\s+by)\s+(?P<name>.+)$",
+)
+
+# Words that show the phrase after "managed by" is a group or role, not a person.
+_NOT_A_PERSON = {
+    "the", "a", "an", "our", "my", "us", "we", "i", "you", "he", "she",
+    "they", "them", "whom", "who", "which", "team", "teams", "company",
+    "contractor", "contractors", "vendor", "vendors", "someone", "anyone",
+    "each", "any", "buildtrack",
+}
+
+
+def parse_manager_filter(query: str) -> Optional[str]:
+    """Extract the person named as project manager, e.g. 'Sarah Chen'."""
+    q = query.strip().rstrip("?").strip()
+    if not re.search(r"\bprojects?\b", q, re.IGNORECASE):
+        return None
+    for pattern in _MANAGER_QUERY_PATTERNS:
+        m = re.search(pattern, q, re.IGNORECASE)
+        if not m:
+            continue
+        name = re.sub(r"[^\w\s'\-.]", " ", m.group("name")).strip()
+        tokens = [t for t in name.split() if t]
+        if not tokens or len(tokens) > 4:
+            continue
+        if any(t.lower() in _NOT_A_PERSON for t in tokens):
+            continue
+        return " ".join(tokens)
+    return None
+
+
+def person_name_matches(candidate: Any, wanted: str) -> bool:
+    """True when an indexed person name refers to the person the user named.
+
+    Accepts partial names in either direction so 'Sarah' matches 'Sarah Chen'.
+    """
+    have = _normalize(str(candidate or ""))
+    want = _normalize(wanted)
+    if not have or not want:
+        return False
+    if want in have or have in want:
+        return True
+    have_tokens = set(re.findall(r"[\w'\-]+", have))
+    want_tokens = set(re.findall(r"[\w'\-]+", want))
+    return bool(want_tokens) and want_tokens.issubset(have_tokens)
+
+
 def target_content_types_for_filter(query: str, analysis: QueryAnalysis) -> List[str]:
     """Which content types to scan for structured metadata filters."""
     q = _normalize(query)
@@ -260,7 +343,33 @@ def analyze_query(query: str, default_top_k: int = 8) -> QueryAnalysis:
             content_types = ["document", *content_types]
         top_k = max(top_k, 12)
 
-    if is_document_content_query(q):
+    if is_asset_inventory_query(q):
+        ql = _normalize(q)
+        asset_types: List[str] = []
+        if re.search(
+            r"\b(crane|excavator|generator|scaffold|equipment|machinery|boom|pump|asset)\b",
+            ql,
+        ):
+            asset_types.append("equipment")
+        if re.search(r"\b(vendor|supplier|procurement)\b", ql):
+            asset_types.append("vendor")
+        if re.search(r"\b(material|delivery|ppe|helmet|vest)\b", ql):
+            asset_types.append("material")
+        if not asset_types:
+            asset_types = ["equipment", "vendor", "material"]
+        for t in reversed(asset_types):
+            if t not in content_types:
+                content_types = [t, *content_types]
+        top_k = max(top_k, 12)
+    elif is_asset_to_people_hop_query(q):
+        # Asset → project → people: keep both equipment and team in the search mix.
+        for t in ("equipment", "team", "project"):
+            if t not in content_types:
+                content_types = [*content_types, t]
+        # Prefer team answers for "who is working…"
+        content_types = ["team", *[t for t in content_types if t != "team"]]
+        top_k = max(top_k, 16)
+    elif is_document_content_query(q):
         if "document" not in content_types:
             content_types = ["document", *content_types]
         top_k = max(top_k, 12)
@@ -577,9 +686,69 @@ def is_drawing_content_query(query: str) -> bool:
     return False
 
 
+def is_asset_to_people_hop_query(query: str) -> bool:
+    """
+    Multi-hop: ask who works on the project where an asset/equipment is used.
+    Example: 'who is working for the project where this asset is used: excavator'
+    """
+    q = _normalize(query)
+    asks_people = bool(
+        re.search(
+            r"\b("
+            r"who\s+is\s+working|who\s+are\s+working|who\s+works|who\s+work|"
+            r"who\s+is\s+on|who\s+are\s+on|workforce|personnel|team\s+members?|"
+            r"staff\s+on|members?\s+of\s+the\s+project"
+            r")\b",
+            q,
+        )
+    )
+    mentions_asset = bool(
+        re.search(
+            r"\b("
+            r"asset|equipment|excavator|crane|generator|scaffold(?:ing)?|"
+            r"machinery|boom\s*lift|concrete\s*pump|hydraulic"
+            r")\b",
+            q,
+        )
+    ) or ("where this asset" in q) or ("project where" in q and "asset" in q)
+    return asks_people and mentions_asset
+
+
+def is_asset_inventory_query(query: str) -> bool:
+    """
+    Questions about site equipment, vendors, or material deliveries
+    (Site Assets & Procurement DB) — not DMS document body text.
+    """
+    q = _normalize(query)
+    # Multi-hop people questions must keep BuildTrack team hits — not asset-only filter.
+    if is_asset_to_people_hop_query(q):
+        return False
+    if re.search(
+        r"\b(report|document|pdf|docx|xlsx|file|drawing|sheet|manual|specification|specs|"
+        r"attachment|inspection report)\b",
+        q,
+    ):
+        return False
+    return bool(
+        re.search(
+            r"\b("
+            r"crane|excavator|generator|scaffold(?:ing)?|boom\s*lift|concrete\s*pump|"
+            r"equipment|machinery|asset\s*tag|on[- ]site\s+equipment|"
+            r"vendor|supplier|procurement|material\s+deliver|"
+            r"ppe(\s+kits?)?|hard\s*hats?|high[- ]vis"
+            r")\b",
+            q,
+        )
+    )
+
+
 def is_document_content_query(query: str) -> bool:
     """Question about text inside an uploaded file (not metadata like size/uploader)."""
     q = _normalize(query).rstrip("?")
+    if is_asset_inventory_query(query):
+        return False
+    if is_workforce_people_query(query):
+        return False
     if is_file_detail_query(query):
         return False
     if is_drawing_content_query(query):
@@ -599,20 +768,30 @@ def is_document_content_query(query: str) -> bool:
     if file_signals and (content_signals or query.strip().endswith("?")):
         return True
     # Facts usually live inside uploaded PDFs/DOCX even when the user omits "document"
-    if re.search(r"\b(who|what|when|which|how many|how much|where|why)\b", q) and re.search(
+    # Do not treat "project manager(s)" as a document cue — that is a workforce role.
+    q_for_facts = re.sub(r"\bproject\s+managers?\b", " ", q)
+    if re.search(r"\b(who|what|when|which|how many|how much|where|why)\b", q_for_facts) and re.search(
         r"\b(inspect(ed|or|ion)?|inspector|equipment|machinery|crane|milestone|risk|finding|findings|"
         r"leed|elevator|parking|site plan|bridge|tower|hse|materials?|concrete|steel|asphalt|"
         r"ev charging|meeting rooms?|floor plate|budget spent|work package|tenant|"
         r"issues?|progress|schedule|safety measures?|ppe|scope|cost|budget)\b",
-        q,
+        q_for_facts,
     ):
+        # Asset inventory questions already returned False above.
         return True
     if content_signals and re.search(
-        r"\b(bridge|highway|tower|metro|commercial tower|project)\b", q
+        r"\b(bridge|highway|tower|metro|commercial tower)\b", q_for_facts
+    ):
+        return True
+    # Bare "project" alone is too broad (matches "project managers"); require a
+    # stronger file/site cue.
+    if content_signals and re.search(
+        r"\b(bridge|highway|tower|metro|commercial tower)\b", q
     ):
         return True
     if query.strip().endswith("?") and re.search(
-        r"\b(bridge|highway|tower|metro|inspection|handover|budget|safety|equipment)\b", q
+        r"\b(bridge|highway|tower|metro|inspection|handover|budget|safety|equipment)\b",
+        q_for_facts,
     ):
         return True
     return bool(

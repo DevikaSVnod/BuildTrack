@@ -76,8 +76,10 @@ def global_search(
 def clear_cache(current_user: User = Depends(get_current_user)):
     from app.search.retrieval import _search_cache
     from app.search.answer import _answer_cache
+    from app.search.cross_db_links import clear_cross_db_cache
     _search_cache.clear()
     _answer_cache.clear()
+    clear_cross_db_cache()
     return {"message": "Search and answer caches cleared"}
 
 
@@ -91,6 +93,47 @@ def list_plugins(current_user: User = Depends(get_current_user)):
     return {
         "connectors": list_connectors(),
         "extractors": list_extractors(),
+    }
+
+
+@router.get("/sources", status_code=200)
+def list_search_sources(current_user: User = Depends(get_current_user)):
+    """List configured databases that Global Search can query."""
+    from app.core.data_sources import ping_source, sources_public_info
+
+    sources = sources_public_info()
+    for src in sources:
+        if src.get("enabled"):
+            src["reachable"] = ping_source(src["id"])
+        else:
+            src["reachable"] = False
+    return {"sources": sources, "count": len(sources)}
+
+
+@router.post("/assets-index", status_code=200)
+def sync_assets_index(current_user: User = Depends(get_current_user)):
+    """Push Site Assets DB into its Azure AI Search index (multi-DB hybrid search)."""
+    from app.search.assets_indexer import assets_index_doc_count, sync_assets_to_azure_search
+
+    try:
+        stats = sync_assets_to_azure_search(embed=True)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {
+        **stats,
+        "index_doc_count": stats.get("index_doc_count") or assets_index_doc_count(),
+    }
+
+
+@router.get("/assets-index/status", status_code=200)
+def assets_index_status(current_user: User = Depends(get_current_user)):
+    from app.core.config import settings
+    from app.search.assets_indexer import assets_index_doc_count, assets_index_name
+
+    return {
+        "index": assets_index_name(),
+        "configured": bool(settings.AZURE_SEARCH_ENDPOINT and settings.AZURE_SEARCH_KEY),
+        "doc_count": assets_index_doc_count(),
     }
 
 

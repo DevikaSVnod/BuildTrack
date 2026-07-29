@@ -9,6 +9,10 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Local Site Assets SQLite (second Global Search DB — recreated by setup script)
+backend/data/*.db
+backend/data/*.db-*
+
 # Environment files
 .env
 .env.*

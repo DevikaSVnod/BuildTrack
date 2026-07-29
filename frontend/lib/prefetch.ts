@@ -1,4 +1,4 @@
-import { operationalApi, documentsApi, projectsApi } from "./api";
+import { operationalApi, documentsApi, assetsApi } from "./api";
 import { writePageCache } from "./pageCache";
 
 const inflight = new Map<string, Promise<unknown>>();
@@ -27,22 +27,37 @@ const ROUTE_PREFETCH: Record<string, () => void> = {
   "/dashboard": () =>
     prefetchOnce("dashboard", async () => {
       const { projectsApi, tasksApi, teamApi, documentsApi, operationalApi } = await import("./api");
-      const [budget, safety, milestones, siteActivity] = await Promise.all([
-        operationalApi.budget().then((r) => r.data),
-        operationalApi.safetyMetrics().then((r) => r.data),
-        operationalApi.milestones().then((r) => r.data),
-        operationalApi.siteActivity().then((r) => r.data),
+      // Must match dashboard/page.tsx shape — wrong cache shape shows all zeros.
+      const results = await Promise.allSettled([
+        projectsApi.list(),
+        tasksApi.list(),
+        teamApi.list(),
+        documentsApi.list(),
+        operationalApi.budget(),
+        operationalApi.safetyMetrics(),
       ]);
-      return { budget, safety, milestones, siteActivity };
+      const val = <T,>(i: number, fallback: T): T =>
+        results[i].status === "fulfilled"
+          ? (results[i] as PromiseFulfilledResult<{ data: T }>).value.data
+          : fallback;
+      return {
+        projects: val(0, [] as unknown[]),
+        tasks: val(1, [] as unknown[]),
+        members: val(2, [] as unknown[]),
+        documents: val(3, [] as unknown[]),
+        budgetRows: val(4, [] as unknown[]),
+        safetyMetrics: val(5, {} as Record<string, unknown>),
+      };
     }),
   "/projects": () =>
     prefetchOnce("projects", () => import("./api").then((m) => m.projectsApi.list().then((r) => r.data))),
   "/documents": () =>
     prefetchOnce("documents-page", async () => {
-      const [docs, projects] = await Promise.all([
-        documentsApi.list().then((r) => r.data),
-        projectsApi.list().then((r) => r.data),
-      ]);
+      const docs = await documentsApi.list().then((r) => r.data);
+      // Prefer already-cached projects (dashboard / projects page) over a fresh
+      // 3-index Azure Search fetch that slows Document Control.
+      const { cachedProjectsOrFetch } = await import("./cachedFetch");
+      const projects = await cachedProjectsOrFetch();
       return { documents: docs, projects };
     }),
   "/team": () => {
@@ -69,6 +84,8 @@ const ROUTE_PREFETCH: Record<string, () => void> = {
     prefetchOnce("tasks", () => import("./api").then((m) => m.tasksApi.list().then((r) => r.data))),
   "/timeline": () =>
     prefetchOnce("timeline", () => operationalApi.timeline().then((r) => r.data)),
+  "/assets": () =>
+    prefetchOnce("assets-overview", () => assetsApi.overview().then((r) => r.data)),
 };
 
 export function prefetchRoute(href: string): void {

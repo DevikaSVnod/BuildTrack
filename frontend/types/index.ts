@@ -101,6 +101,9 @@ export interface SearchResultMetadata {
   content_source?: string;
   source?: string;
   blob_chunk?: string;
+  // Multi-database
+  database_id?: string;
+  database_label?: string;
   // Safety
   incident_type?: string;
   severity?: string;
@@ -128,6 +131,7 @@ export interface SearchResponse {
   search_time_ms: number;
   total_results: number;
   is_question?: boolean;
+  sources_searched?: string[];
 }
 
 export interface TokenResponse {

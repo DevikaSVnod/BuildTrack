@@ -170,6 +170,24 @@ def _drawing_body_text(r: Dict[str, Any]) -> str:
 def _order_results_for_answer(
     query: str, results: List[Dict[str, Any]]
 ) -> List[Dict[str, Any]]:
+    from app.search.query_intel import is_asset_to_people_hop_query
+
+    if is_asset_to_people_hop_query(query):
+        team = [r for r in results if r.get("content_type") == "team"]
+        projects = [r for r in results if r.get("content_type") == "project"]
+        assets = [
+            r
+            for r in results
+            if r.get("content_type") in {"equipment", "material", "vendor"}
+        ]
+        others = [
+            r
+            for r in results
+            if r.get("content_type")
+            not in {"team", "project", "equipment", "material", "vendor"}
+        ]
+        return team + projects + assets + others
+
     if not is_document_content_query(query):
         return results
 
@@ -226,14 +244,32 @@ def _format_result_for_context(r: Dict[str, Any], index: int, query: str = "") -
     ctype = r.get("content_type", "item")
     title = r.get("title", "")
     meta = r.get("metadata") or {}
+    db_label = meta.get("database_label") or meta.get("database_id")
     meta_parts = [
         f"{k}={v}"
         for k, v in meta.items()
         if v
         and str(v).strip()
-        and k not in {"blob_chunk", "chunk_id", "source", "content_source"}
+        and k not in {
+            "blob_chunk",
+            "chunk_id",
+            "source",
+            "content_source",
+            "database_id",
+            "database_label",
+            "related_from",
+            "related_databases",
+            "linked_by_relationship",
+            "relationship",
+            "related_via",
+            "related_key",
+        }
     ]
     meta_str = ", ".join(meta_parts) if meta_parts else ""
+    rel_note = ""
+    if meta.get("relationship") == "same_project" and meta.get("related_key"):
+        via = meta.get("related_via") or "project_name"
+        rel_note = f" [linked across DBs via {via}={meta.get('related_key')}]"
 
     if _is_blob_content(r) or (
         ctype == "drawing" and (meta.get("sheet_notes") or meta.get("blob_chunk"))
@@ -248,7 +284,12 @@ def _format_result_for_context(r: Dict[str, Any], index: int, query: str = "") -
         snippet = (r.get("snippet") or "")[:220]
         label = ctype
 
-    line = f"{index}. [{label}] {title}"
+    if db_label:
+        line = f"{index}. [{label} | DB: {db_label}] {title}"
+    else:
+        line = f"{index}. [{label}] {title}"
+    if rel_note:
+        line += rel_note
     if meta_str:
         line += f" ({meta_str})"
     if snippet:
@@ -328,6 +369,8 @@ def _build_prompt(query: str, results: List[Dict[str, Any]], analysis: Optional[
             "(projects, site activities, DMS documents, handover closeout, drawings, safety/HSE, workforce).\n\n"
             "RULES:\n"
             "- Answer ONLY using the SOURCES below.\n"
+            "- Sources may come from MULTIPLE databases — synthesize ONE coherent answer across all of them.\n"
+            "- When facts come from different databases, briefly name the database (DB label) in the answer.\n"
             "- For document excerpt sources, extract the answer from the excerpt text.\n"
             "- If document excerpts contain the answer, summarize it clearly in bullets.\n"
             "- Only say you could not find it if NO source contains relevant information.\n"
@@ -820,12 +863,188 @@ def _best_drawing_result(
     return drawings[0]
 
 
+def _asset_to_people_hop_answer(
+    query: str,
+    results: List[Dict[str, Any]],
+) -> Optional[Tuple[str, List[str]]]:
+    """
+    Deterministic answer for: who works on the project where asset X is used.
+    Always answers from the asset's project team — never falls through to LLM
+    with unrelated workforce hits.
+    """
+    from app.search.cross_db_links import (
+        _equipment_matches_query,
+        _fetch_buildtrack_team_for_project,
+        _resolve_asset_from_sql,
+        _team_matches_project,
+        project_key_from_hit,
+    )
+    from app.search.query_intel import is_asset_to_people_hop_query
+
+    if not is_asset_to_people_hop_query(query):
+        return None
+
+    ordered = list(results)
+    equipment = [
+        r
+        for r in ordered
+        if r.get("content_type") == "equipment" and _equipment_matches_query(r, query)
+    ]
+    if not equipment:
+        equipment = [r for r in ordered if r.get("content_type") == "equipment"]
+    if not equipment:
+        sql_hits, _ = _resolve_asset_from_sql(query)
+        equipment = sql_hits
+
+    project_name = ""
+    for r in equipment:
+        project_name = project_key_from_hit(r) or str(
+            (r.get("metadata") or {}).get("related_key")
+            or (r.get("metadata") or {}).get("project")
+            or ""
+        ).strip()
+        if project_name:
+            break
+
+    team = [
+        r
+        for r in ordered
+        if r.get("content_type") == "team"
+        and project_name
+        and _team_matches_project(r, project_name)
+    ]
+    if not team and project_name:
+        team = _fetch_buildtrack_team_for_project(project_name)
+
+    asset_line = ""
+    if equipment:
+        e = equipment[0]
+        meta = e.get("metadata") or {}
+        tag = meta.get("asset_tag") or ""
+        title = e.get("title") or "equipment"
+        db = meta.get("database_label") or "Site Assets & Procurement"
+        asset_line = f"{title}" + (f" ({tag})" if tag and tag not in str(title) else "")
+        asset_line += f" - {db}"
+
+    lines: List[str] = []
+    if asset_line and project_name:
+        lines.append(
+            f"{asset_line} is used on **{project_name}** "
+            f"(linked across Site Assets to BuildTrack)."
+        )
+    elif asset_line:
+        lines.append(f"Matched asset: {asset_line}.")
+    elif project_name:
+        lines.append(f"Related project: **{project_name}**.")
+    else:
+        lines.append(
+            "I could not identify which project uses that asset from the current data."
+        )
+
+    if team and project_name:
+        lines.append(f"People working on **{project_name}**:")
+        seen_names: set[str] = set()
+        for r in team:
+            name = str(r.get("title") or "").strip()
+            if not name or name.lower() in seen_names:
+                continue
+            seen_names.add(name.lower())
+            role = (r.get("metadata") or {}).get("role") or ""
+            lines.append(f"• {name}" + (f" - {role}" if role else ""))
+    elif project_name:
+        lines.append(f"No workforce members were found for **{project_name}**.")
+
+    answer = "\n".join(lines)
+    suggested = [
+        f"What equipment is on {project_name}?" if project_name else "List site equipment",
+        f"Show tasks for {project_name}" if project_name else "Show site activities",
+        "Who is the project manager for Metro Station Renovation?",
+    ]
+    return answer, suggested
+
+
+def _manager_projects_answer(
+    query: str,
+    results: List[Dict[str, Any]],
+) -> Optional[Tuple[str, List[str]]]:
+    """
+    Deterministic answer for "which projects are managed by <person>".
+    Enumerates every matching project record so a document that describes one
+    project in detail cannot stand in for the full list.
+    """
+    from app.search.content_mappers import _normalize_project_status
+    from app.search.query_intel import parse_manager_filter, person_name_matches
+
+    wanted = parse_manager_filter(query)
+    if not wanted:
+        return None
+
+    projects: List[Dict[str, Any]] = []
+    seen: set[str] = set()
+    for r in results:
+        if r.get("content_type") != "project":
+            continue
+        meta = r.get("metadata") or {}
+        if not person_name_matches(meta.get("project_manager"), wanted):
+            continue
+        name = str(r.get("title") or "").strip()
+        if not name or name.lower() in seen:
+            continue
+        seen.add(name.lower())
+        projects.append(r)
+
+    if not projects:
+        return None
+
+    manager_name = str(
+        (projects[0].get("metadata") or {}).get("project_manager") or wanted
+    ).strip()
+    count = len(projects)
+    plural = "project" if count == 1 else "projects"
+    lines = [f"**{manager_name}** manages {count} {plural}:", ""]
+    for r in projects:
+        meta = r.get("metadata") or {}
+        details = []
+        if meta.get("status"):
+            details.append(_normalize_project_status(str(meta["status"])))
+        progress = meta.get("progress")
+        if progress not in (None, ""):
+            details.append(f"{progress}% complete")
+        if meta.get("location"):
+            details.append(str(meta["location"]))
+        suffix = f" — {', '.join(details)}" if details else ""
+        lines.append(f"- **{r.get('title')}**{suffix}")
+
+    suggested = [
+        f"What is the progress of {projects[0].get('title')}?",
+        f"Who works on {projects[0].get('title')}?",
+        f"What documents are linked to {projects[0].get('title')}?",
+    ]
+    return "\n".join(lines), suggested
+
+
 def generate_answer(
     query: str,
     search_results: List[Dict[str, Any]],
     analysis: Optional[QueryAnalysis] = None,
 ) -> Tuple[str, List[str]]:
     ordered = _order_results_for_answer(query, search_results)
+
+    # Multi-hop asset→people must not reuse a stale LLM cache of unrelated workforce.
+    hop = _asset_to_people_hop_answer(query, ordered)
+    if hop:
+        fingerprint = _results_fingerprint(ordered)
+        key = _cache_key(query, fingerprint)
+        _set_cached(key, *hop)
+        return hop
+
+    managed = _manager_projects_answer(query, ordered)
+    if managed:
+        fingerprint = _results_fingerprint(ordered)
+        key = _cache_key(query, fingerprint)
+        _set_cached(key, *managed)
+        return managed
+
     fingerprint = _results_fingerprint(ordered)
     key = _cache_key(query, fingerprint)
     cached = _get_cached(key)
@@ -834,6 +1053,19 @@ def generate_answer(
         return cached
 
     if not search_results:
+        from app.search.query_intel import parse_manager_filter
+
+        named_manager = parse_manager_filter(query)
+        if named_manager:
+            return (
+                f"No projects are assigned to **{named_manager}** as project manager. "
+                "They may still be on a project team without managing it.",
+                [
+                    "Who are the project managers?",
+                    f"Which projects is {named_manager} a team member of?",
+                    "Which projects are in progress?",
+                ],
+            )
         return (
             f"I couldn't find anything in BuildTrack matching '{query}'. "
             "Try different keywords or check the Handover, Drawings, or Safety pages.",

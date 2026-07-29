@@ -155,7 +155,6 @@ def _normalize_item_name(name: str) -> str:
         return "grading control point"
     return n
 
-
 def _pluralize(name: str, count: int) -> str:
     base = _normalize_item_name(name)
     if count == 1:
@@ -166,7 +165,6 @@ def _pluralize(name: str, count: int) -> str:
         return base + "es"
     return base + "s"
 
-
 def empty_inventory(scene: str = "unknown") -> dict[str, Any]:
     return {
         "scene": scene,
@@ -175,7 +173,6 @@ def empty_inventory(scene: str = "unknown") -> dict[str, Any]:
         "confidence": "low",
         "limitations": "",
     }
-
 
 def inventory_to_search_text(inventory: Optional[dict[str, Any]]) -> str:
     """Plain text block for sheet_notes / RAG sidecar."""
@@ -208,7 +205,6 @@ def inventory_to_search_text(inventory: Optional[dict[str, Any]]) -> str:
         lines.append(f"Limitations: {lim}")
     return "\n".join(lines)
 
-
 def embed_inventory_in_notes(notes: str, inventory: Optional[dict[str, Any]]) -> str:
     """Append / replace OBJECT INVENTORY JSON marker in sheet_notes."""
     base = notes or ""
@@ -218,7 +214,6 @@ def embed_inventory_in_notes(notes: str, inventory: Optional[dict[str, Any]]) ->
         return base
     payload = json.dumps(inventory, ensure_ascii=False)
     return f"{base}{INVENTORY_MARKER}{payload}"
-
 
 def parse_inventory_from_notes(notes: Optional[str]) -> Optional[dict[str, Any]]:
     text = notes or ""
@@ -236,7 +231,6 @@ def parse_inventory_from_notes(notes: Optional[str]) -> Optional[dict[str, Any]]
         logger.debug("Could not parse object inventory JSON from sheet_notes")
     return None
 
-
 def parse_inventory_json(raw: Optional[str]) -> Optional[dict[str, Any]]:
     if not raw or not str(raw).strip():
         return None
@@ -248,10 +242,48 @@ def parse_inventory_json(raw: Optional[str]) -> Optional[dict[str, Any]]:
         return None
     return None
 
-
 def resolve_drawing_inventory(drawing: dict[str, Any]) -> Optional[dict[str, Any]]:
-    """Load inventory from hit metadata, sheet_notes marker, or SQL row."""
-    meta = drawing.get("metadata") or {}
+    """Load inventory from SQL (preferred), hit metadata, or sheet_notes marker."""
+    meta = drawing.get("metadata") or {} if isinstance(drawing, dict) else {}
+
+    # Prefer live SQL so rebuilds are visible without full reindex
+    try:
+        from app.core.database import SessionLocal
+        from app.models.operational import EngineeringDrawing
+
+        drawing_no = ""
+        drawing_id = None
+        if isinstance(drawing, dict):
+            drawing_no = (meta.get("drawing_no") or "").strip()
+            drawing_id = meta.get("drawing_id")
+        else:
+            drawing_no = str(getattr(drawing, "drawing_no", "") or "").strip()
+            drawing_id = getattr(drawing, "id", None)
+
+        if drawing_no or drawing_id is not None:
+            db = SessionLocal()
+            try:
+                q = db.query(EngineeringDrawing)
+                row = None
+                if drawing_no:
+                    row = q.filter(EngineeringDrawing.drawing_no == drawing_no).first()
+                elif drawing_id is not None:
+                    row = q.filter(EngineeringDrawing.id == int(drawing_id)).first()
+                if row:
+                    parsed = parse_inventory_json(getattr(row, "object_inventory", None))
+                    if parsed:
+                        return parsed
+                    from_notes = parse_inventory_from_notes(row.sheet_notes)
+                    if from_notes:
+                        return from_notes
+            finally:
+                db.close()
+    except Exception as exc:
+        logger.debug("resolve_drawing_inventory SQL lookup failed: %s", exc)
+
+    if not isinstance(drawing, dict):
+        return None
+
     inv = meta.get("object_inventory")
     if isinstance(inv, dict) and inv.get("objects") is not None:
         return inv
@@ -260,38 +292,7 @@ def resolve_drawing_inventory(drawing: dict[str, Any]) -> Optional[dict[str, Any
         if parsed:
             return parsed
 
-    from_notes = parse_inventory_from_notes(meta.get("sheet_notes") or drawing.get("snippet"))
-    if from_notes:
-        return from_notes
-
-    # Fresh from SQL
-    try:
-        from app.core.database import SessionLocal
-        from app.models.operational import EngineeringDrawing
-
-        drawing_no = (meta.get("drawing_no") or "").strip()
-        drawing_id = meta.get("drawing_id")
-        db = SessionLocal()
-        try:
-            q = db.query(EngineeringDrawing)
-            row = None
-            if drawing_no:
-                row = q.filter(EngineeringDrawing.drawing_no == drawing_no).first()
-            elif drawing_id is not None:
-                row = q.filter(EngineeringDrawing.id == int(drawing_id)).first()
-            if not row:
-                return None
-            col = getattr(row, "object_inventory", None)
-            parsed = parse_inventory_json(col)
-            if parsed:
-                return parsed
-            return parse_inventory_from_notes(row.sheet_notes)
-        finally:
-            db.close()
-    except Exception as exc:
-        logger.debug("resolve_drawing_inventory SQL lookup failed: %s", exc)
-        return None
-
+    return parse_inventory_from_notes(meta.get("sheet_notes") or drawing.get("snippet"))
 
 def _tile_image(content: bytes, grid: int = 2, overlap: float = 0.05) -> list[tuple[bytes, str, str]]:
     """
@@ -327,7 +328,6 @@ def _tile_image(content: bytes, grid: int = 2, overlap: float = 0.05) -> list[tu
             tiles.append((buf.getvalue(), "image/png", f"tile-r{row}c{col}"))
     return tiles
 
-
 def _vision_json(
     *,
     client,
@@ -361,7 +361,6 @@ def _vision_json(
     raw = (resp.choices[0].message.content or "{}").strip()
     return json.loads(raw)
 
-
 def _normalize_objects(raw_objects: Any) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     if not isinstance(raw_objects, list):
@@ -381,7 +380,6 @@ def _normalize_objects(raw_objects: Any) -> list[dict[str, Any]]:
         loc = str(row.get("location") or "").strip()
         out.append({"type": item, "count": count, "location": loc})
     return out
-
 
 def _merge_object_lists(*lists: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Sum counts by normalized type; keep first non-empty location."""
@@ -493,12 +491,10 @@ def _is_mechanical_drawing(scene: str, objects: list[dict[str, Any]]) -> bool:
         return True
     return False
 
-
 def _has_interior_furniture_focus(objects: list[dict[str, Any]]) -> bool:
     """True when the inventory is dominated by interior floor-plan furniture."""
     types = {_normalize_item_name(str(o.get("type"))) for o in objects}
     return len(types & _INTERIOR_FURNITURE) >= 2
-
 
 def _site_object_signal(objects: list[dict[str, Any]]) -> int:
     """Count site/civil hints in object types and locations."""
@@ -508,7 +504,6 @@ def _site_object_signal(objects: list[dict[str, Any]]) -> int:
         if any(h in hay for h in _SITE_OBJECT_HINTS):
             hits += 1
     return hits
-
 
 def _is_site_plan(scene: str, objects: list[dict[str, Any]]) -> bool:
     """
@@ -552,16 +547,13 @@ def _is_site_plan(scene: str, objects: list[dict[str, Any]]) -> bool:
         return True
     return False
 
-
 def _is_generic_site_type(name: str) -> bool:
     n = (name or "").strip().lower()
     return n in _GENERIC_SITE_TYPES or n in {"road", "utility", "utilities"}
 
-
 def _is_site_legend_row(row: dict[str, Any]) -> bool:
     hay = f"{row.get('type') or ''} {row.get('location') or ''}".lower()
     return any(p in hay for p in _SITE_LEGEND_PHRASES)
-
 
 def _promote_site_row(row: dict[str, Any]) -> dict[str, Any]:
     """Use printed label fields when vision returned a generic type like 'building'."""
@@ -592,7 +584,6 @@ def _promote_site_row(row: dict[str, Any]) -> dict[str, Any]:
         count = 1
     return {"type": item, "count": max(0, count), "location": loc}
 
-
 def _normalize_site_objects(raw_objects: Any) -> list[dict[str, Any]]:
     """Normalize site-plan inventory rows; preserve building/road names in type."""
     out: list[dict[str, Any]] = []
@@ -610,14 +601,12 @@ def _normalize_site_objects(raw_objects: Any) -> list[dict[str, Any]]:
         out.append(promoted)
     return out
 
-
 def _generic_building_count(objects: list[dict[str, Any]]) -> int:
     return sum(
         1
         for o in objects
         if str(o.get("type") or "").strip().lower() in {"building", "buildings", "structure", "structures"}
     )
-
 
 def _site_building_names_pass(
     client,
@@ -670,7 +659,6 @@ def _site_building_names_pass(
         rows.append({"type": name, "count": 1, "location": loc})
     return rows
 
-
 def _polish_site_objects(
     objects: list[dict[str, Any]],
     *,
@@ -720,7 +708,6 @@ def _polish_site_objects(
                 prev["location"] = row.get("location")
     return list(by_key.values())
 
-
 def _site_display_label(row: dict[str, Any]) -> str:
     """User-facing label for a site inventory row."""
     item = str(row.get("type") or "").strip()
@@ -728,7 +715,6 @@ def _site_display_label(row: dict[str, Any]) -> str:
     if _is_generic_site_type(item) and loc and loc.lower() not in _VAGUE_SITE_LOCATIONS:
         return loc
     return item
-
 
 def _is_site_building_row(row: dict[str, Any]) -> bool:
     hay = _site_display_label(row).lower()
@@ -747,11 +733,9 @@ def _is_site_building_row(row: dict[str, Any]) -> bool:
         )
     )
 
-
 def _is_site_road_row(row: dict[str, Any]) -> bool:
     hay = _site_display_label(row).lower()
     return bool(re.search(r"\broad\b|carriageway|street|avenue|drive|belt|circulation", hay))
-
 
 def _site_gcp_tile_count(
     client,
@@ -791,7 +775,6 @@ def _site_gcp_tile_count(
         except Exception as exc:
             logger.warning("Site GCP tile count failed for %s: %s", label, exc)
     return total
-
 
 def _site_plan_inventory(
     client,
@@ -910,14 +893,12 @@ def _site_plan_inventory(
         "method": "site_plan",
     }
 
-
 def _normalize_bom_type(name: str) -> str:
     """Light normalize for BOM part names — keep size/spec suffixes."""
     n = (name or "").strip().lower()
     n = n.replace("plan washer", "plain washer")
     n = re.sub(r"\s+", " ", n)
     return n
-
 
 def _bom_inventory(
     client,
@@ -1018,7 +999,6 @@ def _bom_inventory(
         "method": "bom_table",
     }
 
-
 def _bom_item_key(row: dict[str, Any]) -> str:
     loc = str(row.get("location") or "")
     m = re.search(r"BOM item\s+(\d+)", loc, re.I)
@@ -1026,7 +1006,6 @@ def _bom_item_key(row: dict[str, Any]) -> str:
         return f"item:{m.group(1)}"
     t = _normalize_bom_type(str(row.get("type") or ""))
     return f"type:{t}" if t else ""
-
 
 def _bom_table_read(
     client,
@@ -1147,7 +1126,6 @@ def _bom_table_read(
         "limitations": str(payload.get("limitations") or "").strip(),
     }
 
-
 def _parse_bom_transcript_lines(lines: Any) -> list[dict[str, Any]]:
     if not isinstance(lines, list):
         return []
@@ -1182,7 +1160,6 @@ def _parse_bom_transcript_lines(lines: Any) -> list[dict[str, Any]]:
             }
         )
     return out
-
 
 def _bom_assembly_overview(
     client,
@@ -1242,7 +1219,6 @@ def _bom_assembly_overview(
         "limitations": str(payload.get("limitations") or "").strip(),
     }
 
-
 def _add_bom_aggregates(objects: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Add rolled-up totals for common fastener families so count questions work.
@@ -1287,7 +1263,6 @@ def _add_bom_aggregates(objects: list[dict[str, Any]]) -> list[dict[str, Any]]:
         )
     return out
 
-
 def _is_residential_plan(scene: str, objects: list[dict[str, Any]]) -> bool:
     s = (scene or "").lower()
     if any(k in s for k in ("residential", "bedroom", "apartment", "hotel", "studio", "dorm")):
@@ -1298,7 +1273,6 @@ def _is_residential_plan(scene: str, objects: list[dict[str, Any]]) -> bool:
     if {"toilet", "shower", "sink"} & types and "table" not in types:
         return True
     return False
-
 
 def _residential_inventory(
     client,
@@ -1409,7 +1383,6 @@ def _residential_inventory(
         "partial_units": partial_units,
     }
 
-
 def _residential_crop_count(
     client,
     deployment: str,
@@ -1462,7 +1435,6 @@ def _residential_crop_count(
         "limitations": str(payload.get("limitations") or "").strip(),
         "complete_units": payload.get("complete_units") or 0,
     }
-
 
 def _cap_residential_counts(
     objects: list[dict[str, Any]],
@@ -1521,7 +1493,6 @@ def _cap_residential_counts(
         )
     return out
 
-
 def _zone_furniture_count(
     client,
     deployment: str,
@@ -1549,7 +1520,9 @@ def _zone_furniture_count(
         "- Typical unit has 2 beds, 1 desk+chair, 1 bathroom (toilet+sink+shower), closet.\n"
         "- Closet kidney/hanger shapes are NOT chairs.\n\n"
         "If this is a CONFERENCE room plan:\n"
-        "- Count chairs around the table AND wall-line chairs separately.\n"
+        "- Count chairs around the table AND wall-line/perimeter chairs separately.\n"
+        "- Breakdown MUST list both, e.g. "
+        "'around conference table: 8; along top wall: 6; along bottom wall: 6'.\n"
         "- Do not invent chairs on cropped edges or for symmetry.\n\n"
         "Return JSON ONLY with an objects array of "
         '{"type","count","location","breakdown"} entries. '
@@ -1608,7 +1581,6 @@ def _zone_furniture_count(
         "limitations": str(payload.get("limitations") or "").strip(),
         "method": "zone_breakdown",
     }
-
 
 def _verify_conference_table_chairs(
     client,
@@ -1716,13 +1688,99 @@ def _verify_conference_table_chairs(
     return sides
 
 
+def _verify_conference_wall_chairs(
+    client,
+    deployment: str,
+    content: bytes,
+    content_type: str,
+) -> Optional[dict[str, int]]:
+    """
+    Count wall-line / perimeter chairs separately from table chairs.
+    Conference rooms often have guest rows along north/south walls.
+    """
+    crops: dict[str, tuple[bytes, str]] = {}
+    try:
+        from PIL import Image
+
+        img = Image.open(io.BytesIO(content)).convert("RGB")
+        w, h = img.size
+        # Left conference-room bay (exclude right utility rooms / corridor)
+        room = img.crop((int(w * 0.01), int(h * 0.04), int(w * 0.56), int(h * 0.82)))
+        rw, rh = room.size
+        bands = {
+            # Thin bands hugging the walls — excludes oval table chairs
+            "top_wall": room.crop((0, 0, rw, max(2, int(rh * 0.30)))),
+            "bottom_wall": room.crop((0, int(rh * 0.70), rw, rh)),
+        }
+        for key, crop in bands.items():
+            buf = io.BytesIO()
+            crop.save(buf, format="PNG")
+            crops[key] = (buf.getvalue(), "image/png")
+    except Exception:
+        crops = {
+            "top_wall": (content, content_type),
+            "bottom_wall": (content, content_type),
+        }
+
+    sides = {"top_wall": 0, "bottom_wall": 0}
+    prompts = {
+        "top_wall": (
+            "This crop shows the TOP wall strip of a conference room. "
+            "Count every distinct chair/seat symbol in the horizontal row along the wall. "
+            "These are guest/perimeter chairs — usually 5 to 7 identical symbols in a line. "
+            "Do NOT count the oval conference table or its chairs (they are outside this strip). "
+            "Do not invent chairs. List each chair briefly in evidence. "
+            'Return JSON: {"count": N, "evidence": ["brief note per chair"]}'
+        ),
+        "bottom_wall": (
+            "This crop shows the BOTTOM wall strip of a conference room. "
+            "Count every distinct chair/seat symbol in the horizontal row along the wall. "
+            "These are guest/perimeter chairs — usually 5 to 7 identical symbols in a line. "
+            "Do NOT count the oval conference table or its chairs (they are outside this strip). "
+            "Do not invent chairs. List each chair briefly in evidence. "
+            'Return JSON: {"count": N, "evidence": ["brief note per chair"]}'
+        ),
+    }
+    system = (
+        "You count CAD wall-line chair symbols on a floor-plan crop. "
+        "Be literal. Never invent chairs. Never count conference-table chairs. "
+        "Return valid JSON only."
+    )
+
+    for side, prompt in prompts.items():
+        focus_bytes, focus_type = crops.get(side, (content, content_type))
+        try:
+            payload = _vision_json(
+                client=client,
+                deployment=deployment,
+                system=system,
+                prompt=prompt,
+                image_bytes=focus_bytes,
+                content_type=focus_type,
+                max_tokens=300,
+                detail="high",
+            )
+            n = int(payload.get("count") or 0)
+            evidence = payload.get("evidence")
+            if isinstance(evidence, list) and evidence:
+                n = min(n, len([e for e in evidence if str(e).strip()]))
+            # Wall rows are typically 4–8; reject absurd spikes from OCR noise
+            sides[side] = max(0, min(n, 12))
+        except Exception as exc:
+            logger.warning("Per-side wall chair count failed (%s): %s", side, exc)
+
+    sides["total"] = sides["top_wall"] + sides["bottom_wall"]
+    if sides["total"] <= 0:
+        return None
+    return sides
+
+
 def _looks_like_floor_plan(scene: str, objects: list[dict[str, Any]]) -> bool:
     s = (scene or "").lower()
     if any(k in s for k in ("floor-plan", "floor plan", "architectural", "drawing", "cad")):
         return True
     types = {_normalize_item_name(str(o.get("type"))) for o in objects}
     return "door" in types and ("chair" in types or "table" in types)
-
 
 def _pick_better_count(full_n: int, zone_n: int, tile_n: int) -> tuple[int, str]:
     """
@@ -1749,7 +1807,6 @@ def _pick_better_count(full_n: int, zone_n: int, tile_n: int) -> tuple[int, str]
         return tile_n, "tiles"
     return 0, "none"
 
-
 def _is_office_plan(scene: str, objects: list[dict[str, Any]]) -> bool:
     """Open office / workstation floor plans (not residential, not conference-only)."""
     if _is_residential_plan(scene, objects):
@@ -1757,26 +1814,54 @@ def _is_office_plan(scene: str, objects: list[dict[str, Any]]) -> bool:
     types = {_normalize_item_name(str(o.get("type"))) for o in objects}
     if "bed" in types:
         return False
+    desks = sum(
+        int(o.get("count") or 0)
+        for o in objects
+        if _normalize_item_name(str(o.get("type"))) == "desk"
+    )
+    tables = sum(
+        int(o.get("count") or 0)
+        for o in objects
+        if _normalize_item_name(str(o.get("type"))) == "table"
+    )
+    chairs = sum(
+        int(o.get("count") or 0)
+        for o in objects
+        if _normalize_item_name(str(o.get("type"))) == "chair"
+    )
+    # Conference room + small side desk/counter is NOT an open-office plan
+    if tables >= 1 and desks <= 2 and ("chair" in types or chairs >= 1):
+        return False
     s = (scene or "").lower()
     if any(k in s for k in ("office", "workstation", "workspace", "lounge")):
-        return True
-    if "desk" in types and ({"sofa", "staircase", "stair"} & types):
+        # Still office if scene says so AND no conference table
+        if tables <= 0:
+            return True
+    if "desk" in types and ({"sofa", "staircase", "stair"} & types) and tables <= 0:
         return True
     if "desk" in types and "chair" in types and "table" not in types:
         return True
     return False
 
-
 def _is_conference_plan(scene: str, objects: list[dict[str, Any]]) -> bool:
-    """Conference / meeting room floor plans (table + chairs, not office desks)."""
-    if _is_residential_plan(scene, objects) or _is_office_plan(scene, objects):
+    """Conference / meeting room floor plans (table + chairs; side desk OK)."""
+    if _is_residential_plan(scene, objects):
+        return False
+    if _is_office_plan(scene, objects):
         return False
     s = (scene or "").lower()
     if any(k in s for k in ("conference", "meeting room", "boardroom", "meeting")):
         return True
     types = {_normalize_item_name(str(o.get("type"))) for o in objects}
-    return "table" in types and "chair" in types and "bed" not in types and "desk" not in types
-
+    desks = sum(
+        int(o.get("count") or 0)
+        for o in objects
+        if _normalize_item_name(str(o.get("type"))) == "desk"
+    )
+    # Allow a side desk/counter; reject only when desks dominate
+    if "table" in types and "chair" in types and "bed" not in types and desks <= 2:
+        return True
+    return False
 
 def _office_inventory(
     client,
@@ -1828,7 +1913,6 @@ def _office_inventory(
         "limitations": lim,
         "method": "office_full",
     }
-
 
 def _office_furniture_count(
     client,
@@ -1904,7 +1988,6 @@ def _office_furniture_count(
         "limitations": lim,
     }
 
-
 def _parse_workstation_layout_count(layout: str) -> Optional[int]:
     """Parse '2 columns × 3' / '2x3' / '3 by 2' into a workstation total."""
     if not layout:
@@ -1923,7 +2006,6 @@ def _parse_workstation_layout_count(layout: str) -> Optional[int]:
     if m:
         return int(m.group(1)) * int(m.group(2))
     return None
-
 
 def _force_workstation_totals(
     objects: list[dict[str, Any]],
@@ -1950,7 +2032,6 @@ def _force_workstation_totals(
             "location": "pedestals (from evidence)",
         }
     return list(by.values())
-
 
 def _office_building_count(
     client,
@@ -1989,7 +2070,6 @@ def _office_building_count(
         "limitations": str(payload.get("limitations") or "").strip(),
     }
 
-
 def _reconcile_workstation_chairs(
     objects: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
@@ -2021,7 +2101,6 @@ def _reconcile_workstation_chairs(
             }
     return list(by.values())
 
-
 def _parse_conference_table_chairs(location: str) -> Optional[int]:
     m = re.search(r"around\s+(?:conference\s+)?table:\s*(\d+)", location or "", re.I)
     if not m:
@@ -2030,7 +2109,6 @@ def _parse_conference_table_chairs(location: str) -> Optional[int]:
         return int(m.group(1))
     except (TypeError, ValueError):
         return None
-
 
 def _reconcile_conference_chairs(objects: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Cap inflated conference chair totals; trust table-verify breakdown in location."""
@@ -2074,14 +2152,14 @@ def _reconcile_conference_chairs(objects: list[dict[str, Any]]) -> list[dict[str
                 "location": f"{loc} (table+wall reconciled)".strip(),
             }
             by["chair"] = chair_row
-    elif chairs > max(16, tables * 12):
+    elif chairs > max(24, tables * 14):
+        # Soft cap only for clearly absurd totals (keeps table+wall rooms like CI-003-C)
         by["chair"] = {
             **chair_row,
-            "count": min(chairs, 16),
+            "count": min(chairs, max(24, tables * 14)),
             "location": f"{loc} (conference cap)".strip(),
         }
     return list(by.values())
-
 
 def _tile_counts_for_types(
     client,
@@ -2146,7 +2224,6 @@ def _tile_counts_for_types(
 
     return totals
 
-
 def _finalize_extraction(
     inventory: dict[str, Any],
     content: bytes,
@@ -2177,7 +2254,7 @@ def extract_object_inventory(
         inventory = _full_image_inventory(client, deployment, content, content_type)
         objects = list(inventory.get("objects") or [])
         scene = inventory.get("scene") or "unknown"
-
+        
         # Mechanical / assembly drawings: BOM table is authoritative
         if _is_mechanical_drawing(str(scene), objects):
             try:
@@ -2253,21 +2330,42 @@ def extract_object_inventory(
                     str(zone_inv.get("scene") or scene),
                     zone_inv.get("objects") or [],
                 ):
-                    is_office = True
-                    try:
-                        office_inv = _office_inventory(
-                            client, deployment, content, content_type
-                        )
-                    except Exception as exc:
-                        logger.warning("Office inventory failed: %s", exc)
-                    zone_inv = None
+                    # Keep zone path when a conference table is present (side desk ≠ office)
+                    zone_objs = zone_inv.get("objects") or []
+                    has_conf_table = any(
+                        _normalize_item_name(str(o.get("type"))) == "table"
+                        for o in zone_objs
+                    )
+                    if has_conf_table:
+                        is_conference = True
+                    else:
+                        is_office = True
+                        try:
+                            office_inv = _office_inventory(
+                                client, deployment, content, content_type
+                            )
+                        except Exception as exc:
+                            logger.warning("Office inventory failed: %s", exc)
+                        zone_inv = None
 
-        # Verify conference-table chairs for conference-style plans
-        if zone_inv and is_conference and any(
+        # Verify conference-table + wall-line chairs whenever zone saw a meeting table
+        zone_has_table = any(
+            _normalize_item_name(str(o.get("type"))) == "table"
+            for o in (zone_inv.get("objects") or [])
+        ) if zone_inv else False
+        zone_has_chair = any(
             _normalize_item_name(str(o.get("type"))) == "chair"
             for o in (zone_inv.get("objects") or [])
-        ):
+        ) if zone_inv else False
+        if zone_inv and zone_has_chair and (is_conference or zone_has_table):
+            # Re-enable conference path if zone found a table (side desk may have
+            # incorrectly flipped is_office earlier).
+            is_conference = True
+            is_office = False
             verified = _verify_conference_table_chairs(
+                client, deployment, content, content_type
+            )
+            wall_verified = _verify_conference_wall_chairs(
                 client, deployment, content, content_type
             )
             if verified and verified.get("total", 0) > 0:
@@ -2277,13 +2375,17 @@ def extract_object_inventory(
                         fixed_objects.append(o)
                         continue
                     loc = str(o.get("location") or "")
-                    # Replace "around conference table: N" with verified total
+                    # Keep non-table, non-side fragments only if they have counts;
+                    # wall rows are replaced by dedicated wall verification when available.
                     wall_parts = [
                         p.strip()
                         for p in re.split(r";\s*", loc)
                         if p.strip()
                         and not re.search(r"around\s+(conference\s+)?table", p, re.I)
-                        and not re.search(r"^(top|bottom|left|right)\b", p, re.I)
+                        and not re.search(
+                            r"^(top|bottom|left|right|along|wall)\b", p, re.I
+                        )
+                        and re.search(r":\s*\d+\s*$", p)
                     ]
                     side_bits = []
                     for label, key in (
@@ -2302,15 +2404,28 @@ def extract_object_inventory(
                         if side_bits
                         else f"around conference table: {verified['total']}"
                     )
-                    wall_sum = 0
-                    for p in wall_parts:
-                        m = re.search(r":\s*(\d+)\s*$", p)
-                        if m:
-                            wall_sum += int(m.group(1))
+                    if wall_verified and wall_verified.get("total", 0) > 0:
+                        wall_bits = []
+                        for label, key in (
+                            ("along top wall", "top_wall"),
+                            ("along bottom wall", "bottom_wall"),
+                        ):
+                            n = int(wall_verified.get(key) or 0)
+                            if n > 0:
+                                wall_bits.append(f"{label}: {n}")
+                        wall_sum = int(wall_verified["total"])
+                        wall_loc = "; ".join(wall_bits) if wall_bits else ""
+                    else:
+                        wall_sum = 0
+                        for p in wall_parts:
+                            m = re.search(r":\s*(\d+)\s*$", p)
+                            if m:
+                                wall_sum += int(m.group(1))
+                        wall_loc = "; ".join(wall_parts) if wall_parts else ""
                     new_total = verified["total"] + wall_sum
                     new_loc = table_part
-                    if wall_parts:
-                        new_loc += "; " + "; ".join(wall_parts)
+                    if wall_loc:
+                        new_loc += "; " + wall_loc
                     fixed_objects.append(
                         {"type": "chair", "count": new_total, "location": new_loc}
                     )
@@ -2320,6 +2435,12 @@ def extract_object_inventory(
                     f"(top={verified['top']}, bottom={verified['bottom']}, "
                     f"left={verified['left_end']}, right={verified['right_end']})."
                 )
+                if wall_verified and wall_verified.get("total", 0) > 0:
+                    note += (
+                        " Wall-line chairs verified "
+                        f"(top={wall_verified.get('top_wall', 0)}, "
+                        f"bottom={wall_verified.get('bottom_wall', 0)})."
+                    )
                 lim = str(zone_inv.get("limitations") or "").strip()
                 zone_inv["limitations"] = f"{lim} {note}".strip() if lim else note
                 zone_inv["method"] = "zone_breakdown+table_verify"
@@ -2425,7 +2546,7 @@ def extract_object_inventory(
             inventory["confidence"] = zone_inv.get("confidence") or inventory.get("confidence")
             lim = str(zone_inv.get("limitations") or "").strip()
             note = (
-                "Counts use verified conference table breakdown."
+                "Counts use verified conference table + wall-line chair breakdown."
                 if zone_method.startswith("zone_breakdown+table_verify")
                 else "Counts use zone breakdown (table chairs + wall chairs counted separately)."
             )

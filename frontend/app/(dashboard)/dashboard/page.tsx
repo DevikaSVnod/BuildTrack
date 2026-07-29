@@ -13,7 +13,9 @@ import { projectsApi, tasksApi, teamApi, documentsApi, operationalApi } from "@/
 import type { Project, Task, TeamMember, Document } from "@/types";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { usePageData } from "@/hooks/usePageData";
+import { clearPageCache, isValidDashboardCache, readPageCache } from "@/lib/pageCache";
 import Link from "next/link";
+import { useLayoutEffect } from "react";
 
 interface DashboardData {
   projects: Project[];
@@ -48,6 +50,16 @@ function getGreeting() {
 
 export default function DashboardPage() {
   const user = useCurrentUser();
+
+  // Drop legacy prefetch cache that stored {budget,safety,...} under the same key
+  // (caused all dashboard cards to show 0).
+  useLayoutEffect(() => {
+    const cached = readPageCache<unknown>("dashboard");
+    if (cached && !isValidDashboardCache(cached)) {
+      clearPageCache("dashboard");
+    }
+  }, []);
+
   const { data, loading } = usePageData<DashboardData>("dashboard", async () => {
     const results = await Promise.allSettled([
       projectsApi.list(),

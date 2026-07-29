@@ -15,17 +15,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [router]);
 
-  // Warm route JS bundles after login; stagger API prefetches to avoid request bursts.
+  // Warm route JS + data after login. Prioritize Documents/Drawings; stagger
+  // heavily so Azure Search/SQL are not stampeded on first paint.
   useEffect(() => {
     const timers: number[] = [];
+    const priority = ["/documents", "/drawings", "/projects", "/dashboard"];
+    const rest = PREFETCH_ROUTES.filter((h) => !priority.includes(h));
+    const ordered = [...priority.filter((h) => PREFETCH_ROUTES.includes(h)), ...rest];
+
     const startTimer = window.setTimeout(() => {
-      PREFETCH_ROUTES.forEach((href, index) => {
+      ordered.forEach((href, index) => {
         router.prefetch(href);
         timers.push(
-          window.setTimeout(() => prefetchRoute(href), index * 400),
+          window.setTimeout(() => prefetchRoute(href), index * 700),
         );
       });
-    }, 2000);
+    }, 1500);
     return () => {
       window.clearTimeout(startTimer);
       timers.forEach((t) => window.clearTimeout(t));

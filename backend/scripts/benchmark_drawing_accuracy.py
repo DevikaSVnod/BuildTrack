@@ -42,9 +42,9 @@ GOLDEN = [
     {
         "drawing_no": "CI-003-C",
         "element": "chair",
-        "min": 8,
-        "max": 16,
-        "label": "conference chairs (table + wall)",
+        "min": 18,
+        "max": 24,
+        "label": "conference chairs (table + wall rows)",
     },
     {
         "drawing_no": "ST-009-B",

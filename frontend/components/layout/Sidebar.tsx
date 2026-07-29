@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Building2, ClipboardList,
   Users, FolderOpen, Calendar,
   HardHat, LogOut, ShieldCheck,
-  Layers,
+  Layers, Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearAuth } from "@/lib/auth";
@@ -34,6 +34,12 @@ const SECTIONS: { heading?: string; items: NavItem[] }[] = [
     items: [
       { href: "/team",        label: "Workforce",      icon: Users },
       { href: "/safety",      label: "Safety & HSE",   icon: ShieldCheck },
+    ],
+  },
+  {
+    heading: "ASSETS · PROCUREMENT",
+    items: [
+      { href: "/assets",      label: "Site Assets",    icon: Package },
     ],
   },
   {

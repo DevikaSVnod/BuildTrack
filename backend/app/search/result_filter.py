@@ -455,6 +455,157 @@ def _filter_by_team_role(
     return filtered
 
 
+_ASSET_KIND_PATTERNS: list[tuple[str, str]] = [
+    (r"\bcranes?\b", "crane"),
+    (r"\bexcavators?\b", "excavator"),
+    (r"\bgenerators?\b", "generator"),
+    (r"\bscaffolds?(?:ing)?\b", "scaffold"),
+    (r"\bboom\s*lifts?\b", "boom lift"),
+    (r"\bconcrete\s*pumps?\b", "concrete pump"),
+    (r"\bpumps?\b", "pump"),
+    (r"\bppe\b|\bhelmets?\b|\bhigh[- ]vis", "ppe"),
+]
+
+
+def extract_asset_kind(query: str) -> Optional[str]:
+    """Specific equipment/material kind asked about, e.g. 'crane'."""
+    q = query.lower()
+    for pattern, kind in _ASSET_KIND_PATTERNS:
+        if re.search(pattern, q):
+            return kind
+    return None
+
+
+def _asset_haystack(result: Dict[str, Any]) -> str:
+    meta = result.get("metadata") or {}
+    parts = [
+        result.get("title") or "",
+        result.get("snippet") or "",
+        str(meta.get("category") or ""),
+        str(meta.get("project") or ""),
+        str(meta.get("vendor") or ""),
+        str(meta.get("asset_tag") or ""),
+        str(meta.get("name") or ""),
+    ]
+    return " ".join(parts).lower()
+
+
+def _matches_asset_kind(result: Dict[str, Any], kind: str) -> bool:
+    if not kind:
+        return True
+    hay = _asset_haystack(result)
+    return all(tok in hay for tok in kind.split() if tok)
+
+
+def _matches_asset_project(result: Dict[str, Any], project_qual: str) -> bool:
+    if not project_qual:
+        return True
+    hay = _asset_haystack(result)
+    qual = project_qual.lower().strip()
+    if qual in hay:
+        return True
+    words = [w for w in qual.split() if len(w) > 3]
+    if not words:
+        return True
+    hits = sum(1 for w in words if w in hay)
+    return hits >= max(2, (len(words) + 1) // 2)
+
+
+def _dedupe_asset_results(results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    seen: set[str] = set()
+    unique: List[Dict[str, Any]] = []
+    for r in results:
+        key = f"{r.get('content_type')}|{str(r.get('title') or '').strip().lower()}"
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(r)
+    return unique
+
+
+def _filter_asset_inventory_results(
+    query: str,
+    results: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """
+    Keep only assets that match the asked equipment/material kind and project.
+    Example: 'What crane is on Highway Bridge Expansion?' → CRN-220 (+ related crane vendor),
+    not excavators on Metro or unrelated PPE kits.
+    """
+    kind = extract_asset_kind(query)
+    project = extract_project_qualifier(query)
+    q = query.lower()
+
+    wants_vendor = bool(re.search(r"\b(vendor|supplier|who\s+supplies|rentals?)\b", q))
+    wants_material = bool(re.search(r"\b(material|deliver(?:y|ies)|ppe|helmet|vest)\b", q))
+    # Default for "what crane is on …" is equipment
+    wants_equipment = (
+        bool(kind)
+        or bool(re.search(r"\b(equipment|machinery|asset)\b", q))
+        or (not wants_vendor and not wants_material)
+    )
+
+    equipment = [r for r in results if r.get("content_type") == "equipment"]
+    vendors = [r for r in results if r.get("content_type") == "vendor"]
+    materials = [r for r in results if r.get("content_type") == "material"]
+
+    out: List[Dict[str, Any]] = []
+
+    if wants_equipment:
+        matched = [
+            r
+            for r in equipment
+            if _matches_asset_kind(r, kind or "")
+            and _matches_asset_project(r, project or "")
+        ]
+        if not matched and kind:
+            # Kind matched but project missing — still show that equipment type only
+            matched = [r for r in equipment if _matches_asset_kind(r, kind)]
+            if project:
+                proj_hit = [r for r in matched if _matches_asset_project(r, project)]
+                if proj_hit:
+                    matched = proj_hit
+        out.extend(matched)
+
+    if wants_vendor or (kind and out):
+        # Related vendor only when it matches the same kind (e.g. "Crane Rentals")
+        for r in vendors:
+            if kind and not _matches_asset_kind(r, kind):
+                continue
+            out.append(r)
+        # If the question is specifically about equipment on a project, keep at most
+        # one supporting vendor when we already have the equipment hit.
+        if wants_equipment and not wants_vendor and out:
+            equip = [r for r in out if r.get("content_type") == "equipment"]
+            vend = [r for r in out if r.get("content_type") == "vendor"]
+            if equip:
+                out = equip + vend[:1]
+
+    if wants_material:
+        matched_m = [
+            r
+            for r in materials
+            if _matches_asset_kind(r, kind or "")
+            and _matches_asset_project(r, project or "")
+        ]
+        if not matched_m and kind:
+            matched_m = [r for r in materials if _matches_asset_kind(r, kind)]
+        out.extend(matched_m)
+
+    out = _dedupe_asset_results(out)
+    if out:
+        return out
+    # Last resort: best single equipment/vendor match by kind
+    if kind:
+        loose = [r for r in results if _matches_asset_kind(r, kind)]
+        loose = _dedupe_asset_results(loose)
+        if loose:
+            return loose[:3]
+    return _dedupe_asset_results(
+        [r for r in results if r.get("content_type") in {"equipment", "vendor", "material"}]
+    )[:5]
+
+
 def filter_results_for_query(
     query: str,
     results: List[Dict[str, Any]],
@@ -465,6 +616,7 @@ def filter_results_for_query(
         return results
 
     from app.search.structured_filters import is_structured_filter_query
+    from app.search.query_intel import is_asset_inventory_query
 
     if is_structured_filter_query(query) or is_workforce_aggregate_query(query):
         return results
@@ -480,6 +632,65 @@ def filter_results_for_query(
         role_filtered = _filter_by_team_role(results, role, project_qual)
         if role_filtered:
             return role_filtered
+        # Role was explicit — never fall through to budget/report docs.
+        team_only = [r for r in results if r.get("content_type") == "team"]
+        return team_only
+    # Exception: asset→people hop queries must keep team + project hits.
+    from app.search.query_intel import is_asset_to_people_hop_query
+
+    if is_asset_to_people_hop_query(query):
+        # Strict: only equipment matching the asked asset + team/project for THAT project.
+        from app.search.cross_db_links import (
+            _equipment_matches_query,
+            _team_matches_project,
+            project_key_from_hit,
+        )
+
+        equipment = [
+            r
+            for r in results
+            if r.get("content_type") in {"equipment", "material"}
+            and _equipment_matches_query(r, query)
+        ]
+        if not equipment:
+            equipment = [
+                r for r in results if r.get("content_type") in {"equipment", "material"}
+            ]
+        asset_projects = {
+            project_key_from_hit(r)
+            for r in equipment
+            if project_key_from_hit(r)
+        }
+        for r in equipment:
+            rk = (r.get("metadata") or {}).get("related_key")
+            if rk:
+                asset_projects.add(str(rk))
+
+        team = [
+            r
+            for r in results
+            if r.get("content_type") == "team"
+            and any(_team_matches_project(r, p) for p in asset_projects)
+        ]
+        projects = [
+            r
+            for r in results
+            if r.get("content_type") == "project"
+            and project_key_from_hit(r) in asset_projects
+        ]
+        merged_hop: list = []
+        seen: set[str] = set()
+        for r in team + equipment + projects:
+            rid = str(r.get("id") or "")
+            if rid in seen:
+                continue
+            if rid:
+                seen.add(rid)
+            merged_hop.append(r)
+        return merged_hop or equipment or results
+
+    if is_asset_inventory_query(query):
+        return _filter_asset_inventory_results(query, results)
 
     filtered = results
     if analysis and analysis.is_question and len(analysis.content_types) == 1:
@@ -537,6 +748,9 @@ def filter_results_for_display(
         role_filtered = _filter_by_team_role(results, role, project_qual)
         if role_filtered:
             return role_filtered
+        # Role was explicit — never fall through to budget/report docs.
+        team_only = [r for r in results if r.get("content_type") == "team"]
+        return team_only
 
     if answer and answer.strip():
         if _answer_says_not_found(answer):
@@ -547,7 +761,24 @@ def filter_results_for_display(
         if drawing_filtered:
             return drawing_filtered
 
-        from app.search.query_intel import is_document_content_query, is_drawing_content_query
+        from app.search.query_intel import (
+            is_asset_inventory_query,
+            is_asset_to_people_hop_query,
+            is_document_content_query,
+            is_drawing_content_query,
+        )
+
+        if is_asset_to_people_hop_query(query):
+            # Keep people answer evidence; don't collapse to equipment-only.
+            return filter_results_for_query(query, results, analysis)
+
+        if is_asset_inventory_query(query):
+            precise = _filter_asset_inventory_results(query, results)
+            if precise:
+                # Further narrow to items the answer actually cites when possible.
+                entity_filtered = _filter_by_answer_entities(answer, precise)
+                return entity_filtered if entity_filtered else precise
+            return results
 
         if is_document_content_query(query) or is_drawing_content_query(query):
             evidence_filtered = filter_by_blob_evidence(answer, results)

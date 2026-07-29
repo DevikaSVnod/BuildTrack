@@ -16,12 +16,14 @@ export interface SearchResponse {
   search_time_ms: number;
   total_results: number;
   is_question?: boolean;
+  sources_searched?: string[];
 }
 
 export interface SearchRequest {
   query: string;
   filter_type?: string;
   top_k?: number;
+  source_ids?: string[];
 }
 
 export type ContentTypeConfig = {

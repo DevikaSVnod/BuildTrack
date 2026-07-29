@@ -4,6 +4,7 @@ from __future__ import annotations
 from global_search_core.registry import register_connector, register_extractor, set_default_connector
 
 from app.connectors.buildtrack import BuildTrackConnector
+from app.connectors.multi_database import MultiDatabaseConnector
 from app.extractors.buildtrack import DocumentBodyTextExtractor, DrawingIntelligenceExtractor
 
 _registered = False
@@ -14,7 +15,9 @@ def register_all_plugins() -> None:
     if _registered:
         return
     register_connector(BuildTrackConnector())
+    register_connector(MultiDatabaseConnector())
     register_extractor(DrawingIntelligenceExtractor())
     register_extractor(DocumentBodyTextExtractor())
-    set_default_connector("buildtrack")
+    # Default: fan-out across every configured database (works with 1 or many).
+    set_default_connector("multi_database")
     _registered = True

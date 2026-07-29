@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
-from app.search.index_reader import get_indexed
+from app.search.index_reader import get_indexed, get_indexed_many
 
 
 def _drawing_id_from_hit(item: Dict[str, Any]) -> Optional[int]:
@@ -40,6 +40,16 @@ def _document_id_from_hit(item: Dict[str, Any]) -> Optional[int]:
     return None
 
 
+def _indexed_id_for_hit(item: Dict[str, Any]) -> str:
+    """The Azure Search key the enrichment loop will look this hit up under."""
+    rid = str(item.get("id") or "")
+    if re.match(r"document-(\d+)", rid):
+        return rid
+    meta = item.get("metadata") or {}
+    did = meta.get("doc_id") if isinstance(meta, dict) else None
+    return f"document-{did}" if did is not None else rid
+
+
 def _parse_metadata(raw: Any) -> dict:
     if isinstance(raw, dict):
         return raw
@@ -55,25 +65,54 @@ def _normalize_doc_name(name: str) -> str:
     return re.sub(r"[^a-z0-9.]+", "", (name or "").lower())
 
 
-def _lookup_document_by_title(db: Session, title: str):
-    from app.models.document import Document
+class _DocumentNameIndex:
+    """Title → document row map, loaded at most once per enrichment pass.
 
-    clean = (title or "").strip()
-    if not clean:
-        return None
-    doc = db.query(Document).filter(Document.name == clean).first()
-    if doc:
-        return doc
-    key = _normalize_doc_name(clean)
-    if not key:
-        return None
-    for row in db.query(Document).all():
-        if _normalize_doc_name(row.name) == key:
+    Resolving each hit with its own query meant one unfiltered scan of the
+    documents table per hit — dozens of round trips against Azure SQL for a
+    single search.
+    """
+
+    __slots__ = ("_db", "_by_name", "_by_norm")
+
+    def __init__(self, db: Session):
+        self._db = db
+        self._by_name: Optional[Dict[str, Any]] = None
+        self._by_norm: Dict[str, Any] = {}
+
+    def _load(self) -> None:
+        if self._by_name is not None:
+            return
+        from app.models.document import Document
+
+        self._by_name = {}
+        rows = self._db.query(
+            Document.id, Document.name, Document.file_type, Document.file_url
+        ).all()
+        for row in rows:
+            # SQL Server collation is case-insensitive; match that here.
+            name = (row.name or "").strip().lower()
+            if name:
+                self._by_name.setdefault(name, row)
+            norm = _normalize_doc_name(row.name)
+            if norm:
+                self._by_norm.setdefault(norm, row)
+
+    def lookup(self, title: str):
+        clean = (title or "").strip()
+        if not clean:
+            return None
+        self._load()
+        row = self._by_name.get(clean.lower())
+        if row is not None:
             return row
-    return None
+        norm = _normalize_doc_name(clean)
+        return self._by_norm.get(norm) if norm else None
 
 
-def _attach_document_file_identity(db: Session, item: Dict[str, Any]) -> Dict[str, Any]:
+def _attach_document_file_identity(
+    names: "_DocumentNameIndex", item: Dict[str, Any]
+) -> Dict[str, Any]:
     """Ensure blob search hits carry a stable document id for file download/view."""
     if item.get("content_type") != "document":
         return item
@@ -83,11 +122,11 @@ def _attach_document_file_identity(db: Session, item: Dict[str, Any]) -> Dict[st
     patched = dict(item)
 
     if doc_id is None:
-        row = _lookup_document_by_title(db, item.get("title", ""))
+        row = names.lookup(item.get("title", ""))
         if row is None:
             file_url = meta.get("file_url") or item.get("url") or ""
             if isinstance(file_url, str) and file_url:
-                row = _lookup_document_by_title(db, file_url.split("/")[-1].split("?")[0])
+                row = names.lookup(file_url.split("/")[-1].split("?")[0])
         if row is not None:
             doc_id = row.id
             meta.setdefault("doc_id", row.id)
@@ -108,6 +147,8 @@ def enrich_document_results(db: Session, results: List[Dict[str, Any]]) -> List[
     """Drop stale SQL-backed hits and refresh titles/snippets from live SQL rows."""
     from app.models.document import Document
     from app.models.operational import EngineeringDrawing
+
+    names = _DocumentNameIndex(db)
 
     drawing_ids_needed = {
         did
@@ -142,6 +183,19 @@ def enrich_document_results(db: Session, results: List[Dict[str, Any]]) -> List[
         if doc_ids_needed
         else {}
     )
+
+    # Warm the index cache for every document hit the loop below will look up,
+    # so it costs one Azure Search call instead of one per hit.
+    pending = [
+        rid
+        for item in results
+        if item.get("content_type") == "document"
+        and (_document_id_from_hit(item) not in doc_ids)
+        for rid in [_indexed_id_for_hit(item)]
+        if rid
+    ]
+    if pending:
+        get_indexed_many(pending)
 
     enriched: List[Dict[str, Any]] = []
     for item in results:
@@ -237,7 +291,7 @@ def enrich_document_results(db: Session, results: List[Dict[str, Any]]) -> List[
             rid = f"document-{did}" if did is not None else rid
         fresh = get_indexed(rid) if rid else None
         if not fresh:
-            enriched.append(_attach_document_file_identity(db, item))
+            enriched.append(_attach_document_file_identity(names, item))
             continue
         sql_meta = fresh.get("metadata") or {}
         patched = dict(item)
@@ -253,5 +307,10 @@ def enrich_document_results(db: Session, results: List[Dict[str, Any]]) -> List[
             if sql_meta.get("body_text") and not patched["metadata"].get("blob_chunk"):
                 patched["metadata"]["body_text"] = sql_meta.get("body_text")
                 patched["metadata"]["content_source"] = "document_body_text"
-        enriched.append(_attach_document_file_identity(db, patched))
-    return [_attach_document_file_identity(db, item) if item.get("content_type") == "document" else item for item in enriched]
+        enriched.append(_attach_document_file_identity(names, patched))
+    return [
+        _attach_document_file_identity(names, item)
+        if item.get("content_type") == "document"
+        else item
+        for item in enriched
+    ]

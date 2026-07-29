@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import engine, Base, ping_database
-from app.api.routes import auth, projects, tasks, team, documents, search, operational, files
+from app.api.routes import auth, projects, tasks, team, documents, search, operational, files, assets
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -51,9 +51,55 @@ async def lifespan(app: FastAPI):
     register_all_plugins()
     logger.info("Global Search plugins registered")
 
+    # Second Global Search database on Azure SQL: buildtrack_assets
+    try:
+        from app.core.data_sources import clear_data_source_caches, ensure_assets_database
+
+        db_name = await asyncio.to_thread(ensure_assets_database)
+        clear_data_source_caches()
+        logger.info("Site Assets Azure SQL database ready: %s", db_name)
+    except Exception as exc:
+        logger.warning("Could not initialize Site Assets Azure SQL database: %s", exc)
+
+    # Push assets into Azure AI Search when the dedicated index is empty/missing docs
+    if settings.AZURE_SEARCH_ENDPOINT and settings.AZURE_SEARCH_KEY:
+        async def _sync_assets_index():
+            try:
+                from app.search.assets_indexer import (
+                    assets_index_doc_count,
+                    sync_assets_to_azure_search,
+                )
+
+                count = await asyncio.to_thread(assets_index_doc_count)
+                if count is None or count == 0:
+                    stats = await asyncio.to_thread(
+                        lambda: sync_assets_to_azure_search(embed=True)
+                    )
+                    logger.info("Assets Azure index sync: %s", stats.get("message"))
+                else:
+                    logger.info("Assets Azure index already has %s docs", count)
+            except Exception as exc:
+                logger.warning("Assets Azure index sync skipped: %s", exc)
+
+        asyncio.create_task(_sync_assets_index())
+
     if settings.DATABASE_URL.startswith("mssql"):
         keepalive_task = asyncio.create_task(_db_keepalive_loop())
         asyncio.create_task(asyncio.to_thread(ping_database))
+
+    # Warm Azure Search list caches so Documents/Drawings/Projects open quickly.
+    if settings.AZURE_SEARCH_ENDPOINT and settings.AZURE_SEARCH_KEY:
+        async def _warm_page_indexes():
+            try:
+                from app.search import index_reader
+
+                for ctype in ("document", "drawing", "project", "team", "task"):
+                    await asyncio.to_thread(index_reader.list_indexed, ctype)
+                logger.info("Page index caches warmed (document/drawing/project/team/task)")
+            except Exception as exc:
+                logger.warning("Page index warm-up skipped: %s", exc)
+
+        asyncio.create_task(_warm_page_indexes())
 
     yield
 
@@ -93,6 +139,7 @@ app.include_router(documents.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(operational.router, prefix="/api")
 app.include_router(files.router, prefix="/api")
+app.include_router(assets.router, prefix="/api")
 
 
 def seed_kpi_if_needed_sync():

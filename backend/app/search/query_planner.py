@@ -18,6 +18,7 @@ from typing import List, Optional
 
 from app.search.query_intel import (
     QueryAnalysis,
+    parse_manager_filter,
     parse_progress_filter,
     parse_status_filter,
     target_content_types_for_filter,
@@ -46,6 +47,7 @@ class QueryPlan:
     content_types: List[str] = field(default_factory=list)
     progress: Optional[int] = None
     status: Optional[str] = None
+    manager: Optional[str] = None
     max_results: int = EXHAUSTIVE_CAP
     fetch_limit: int = SEMANTIC_FETCH_MIN
 
@@ -139,15 +141,20 @@ def plan_query(
 
     progress = parse_progress_filter(query)
     status = parse_status_filter(query)
+    manager = parse_manager_filter(query)
 
     # 2) Exact metadata filter — always exhaustive
-    if progress is not None or status is not None:
-        types = chip_types or target_content_types_for_filter(query, analysis)
+    if progress is not None or status is not None or manager:
+        if manager:
+            types = chip_types or ["project"]
+        else:
+            types = chip_types or target_content_types_for_filter(query, analysis)
         return QueryPlan(
             mode=QueryMode.FILTER,
             content_types=types,
             progress=progress,
             status=status,
+            manager=manager,
             max_results=EXHAUSTIVE_CAP,
         )
 

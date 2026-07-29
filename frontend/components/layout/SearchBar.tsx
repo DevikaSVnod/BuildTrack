@@ -7,6 +7,7 @@ import {
   FileText, Users, X, Clock, ArrowRight, Loader2, ExternalLink,
   LayoutDashboard, ChevronRight, BookOpen, Layers,
   ShieldCheck, ClipboardCheck, TrendingUp, Calendar,
+  Package, Truck, Wrench,
 } from "lucide-react";
 import { searchApi } from "@/lib/api";
 import type { SearchResponse, SearchResultItem } from "@/types";
@@ -65,6 +66,9 @@ const TYPE_CONFIG: Record<string, {
   attendance: { icon: ClipboardCheck, color: "text-green-600",  bg: "bg-green-50",   label: "Attendance",     pluralLabel: "Attendance",       listPage: "/team?tab=attendance" },
   report:     { icon: TrendingUp,     color: "text-rose-600",   bg: "bg-rose-50",    label: "Report",         pluralLabel: "Reports & Budget", listPage: "/dashboard"    },
   timeline:   { icon: Calendar,       color: "text-cyan-600",   bg: "bg-cyan-50",    label: "Timeline",       pluralLabel: "Timeline & Phases",listPage: "/timeline"   },
+  equipment:  { icon: Wrench,         color: "text-orange-600", bg: "bg-orange-50",  label: "Equipment",      pluralLabel: "Equipment",        listPage: "/assets?tab=equipment"  },
+  vendor:     { icon: Truck,          color: "text-sky-600",    bg: "bg-sky-50",     label: "Vendor",         pluralLabel: "Vendors",          listPage: "/assets?tab=vendors"  },
+  material:   { icon: Package,        color: "text-lime-700",   bg: "bg-lime-50",    label: "Material",       pluralLabel: "Material Deliveries", listPage: "/assets?tab=materials" },
 };
 
 const NAV_SHORTCUTS = [
@@ -75,6 +79,7 @@ const NAV_SHORTCUTS = [
   { icon: FileText,        label: "Documents",  href: "/documents",  color: "text-red-600"     },
   { icon: Layers,          label: "Drawings",   href: "/drawings",   color: "text-indigo-600"  },
   { icon: ShieldCheck,     label: "Safety",     href: "/safety",     color: "text-rose-600"    },
+  { icon: Package,         label: "Assets",     href: "/assets",     color: "text-lime-700"    },
 ];
 
 const EXAMPLES = [
@@ -219,10 +224,10 @@ export default function SearchBar() {
         if (!prev || activeQueryRef.current.trim() !== trimmed) return prev;
         const merged: SearchResponse = {
           ...prev,
-          ai_answer: res.data.ai_answer,
+          ai_answer: res.data.ai_answer || prev.ai_answer || "",
           suggested_questions: res.data.suggested_questions,
-          results: res.data.results,
-          total_results: res.data.total_results,
+          results: res.data.results?.length ? res.data.results : prev.results,
+          total_results: res.data.total_results || prev.total_results,
           search_time_ms: res.data.search_time_ms,
           is_question: res.data.is_question ?? prev.is_question,
         };
@@ -238,6 +243,24 @@ export default function SearchBar() {
           "code" in err &&
           (err as { code?: string }).code === "ERR_CANCELED");
       if (canceled) return;
+      // Keep dropdown useful even if /answer fails — build a short local summary.
+      if (seq !== aiSeqRef.current) return;
+      setResults((prev) => {
+        if (!prev || activeQueryRef.current.trim() !== trimmed) return prev;
+        if (prev.ai_answer) return prev;
+        const top = (prev.results || []).slice(0, 4);
+        const lines = top.map((r) => {
+          const db = r.metadata?.database_label ? ` (${r.metadata.database_label})` : "";
+          return `• ${r.title}${db}`;
+        });
+        const fallback =
+          lines.length > 0
+            ? `Based on your search, here is what I found:\n${lines.join("\n")}`
+            : "I found matching records, but the AI answer service is temporarily unavailable.";
+        const merged = { ...prev, ai_answer: fallback };
+        setCached(trimmed, merged);
+        return merged;
+      });
     } finally {
       if (seq === aiSeqRef.current) setLoadingAI(false);
     }
@@ -247,17 +270,22 @@ export default function SearchBar() {
     (q: string, immediate = false) => {
       clearTimeout(aiDebounceRef.current);
       aiAbortRef.current?.abort();
-      setLoadingAI(false);
 
       const trimmed = q.trim();
-      if (!shouldFetchAIAnswer(trimmed)) return;
+      if (!shouldFetchAIAnswer(trimmed)) {
+        setLoadingAI(false);
+        return;
+      }
+
+      // Show the AI panel immediately so users know an answer is coming.
+      setLoadingAI(true);
 
       const run = () => {
         if (activeQueryRef.current.trim() !== trimmed) return;
         fetchAIAnswer(trimmed);
       };
 
-      if (immediate) {
+      if (immediate || looksLikeQuestion(trimmed)) {
         run();
       } else {
         aiDebounceRef.current = setTimeout(run, AI_DEBOUNCE_MS);
@@ -764,9 +792,28 @@ export default function SearchBar() {
                                 <Icon size={13} className={cfg.color} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate group-hover:text-primary transition-colors">
-                                  {r.title}
-                                </p>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <p className="text-sm font-medium text-gray-900 truncate group-hover:text-primary transition-colors">
+                                    {r.title}
+                                  </p>
+                                  {r.metadata?.database_label ? (
+                                    <span className="flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                      {String(r.metadata.database_label)}
+                                    </span>
+                                  ) : null}
+                                  {r.metadata?.relationship === "same_project" ? (
+                                    <span
+                                      className="flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded"
+                                      title={
+                                        r.metadata?.related_key
+                                          ? `Linked across databases via project: ${r.metadata.related_key}`
+                                          : "Linked across databases"
+                                      }
+                                    >
+                                      Linked
+                                    </span>
+                                  ) : null}
+                                </div>
                                 <p className="text-xs text-gray-400 truncate mt-0.5">
                                   {(r.content_type === "document" || r.content_type === "drawing") &&
                                   (r.metadata?.content_source === "blob_rag" || r.metadata?.source === "blob_rag")
@@ -781,6 +828,12 @@ export default function SearchBar() {
                                     ? `${r.metadata.incident_type ?? ""} · ${r.metadata.severity ?? ""} severity · ${r.metadata.status ?? ""}`
                                     : r.content_type === "attendance" && r.metadata
                                     ? `${r.metadata.role ?? ""} · ${r.metadata.status ?? ""} · ${r.metadata.project ?? ""}`
+                                    : r.content_type === "equipment" && r.metadata
+                                    ? `${r.metadata.category ?? ""} · ${r.metadata.status ?? ""} · ${r.metadata.project ?? ""}`
+                                    : r.content_type === "vendor" && r.metadata
+                                    ? `${r.metadata.category ?? ""} · ${r.metadata.status ?? ""} · rating ${r.metadata.rating ?? ""}`
+                                    : r.content_type === "material" && r.metadata
+                                    ? `${r.metadata.quantity ?? ""} ${r.metadata.unit ?? ""} · ${r.metadata.status ?? ""} · ${r.metadata.project ?? ""}`
                                     : r.snippet}
                                 </p>
                               </div>

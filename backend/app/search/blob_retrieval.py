@@ -12,6 +12,7 @@ import logging
 import re
 import time
 import urllib.parse
+from threading import Lock
 from typing import Any, Optional
 
 from app.core.config import settings
@@ -32,7 +33,10 @@ _blob_index_name: Optional[str] = None
 _semantic_config_name: Optional[str] = None
 _file_url_index: Optional[dict[str, dict[str, Any]]] = None
 _file_url_index_at: float = 0
-_FILE_URL_INDEX_TTL = 120
+# Rebuilding costs two 500-document index reads. The mapping only changes when
+# the indexer picks up new files, which happens on a 15-minute schedule.
+_FILE_URL_INDEX_TTL = 600
+_file_url_index_lock = Lock()
 
 
 def _normalize_blob_url(url: str) -> str:
@@ -150,6 +154,15 @@ def _build_file_url_index() -> dict[str, dict[str, Any]]:
     if _file_url_index and now - _file_url_index_at < _FILE_URL_INDEX_TTL:
         return _file_url_index
 
+    with _file_url_index_lock:
+        now = time.time()
+        if _file_url_index and now - _file_url_index_at < _FILE_URL_INDEX_TTL:
+            return _file_url_index
+        return _load_file_url_index(now)
+
+
+def _load_file_url_index(now: float) -> dict[str, dict[str, Any]]:
+    global _file_url_index, _file_url_index_at
     mapping: dict[str, dict[str, Any]] = {}
     try:
         for content_type in ("document", "drawing"):
@@ -196,13 +209,21 @@ def should_search_blob_content(
         is_drawing_count_query,
         is_drawing_vision_first_query,
         is_file_content_query,
+        is_asset_inventory_query,
         is_question,
     )
 
     if is_drawing_count_query(query) or is_drawing_vision_first_query(query):
         return False
+    # Equipment / vendor / material questions → Azure SQL assets index, not blob RAG.
+    if is_asset_inventory_query(query):
+        return False
     # Always try blob/RAG for document-content questions and general questions
     # (body_text injection still helps when RAG is empty).
+    from app.search.query_intel import is_workforce_people_query
+
+    if is_workforce_people_query(query):
+        return False
     if is_file_content_query(query):
         return True
     if is_question(query) and filter_type in (None, "", "all", "documents"):

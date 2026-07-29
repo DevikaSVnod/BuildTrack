@@ -49,6 +49,7 @@ export default function DrawingsPage() {
     data: drawings,
     loading,
     refreshing,
+    error,
     reload,
   } = usePageData<Drawing[]>("drawings", () => operationalApi.drawings().then((r) => r.data));
   const [showUpload, setShowUpload] = useState(false);
@@ -98,6 +99,19 @@ export default function DrawingsPage() {
           <Layers size={15} /> Upload Drawing
         </button>
       </div>
+
+      {error && !loading && rows.length === 0 && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-center justify-between gap-3">
+          <p className="text-sm text-red-700">{error}</p>
+          <button
+            type="button"
+            onClick={reload}
+            className="text-sm font-medium text-red-700 hover:text-red-900 underline"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-4">
         {[

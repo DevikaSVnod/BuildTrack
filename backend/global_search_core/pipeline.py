@@ -12,7 +12,7 @@ AnalyzeQueryFn = Callable[[str, int], Any]
 FilterForQueryFn = Callable[[str, list, Any], list]
 FilterForDisplayFn = Callable[[str, str, list, Any], list]
 GenerateAnswerFn = Callable[[str, list, Any], tuple[str, list[str]]]
-GetCachedFn = Callable[[str, Optional[str], int, Any], Optional[list]]
+GetCachedFn = Callable[..., Optional[list]]
 CacheResultsFn = Callable[[str, Optional[str], int, Any, list], None]
 
 
@@ -57,6 +57,36 @@ class SearchPipeline:
             for r in raw_results
         ]
 
+    @staticmethod
+    def _sources_from_hits(raw_results: list, context: SearchContext) -> list[str]:
+        found: list[str] = []
+        seen: set[str] = set()
+        for r in raw_results:
+            meta = r.get("metadata") or {}
+            sid = meta.get("database_id")
+            if sid and sid not in seen:
+                seen.add(str(sid))
+                found.append(str(sid))
+        if found:
+            return found
+        requested = context.get("source_ids")
+        if isinstance(requested, list) and requested:
+            return [str(s) for s in requested]
+        try:
+            from app.core.data_sources import get_enabled_sources
+
+            return [s.id for s in get_enabled_sources()]
+        except Exception:
+            return []
+
+    def _with_source_context(
+        self, request: SearchRequest, context: SearchContext
+    ) -> SearchContext:
+        ctx = dict(context)
+        if request.source_ids:
+            ctx["source_ids"] = list(request.source_ids)
+        return ctx
+
     def _retrieve(
         self,
         *,
@@ -82,10 +112,11 @@ class SearchPipeline:
         if not request.query.strip():
             raise ValueError("Query cannot be empty")
 
+        ctx = self._with_source_context(request, context)
         analysis = self.analyze_query(request.query, request.top_k)
         start = time.time()
         raw = self._retrieve(
-            context=context,
+            context=ctx,
             query=request.query,
             filter_type=request.filter_type,
             top_k=request.top_k,
@@ -93,6 +124,7 @@ class SearchPipeline:
         )
         filtered = self.filter_for_query(request.query, raw, analysis)
         elapsed = int((time.time() - start) * 1000)
+        sources = self._sources_from_hits(filtered or raw, ctx)
 
         return SearchResponse(
             ai_answer="",
@@ -101,6 +133,7 @@ class SearchPipeline:
             search_time_ms=elapsed,
             total_results=len(filtered),
             is_question=getattr(analysis, "is_question", False),
+            sources_searched=sources,
         )
 
     def search_with_answer(
@@ -113,29 +146,35 @@ class SearchPipeline:
         if not request.query.strip():
             raise ValueError("Query cannot be empty")
 
+        ctx = self._with_source_context(request, context)
         analysis = self.analyze_query(request.query, request.top_k)
         start = time.time()
 
         raw: list | None = None
         if use_cache and self.get_cached_results:
             raw = self.get_cached_results(
-                request.query, request.filter_type, request.top_k, analysis
+                request.query,
+                request.filter_type,
+                request.top_k,
+                analysis,
+                request.source_ids,
             )
             if raw is not None:
-                raw = self.connector.enrich_cached(context=context, hits=raw)
+                raw = self.connector.enrich_cached(context=ctx, hits=raw)
 
         if raw is None:
             raw = self._retrieve(
-                context=context,
+                context=ctx,
                 query=request.query,
                 filter_type=request.filter_type,
                 top_k=request.top_k,
                 analysis=analysis,
             )
 
-        answer_text, suggested = self.generate_answer(request.query, raw, analysis=analysis)
+        answer_text, suggested = self.generate_answer(request.query, raw, analysis)
         filtered = self.filter_for_display(request.query, answer_text, raw, analysis)
         elapsed = int((time.time() - start) * 1000)
+        sources = self._sources_from_hits(filtered or raw, ctx)
 
         return SearchResponse(
             ai_answer=answer_text,
@@ -144,6 +183,7 @@ class SearchPipeline:
             search_time_ms=elapsed,
             total_results=len(filtered),
             is_question=getattr(analysis, "is_question", False),
+            sources_searched=sources,
         )
 
     def search_combined(
@@ -155,18 +195,20 @@ class SearchPipeline:
         if not request.query.strip():
             raise ValueError("Query cannot be empty")
 
+        ctx = self._with_source_context(request, context)
         analysis = self.analyze_query(request.query, request.top_k)
         start = time.time()
         raw = self._retrieve(
-            context=context,
+            context=ctx,
             query=request.query,
             filter_type=request.filter_type,
             top_k=request.top_k,
             analysis=analysis,
         )
-        answer_text, suggested = self.generate_answer(request.query, raw, analysis=analysis)
+        answer_text, suggested = self.generate_answer(request.query, raw, analysis)
         filtered = self.filter_for_display(request.query, answer_text, raw, analysis)
         elapsed = int((time.time() - start) * 1000)
+        sources = self._sources_from_hits(filtered or raw, ctx)
 
         return SearchResponse(
             ai_answer=answer_text,
@@ -175,4 +217,5 @@ class SearchPipeline:
             search_time_ms=elapsed,
             total_results=len(filtered),
             is_question=getattr(analysis, "is_question", False),
+            sources_searched=sources,
         )

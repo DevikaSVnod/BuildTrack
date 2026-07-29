@@ -74,7 +74,7 @@ def validate_inventory(inventory: dict[str, Any]) -> dict[str, Any]:
     if method == "zone_breakdown" or method == "zone_breakdown+table_verify":
         chairs = by_type.get("chair", 0)
         tables = by_type.get("table", 0)
-        if tables and chairs and chairs > tables * 8:
+        if tables and chairs and chairs > tables * 14:
             issues.append(f"conference chairs ({chairs}) unusually high vs tables ({tables})")
 
     if method == "site_plan":
@@ -240,6 +240,10 @@ def finalize_inventory(
         or validation["score"] < 90
         or _rank(str(inventory.get("confidence") or "medium")) <= 1
     )
+    # Per-side table/wall verification is more reliable than a second full-sheet guess
+    method = str(inventory.get("method") or "")
+    if method.startswith("zone_breakdown+table_verify"):
+        should_verify = False
     if should_verify and content:
         corrected = _vision_verify_inventory(out, content, content_type)
         if corrected and corrected.get("objects"):

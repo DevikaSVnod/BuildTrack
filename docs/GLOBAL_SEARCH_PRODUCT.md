@@ -14,23 +14,55 @@ Package the POC as **Search API + UI widget + plugins** so other projects integr
 │  SearchPipeline (global_search_core) │
 │  query → retrieve → filter → answer  │
 └─────────────────┬────────────────────┘
-                  │ connector plugin
+                  │ MultiDatabaseConnector (default)
 ┌─────────────────▼────────────────────┐
-│  BuildTrackConnector (reference)     │
-│  Azure Search + SQL enrich + workforce│
-└─────────────────┬────────────────────┘
-                  │ extractor plugins (index time)
-┌─────────────────▼────────────────────┐
-│  drawing_intelligence, document_body │
+│  Fan-out across SEARCH_DATA_SOURCES  │
+│  each: Azure Search index + SQL DB   │
+│  → merge hits → one AI answer        │
 └──────────────────────────────────────┘
 ```
+
+## Multi-database support
+
+Configure one or more databases via `SEARCH_DATA_SOURCES` (JSON array). Each source has:
+
+| Field | Meaning |
+|-------|---------|
+| `id` | Stable id (e.g. `buildtrack`, `assets`) |
+| `label` | Human label shown in UI / answers |
+| `database_url` | SQLAlchemy URL for that database |
+| `search_index` | Azure AI Search index (when `retrieval_mode=azure`) |
+| `blob_index` | Optional blob/RAG index |
+| `retrieval_mode` | `azure` (hybrid search) or `sql` (local `search_documents` table) |
+| `enabled` | `true` / `false` |
+
+If `SEARCH_DATA_SOURCES` is unset, Global Search uses:
+1. Primary Azure SQL `buildtrack` + `AZURE_SEARCH_INDEX`
+2. Satellite Azure SQL **`buildtrack_assets`** (same server) + `AZURE_SEARCH_ASSETS_INDEX`
+
+Create/reseed the assets Azure SQL DB and push it to Azure AI Search:
+
+```bash
+cd backend
+python -m scripts.setup_assets_db --force
+python -m scripts.sync_assets_to_search
+```
+
+Or call `POST /api/search/assets-index` while logged in.
+
+After setup, Azure Portal → SQL server → Available resources should list **two** databases: `buildtrack` and `buildtrack_assets`.### `GET /api/search/sources`
+Lists configured databases (ids, labels, reachability). No connection strings are returned.
+
+Search requests may optionally pass `source_ids` to query a subset. Responses include `sources_searched` and each hit’s `metadata.database_id` / `metadata.database_label`. The AI answer synthesizes across all returned sources.
 
 ## Backend layout
 
 | Path | Role |
 |------|------|
 | `backend/global_search_core/` | **Product SDK** — models, pipeline, registry, interfaces |
-| `backend/app/connectors/` | Host-specific **connector plugins** |
+| `backend/app/core/data_sources.py` | Multi-DB registry + session factories |
+| `backend/app/connectors/multi_database.py` | Fan-out connector (default) |
+| `backend/app/connectors/buildtrack.py` | Single-source BuildTrack retrieval |
 | `backend/app/extractors/` | Host-specific **extractor plugins** |
 | `backend/app/plugins/` | Registers plugins at startup |
 | `backend/app/search/pipeline_factory.py` | Wires pipeline + BuildTrack intel helpers |
@@ -51,12 +83,16 @@ Combined search + answer (legacy).
 ### `GET /api/search/plugins`
 Lists registered connectors and extractors.
 
+### `GET /api/search/sources`
+Lists configured search databases.
+
 **Request body:**
 ```json
 {
   "query": "How many chairs in CI-003-C?",
   "filter_type": "all",
-  "top_k": 10
+  "top_k": 10,
+  "source_ids": ["buildtrack", "hr"]
 }
 ```
 
@@ -68,7 +104,8 @@ Lists registered connectors and extractors.
   "suggested_questions": [],
   "search_time_ms": 400,
   "total_results": 3,
-  "is_question": true
+  "is_question": true,
+  "sources_searched": ["buildtrack", "hr"]
 }
 ```
 
