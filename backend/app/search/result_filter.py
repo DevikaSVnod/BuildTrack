@@ -169,10 +169,16 @@ def _blob_body_text(result: Dict[str, Any]) -> str:
 
 def _is_internal_crawl_sidecar(result: Dict[str, Any]) -> bool:
     """
-    RAG text sidecars (e.g. AR-113-9_sheet_content.txt) are for search indexing only.
-    Users should see the real drawing/document file in the dropdown, not the sidecar.
+    RAG text sidecars (e.g. AR-113-9_sheet_content.txt, doc18_…_content.txt)
+    are for search indexing only. Users should see the real drawing/document
+    file in the dropdown, not the sidecar.
     """
-    title = (result.get("title") or "").lower()
+    title = (result.get("title") or "").lower().strip()
+    # Already resolved to a real uploaded file — keep it.
+    if title.endswith(
+        (".pdf", ".docx", ".doc", ".xlsx", ".xls", ".png", ".jpg", ".jpeg", ".dwg")
+    ):
+        return False
     meta = result.get("metadata") or {}
     filename = str(
         meta.get("filename")
@@ -183,6 +189,10 @@ def _is_internal_crawl_sidecar(result: Dict[str, Any]) -> bool:
     blob = str(meta.get("blob_url") or meta.get("file_url") or "").lower()
     hay = " ".join([title, filename, blob])
     if "_sheet_content.txt" in hay or " sheet content.txt" in hay:
+        return True
+    if "_content.txt" in hay or " content.txt" in hay:
+        return True
+    if hay.rstrip().endswith("content.txt"):
         return True
     if meta.get("sidecar") in ("drawing_crawl", "document_body", "sheet_content"):
         return True
@@ -201,10 +211,13 @@ def _matches_drawing_number(result: Dict[str, Any], drawing_no: str) -> bool:
 
 
 def _prefer_drawing_rows(results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Drop crawl sidecars; when a real drawing row exists, show only that."""
+    """Drop crawl sidecars; prefer real drawing/document files over text sidecars."""
     visible = [r for r in results if not _is_internal_crawl_sidecar(r)]
     drawings = [r for r in visible if r.get("content_type") == "drawing"]
-    return drawings if drawings else visible
+    if drawings:
+        return drawings
+    documents = [r for r in visible if r.get("content_type") == "document"]
+    return documents if documents else visible
 
 
 def _filter_to_named_drawing(
@@ -615,6 +628,11 @@ def filter_results_for_query(
     if not results:
         return results
 
+    # Never show RAG crawl sidecars (*_content.txt) in the dropdown.
+    results = [r for r in results if not _is_internal_crawl_sidecar(r)]
+    if not results:
+        return results
+
     from app.search.structured_filters import is_structured_filter_query
     from app.search.query_intel import is_asset_inventory_query
 
@@ -731,6 +749,10 @@ def filter_results_for_display(
     analysis: Optional[QueryAnalysis] = None,
 ) -> List[Dict[str, Any]]:
     """Filter dropdown results to match what the AI answer actually covers."""
+    if not results:
+        return results
+
+    results = [r for r in results if not _is_internal_crawl_sidecar(r)]
     if not results:
         return results
 

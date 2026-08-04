@@ -31,12 +31,13 @@ def _document_id_from_hit(item: Dict[str, Any]) -> Optional[int]:
     if m:
         return int(m.group(1))
     meta = item.get("metadata") or {}
-    did = meta.get("doc_id")
-    if did is not None:
-        try:
-            return int(did)
-        except (TypeError, ValueError):
-            return None
+    for key in ("doc_id", "document_id"):
+        did = meta.get(key)
+        if did is not None:
+            try:
+                return int(did)
+            except (TypeError, ValueError):
+                continue
     return None
 
 
@@ -46,7 +47,11 @@ def _indexed_id_for_hit(item: Dict[str, Any]) -> str:
     if re.match(r"document-(\d+)", rid):
         return rid
     meta = item.get("metadata") or {}
-    did = meta.get("doc_id") if isinstance(meta, dict) else None
+    did = None
+    if isinstance(meta, dict):
+        did = meta.get("doc_id")
+        if did is None:
+            did = meta.get("document_id")
     return f"document-{did}" if did is not None else rid
 
 
@@ -61,8 +66,28 @@ def _parse_metadata(raw: Any) -> dict:
     return {}
 
 
+_UUID_PREFIX = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_",
+    re.IGNORECASE,
+)
+_CONTENT_SIDECAR_SUFFIX = re.compile(
+    r"(?:_sheet_content|_content|[\s_]+sheet[\s_]+content|[\s_]+content)\.txt$",
+    re.IGNORECASE,
+)
+_DOC_ID_PREFIX = re.compile(r"^doc\d+[\s_\-]*", re.IGNORECASE)
+
+
 def _normalize_doc_name(name: str) -> str:
-    return re.sub(r"[^a-z0-9.]+", "", (name or "").lower())
+    """Stem key so crawl sidecars resolve to the real uploaded PDF/DOCX name."""
+    n = (name or "").strip()
+    if not n:
+        return ""
+    n = n.split("/")[-1].split("?")[0]
+    n = _UUID_PREFIX.sub("", n)
+    n = _CONTENT_SIDECAR_SUFFIX.sub("", n)
+    n = _DOC_ID_PREFIX.sub("", n)
+    n = re.sub(r"\.[a-z0-9]{1,5}$", "", n, flags=re.IGNORECASE)
+    return re.sub(r"[^a-z0-9]+", "", n.lower())
 
 
 class _DocumentNameIndex:
@@ -250,9 +275,18 @@ def enrich_document_results(db: Session, results: List[Dict[str, Any]]) -> List[
 
         if ctype == "document":
             doc_id = _document_id_from_hit(item)
-            if doc_id is not None and doc_id not in doc_ids:
-                continue
             row = doc_ids.get(doc_id) if doc_id is not None else None
+            # Stale sidecar may carry an old document_id — remap by filename stem.
+            if doc_id is not None and row is None:
+                remapped = names.lookup(item.get("title", ""))
+                if remapped is None:
+                    meta0 = item.get("metadata") or {}
+                    file_url = meta0.get("file_url") or item.get("url") or ""
+                    if isinstance(file_url, str) and file_url:
+                        remapped = names.lookup(file_url.split("/")[-1].split("?")[0])
+                if remapped is None:
+                    continue
+                row = remapped
             meta = _parse_metadata(item.get("metadata"))
             if row is not None:
                 meta.update(

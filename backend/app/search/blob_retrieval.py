@@ -28,6 +28,13 @@ _UUID_PREFIX = re.compile(
     re.IGNORECASE,
 )
 _FILENAME_KEY = re.compile(r"[\s_\-]+")
+# RAG crawl sidecars: uuid_doc18_Report.docx_content.txt → match Report.pdf in SQL
+_CONTENT_SIDECAR_SUFFIX = re.compile(
+    r"(?:_sheet_content|_content|[\s_]+sheet[\s_]+content|[\s_]+content)\.txt$",
+    re.IGNORECASE,
+)
+_DOC_ID_PREFIX = re.compile(r"^doc\d+[\s_\-]*", re.IGNORECASE)
+_FILE_EXT = re.compile(r"\.[a-z0-9]{1,5}$", re.IGNORECASE)
 
 _blob_index_name: Optional[str] = None
 _semantic_config_name: Optional[str] = None
@@ -70,10 +77,35 @@ def _filename_key(name: str) -> str:
     return _FILENAME_KEY.sub("", base.lower())
 
 
+def _stem_key(name: str) -> str:
+    """
+    Extension-agnostic stem for matching crawl sidecars to real files.
+
+    e.g. 'doc18 Commercial Tower … Report.docx content.txt'
+      → 'commercialtowerphasereport…'
+         same stem as 'Commercial_Tower_Phase_2_Planning_Report.pdf'
+    """
+    if not name:
+        return ""
+    base = urllib.parse.unquote(str(name).split("/")[-1].split("?")[0])
+    base = _UUID_PREFIX.sub("", base)
+    base = _CONTENT_SIDECAR_SUFFIX.sub("", base)
+    base = _DOC_ID_PREFIX.sub("", base)
+    base = _FILE_EXT.sub("", base)
+    return re.sub(r"[^a-z0-9]+", "", base.lower())
+
+
 def parse_rag_filename(title: str) -> str:
     if not title:
         return "Document"
     name = _UUID_PREFIX.sub("", title)
+    # Never surface internal RAG sidecar names in the UI.
+    if _CONTENT_SIDECAR_SUFFIX.search(name) or name.lower().endswith("content.txt"):
+        cleaned = _CONTENT_SIDECAR_SUFFIX.sub("", name)
+        cleaned = _DOC_ID_PREFIX.sub("", cleaned)
+        cleaned = cleaned.strip(" ._")
+        if cleaned:
+            name = cleaned
     return name.replace("_", " ") if "_" in name and " " not in name else name
 
 
@@ -183,6 +215,9 @@ def _load_file_url_index(now: float) -> dict[str, dict[str, Any]]:
                     fkey = _filename_key(name or "")
                     if fkey:
                         mapping[f"name:{fkey}"] = doc
+                    skey = _stem_key(name or "")
+                    if skey:
+                        mapping[f"stem:{skey}"] = doc
     except Exception as exc:
         logger.debug("File URL index build failed: %s", exc)
 
@@ -290,17 +325,23 @@ def _row_to_hit(row: dict[str, Any]) -> dict[str, Any]:
     chunk = (row.get("chunk") or "").strip()
     chunk_id = row.get("chunk_id") or row.get("id") or ""
 
-    sql_doc = _build_file_url_index().get(_normalize_blob_url(blob_url))
+    index = _build_file_url_index()
+    sql_doc = index.get(_normalize_blob_url(blob_url))
     if sql_doc is None:
-        sql_doc = _build_file_url_index().get(f"name:{_filename_key(rag_title)}")
+        sql_doc = index.get(f"name:{_filename_key(rag_title)}")
     if sql_doc is None and blob_url:
-        sql_doc = _build_file_url_index().get(f"name:{_filename_key(blob_url)}")
+        sql_doc = index.get(f"name:{_filename_key(blob_url)}")
+    # Crawl sidecars (*_content.txt) share a stem with the real PDF/DOCX.
+    if sql_doc is None:
+        sql_doc = index.get(f"stem:{_stem_key(rag_title)}")
+    if sql_doc is None and blob_url:
+        sql_doc = index.get(f"stem:{_stem_key(blob_url)}")
     if sql_doc is None:
         from app.search.query_intel import extract_drawing_no
 
         drawing_no = extract_drawing_no(rag_title) or extract_drawing_no(blob_url)
         if drawing_no:
-            sql_doc = _build_file_url_index().get(f"drawing_no:{drawing_no.lower()}")
+            sql_doc = index.get(f"drawing_no:{drawing_no.lower()}")
     meta: dict[str, Any] = {
         "source": "blob_rag",
         "content_source": "blob_rag",
@@ -382,6 +423,10 @@ def _file_key(hit: dict[str, Any]) -> str:
     drawing_no = (meta.get("drawing_no") or "").strip()
     if drawing_no:
         return f"drawing_no:{drawing_no.lower()}"
+    # Collapse crawl sidecars with the real PDF/DOCX via shared stem.
+    stem = _stem_key(hit.get("title") or meta.get("file_url") or "")
+    if stem:
+        return f"stem:{stem}"
     return (
         _filename_key(meta.get("file_url") or hit.get("title", ""))
         or hit.get("_blob_url")
@@ -589,6 +634,7 @@ def search_blob_content(
         if multi_chunk
         else _collapse_chunks(rows, query)
     )
+    collapsed = _resolve_sidecar_titles(collapsed)
     for hit in collapsed:
         hit.pop("_parent_id", None)
         hit.pop("_blob_url", None)
@@ -596,15 +642,65 @@ def search_blob_content(
     return collapsed
 
 
+def _resolve_sidecar_titles(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Map crawl sidecar hits to the real SQL document title/id when possible."""
+    index = _build_file_url_index()
+    out: list[dict[str, Any]] = []
+    for hit in hits:
+        if hit.get("content_type") not in ("document", "drawing", None):
+            out.append(hit)
+            continue
+        title = hit.get("title") or ""
+        meta = dict(hit.get("metadata") or {})
+        file_url = str(meta.get("file_url") or "")
+        looks_sidecar = bool(
+            _CONTENT_SIDECAR_SUFFIX.search(title)
+            or title.lower().endswith("content.txt")
+            or _CONTENT_SIDECAR_SUFFIX.search(file_url)
+        )
+        if not looks_sidecar:
+            out.append(hit)
+            continue
+        sql_doc = (
+            index.get(f"stem:{_stem_key(title)}")
+            or index.get(f"stem:{_stem_key(file_url)}")
+        )
+        if not sql_doc:
+            out.append(hit)
+            continue
+        patched = dict(hit)
+        sql_meta = dict(sql_doc.get("metadata") or {})
+        doc_id = sql_meta.get("doc_id")
+        drawing_id = sql_meta.get("drawing_id")
+        ctype = sql_doc.get("content_type") or patched.get("content_type") or "document"
+        patched["content_type"] = ctype
+        patched["title"] = sql_doc.get("title") or patched.get("title")
+        if ctype == "drawing" and drawing_id is not None:
+            patched["id"] = sql_doc.get("id") or f"drawing-{drawing_id}"
+            patched["url"] = sql_doc.get("url") or f"/drawings?drawingId={drawing_id}"
+        elif doc_id is not None:
+            patched["id"] = sql_doc.get("id") or f"document-{doc_id}"
+            patched["url"] = sql_doc.get("url") or f"/documents?docId={doc_id}"
+        for key in ("file_url", "file_type", "doc_id", "drawing_id", "drawing_no"):
+            if sql_meta.get(key) is not None:
+                meta[key] = sql_meta[key]
+        meta.pop("sidecar", None)
+        patched["metadata"] = meta
+        out.append(patched)
+    return out
+
+
 def merge_sql_and_blob_hits(
     sql_hits: list[dict[str, Any]],
     blob_hits: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     """Merge SQL metadata hits with blob content hits; prefer blob snippet when same file."""
+    blob_hits = _resolve_sidecar_titles(blob_hits)
     blob_by_doc_id: dict[str, dict[str, Any]] = {}
     blob_by_drawing_id: dict[str, dict[str, Any]] = {}
     blob_by_url: dict[str, dict[str, Any]] = {}
     blob_by_name: dict[str, dict[str, Any]] = {}
+    blob_by_stem: dict[str, dict[str, Any]] = {}
     blob_by_drawing_no: dict[str, dict[str, Any]] = {}
     for hit in blob_hits:
         meta = hit.get("metadata") or {}
@@ -627,6 +723,9 @@ def merge_sql_and_blob_hits(
         name_key = _filename_key(hit.get("title") or meta.get("file_url") or "")
         if name_key:
             blob_by_name[name_key] = hit
+        stem = _stem_key(hit.get("title") or meta.get("file_url") or "")
+        if stem:
+            blob_by_stem[stem] = hit
 
     merged: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
@@ -654,6 +753,8 @@ def merge_sql_and_blob_hits(
             blob_match = blob_by_url.get(_normalize_blob_url(meta.get("file_url") or ""))
         if blob_match is None:
             blob_match = blob_by_name.get(_filename_key(item.get("title") or ""))
+        if blob_match is None:
+            blob_match = blob_by_stem.get(_stem_key(item.get("title") or ""))
 
         if blob_match:
             patched = dict(item)
@@ -661,7 +762,17 @@ def merge_sql_and_blob_hits(
             patched["score"] = max(item.get("score", 0), blob_match.get("score", 0))
             item_meta = item.get("metadata") or {}
             blob_meta = blob_match.get("metadata") or {}
-            patched["metadata"] = {**item_meta, **blob_meta, "content_source": "blob_rag"}
+            merged_meta = {**item_meta, **blob_meta, "content_source": "blob_rag"}
+            # Prefer SQL file identity over crawl-sidecar blob paths.
+            for key in ("file_url", "file_type", "doc_id", "drawing_id", "drawing_no"):
+                if item_meta.get(key) is not None:
+                    merged_meta[key] = item_meta[key]
+            if blob_meta.get("blob_chunk"):
+                merged_meta["blob_chunk"] = blob_meta["blob_chunk"]
+            patched["metadata"] = merged_meta
+            # Keep the real SQL filename (PDF), not the crawl sidecar title.
+            if item.get("title"):
+                patched["title"] = item["title"]
             merged.append(patched)
         elif ctype == "drawing":
             merged.append(_inject_drawing_sheet_notes(item))

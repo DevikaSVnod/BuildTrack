@@ -70,10 +70,12 @@ class BuildTrackConnector(SearchConnector):
             analysis=analysis,
             search_index=search_index,
         )
-        # Satellite DBs (e.g. assets SQLite) do not share BuildTrack ORM tables —
-        # Azure hits are already complete; skip SQL enrich against the wrong schema.
+        # Satellite DBs skip BuildTrack ORM enrich, but still resolve crawl
+        # sidecar titles to the real uploaded PDF/DOCX via the shared index.
         if source and getattr(source, "id", None) == "assets":
-            return _tag_hits_with_source(raw, source)
+            from app.search.blob_retrieval import _resolve_sidecar_titles
+
+            return _tag_hits_with_source(_resolve_sidecar_titles(raw), source)
 
         from app.search.document_enrich import enrich_document_results
 
