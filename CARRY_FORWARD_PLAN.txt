@@ -1,0 +1,776 @@
+================================================================================
+GLOBAL SEARCH POC -> SPACE APPLICATION
+CARRY-FORWARD MANIFEST + 7-DAY EXECUTION STRATEGY
+Written 24 Aug. Target per Jira: SPACE DEV demo by 31 Aug (~72 est. hours).
+No code was created, modified or deleted to produce this document.
+================================================================================
+
+
+================================================================================
+0. STRATEGY RESET — READ THIS FIRST
+================================================================================
+
+My earlier assessments ("NO-GO", "rebuild the backend") were written assuming the
+target application was unknown and that its module APIs would be the integration
+surface. The Jira CSV changes that picture in one decisive way:
+
+    THE POC IS ALREADY READING THE REAL APPLICATION'S DATABASES.
+
+The 17 DEV_V1_SPACE_* databases in backend/.env are SPACE's own databases. This
+is not a POC talking to a toy dataset that must be re-pointed at production. It
+is already pointed at production-shaped data, and per your Jira baseline story it
+already has ~6.6k documents indexed in space-action-index and working ProjectId
+hops across Project, HSE, Incident, LMS, CMS and Dashboard.
+
+That means the correct move is NOT to rebuild. It is:
+
+    PROMOTE the POC backend to "Global Search Service v1", then HARDEN it.
+
+With 7 days you cannot rebuild, and you do not need to. What you must do is fix
+the small number of things that are genuinely unsafe, and cleanly separate the
+demo application scaffolding from the search service.
+
+THE HONEST TRADE, STATED ONCE
+  The one thing that is not negotiable even for a DEV demo is that two SPACE
+  users with different project access must not see each other's data. Right now
+  they do — verified: SEARCH_ENABLE_BUILDTRACK=false in backend/.env, and
+  connectors/buildtrack.py:99-102 is the only caller of build_security_odata,
+  so zero permission filtering executes today. Section 3 lists six fixes that
+  close this. They are days of work, not weeks, and they are the difference
+  between a demo you can show and a demo that leaks SPACE data in front of
+  stakeholders.
+
+  Everything else on the "ideal architecture" list — federating to module APIs,
+  rebuilding the chunk index, replacing the SQL agent — is deferred to post-31-Aug
+  and recorded in section 6 as UAT/PROD gates. That is the right call for the
+  deadline, provided you write those gates down now rather than discovering them
+  in UAT.
+
+
+================================================================================
+1. REPO STRUCTURE — STOP EDITING THE POC
+================================================================================
+
+Do this on day 1, before touching anything else.
+
+  global-search-poc/                    <- FREEZE. Tag it. Never merge into it.
+      Keep it running as your reference implementation and demo fallback.
+
+  space-global-search/                  <- NEW repo. This is what ships.
+      backend/
+          app/
+              api/          search routes only (2 public + admin split)
+              auth/         NEW - SPACE JWT validation + entitlement resolution
+              search/       lifted from POC (see manifest)
+              connectors/   lifted, hardened
+              indexing/     lifted indexers, moved OUT of the API process
+              core/         config, data sources, logging
+              prompts/      NEW - extracted from inline strings (see 2.4)
+          tests/
+      frontend/
+          packages/space-global-search/ the reusable widget (Jira story 4)
+
+  Rule: code moves POC -> new repo in one direction only. If you find a bug in
+  a lifted file, fix it in the new repo. Do not sync back.
+
+WHY THIS MATTERS UNDER DEADLINE
+  The POC repo contains a whole demo construction-management application
+  (projects, tasks, team, documents, drawings, assets, operational reporting,
+  CAD vision). By file size, the search service you actually need is roughly a
+  third of backend/app. Carrying the rest forward means carrying its seed data,
+  its auth, its 20-endpoint API surface and its dependencies into a SPACE
+  deployment review. Cutting it now is faster than cutting it later.
+
+
+================================================================================
+2. THE CARRY-FORWARD MANIFEST
+================================================================================
+
+Your list used generic names. Here is the mapping to what actually exists in
+this repository, so nobody wastes a day looking for a file that was never
+written.
+
+  You wrote                  Actual file(s) in this repo
+  ------------------------   --------------------------------------------------
+  search_service.py          global_search_core/pipeline.py
+                             + app/search/retrieval.py
+  database_connector.py      app/core/data_sources.py
+                             + app/connectors/multi_database.py
+  schema_service.py          app/schema_catalog/snapshot.py
+  query_classifier.py        app/search/query_intel.py
+  sql_agent.py               app/sql_agent/ (pipeline, generator, validator,
+                             executor - 4 files)
+  search_client.py           app/search/indexer.py get_search_client()
+  embedding_service.py       app/search/embeddings.py
+  result_merger.py           app/connectors/multi_database.py _merge_by_score()
+                             + app/search/result_filter.py
+  prompts/                   DOES NOT EXIST. Prompts are inline string literals
+                             in answer.py, sql_agent/generator.py,
+                             drawing_vision.py, object_inventory.py.
+                             Extracting them is a real task - see 2.4.
+
+--------------------------------------------------------------------------------
+2.1  BUCKET A — LIFT AS-IS  (copy, keep working, do not redesign)
+--------------------------------------------------------------------------------
+These are self-contained, have no auth or DB coupling, and are the actual value.
+
+  KEEP  backend/app/search/query_intel.py                (48 KB)
+        analyze_query, detect_content_types, is_question, extract_search_terms,
+        rerank_score, DOMAIN_SIGNALS. Rule-based, no network, no LLM.
+        This is your single highest-value asset.
+
+  KEEP  backend/app/search/query_planner.py              (6 KB)
+        plan_query, QueryMode, exhaustive-mode fetch limits.
+
+  KEEP  backend/app/search/result_filter.py              (32 KB)
+        filter_results_for_query / filter_results_for_display.
+        Note: this is RELEVANCE filtering, not permission filtering. Keep it,
+        but do not mistake it for a security control.
+
+  KEEP  backend/app/search/embeddings.py                 (4 KB)
+        Add batching + retry later; ships as-is for DEV.
+
+  KEEP  backend/app/search/indexer.py                    (19 KB)
+        ensure_index_exists index schema, get_search_client, index_documents.
+        The ACL field names are already declared - you will populate them.
+
+  KEEP  backend/app/search/incremental_sync.py           (5 KB)
+  KEEP  backend/app/search/sync_state.py                 (3 KB)
+        Watermark + content-hash gated embedding. Genuinely good, keep.
+
+  KEEP  backend/app/search/catalog/                      (4 files, ~14 KB)
+        Declarative entity definitions + 5 YAML files.
+
+  KEEP  backend/app/search/metrics.py                    (5 KB)
+        In-process only, but useful for the Jira latency-baseline story.
+
+  KEEP  backend/global_search_core/                      (6 files)
+        models.py, connector.py, extractor.py, registry.py, pipeline.py.
+        ONE EDIT NEEDED: pipeline.py:75-80 imports app.core.data_sources.
+        Cut that import so the package is standalone.
+
+  KEEP  backend/app/search/structured_filters.py         (4 KB)
+  KEEP  backend/app/search/index_reader.py               (11 KB)
+  KEEP  backend/app/search/index_purge.py                (5 KB)
+
+--------------------------------------------------------------------------------
+2.2  BUCKET B — LIFT + HARDEN  (carry the file, make a specific change)
+--------------------------------------------------------------------------------
+Each line states the exact change. These are the 7-day work items.
+
+  HARDEN  backend/app/search/retrieval.py                (17 KB)
+          - Cache key must include the caller's entitlement hash.
+            Today: _search_cache_key(query, filter_type, top_k, analysis_suffix,
+            search_index) at line 47-57. The security_filter is only folded in
+            at line 91 when one is passed - and for Space sources none is.
+          - Keep the hybrid strategy and the embedding gate untouched.
+
+  HARDEN  backend/app/connectors/buildtrack.py           (6 KB)
+          - LINE 70 IS THE BUG: security_filter=None is hardcoded for every
+            Space source. Must pass the resolved scope filter.
+
+  HARDEN  backend/app/connectors/multi_database.py       (9 KB)
+          - LINE 99-105: cache key has no user dimension. Add entitlement hash.
+          - LINE 125: fut.result() has no timeout. Add a per-source deadline.
+          - LINE 150-155: source errors are logged and swallowed. Surface them
+            as partial:true + failedSources[] in the response.
+
+  HARDEN  backend/app/search/security_trim.py            (2 KB)
+          - LINE 20: role check compares against "project_manager" but
+            UserRole.project_manager.value is "Project Manager", so .lower()
+            yields "project manager" and never matches. Project Managers are
+            silently treated as restricted. Fix, and re-base the whole module on
+            SPACE roles rather than the POC's 4-value enum.
+          - Must become the single scope authority used by every path.
+
+  HARDEN  backend/app/core/data_sources.py               (20 KB)
+          - Keep the DataSource registry and select_sources_for_analysis.
+          - Move connection strings to Key Vault references.
+          - The 17 enable-flags are fine as feature flags; keep them.
+
+  HARDEN  backend/app/core/space_databases.py            (8 KB)
+          - Keep the registry. Remove resolve_space_database_url()'s
+            string-swap derivation (lines 249-266) - every DB URL must be
+            explicit configuration, not derived by swapping a database name
+            inside another connection string.
+
+  HARDEN  backend/app/search/cross_db_links.py           (59 KB)
+          - The 16 hops in _SPACE_PROJECT_HOPS are your "Linked" feature and
+            your Jira demo depends on them. Keep them.
+          - EVERY hop SQL must gain a scope predicate. They currently filter
+            only by the seed record's ProjectId, which means if a user reaches
+            ANY hit, they get all linked records for that project regardless of
+            their own access. Add: AND ProjectId IN (:allowed_project_ids).
+          - Delete PROJECT_ALIASES (lines 51-57) - 5 hardcoded demo project
+            name pairs.
+          - The BuildTrack<->assets name-string matching (lines ~1024-1110) is
+            not SPACE-relevant. Drop it.
+
+  HARDEN  backend/app/sql_agent/                         (4 files, 25 KB)
+          - This is the risky one and your demo needs it (Jira: "list active
+            projects", "HSE reviews", "incidents", "contracts").
+          - validator.py already has _ensure_join_key_columns() which forces
+            ProjectId into the SELECT list. Extend that same mechanism to force
+            a WHERE ProjectId IN (:allowed) predicate onto every generated
+            query, rejecting any statement where it cannot be applied.
+          - Keep the read-only regex guard, the table allowlist and the TOP N
+            clamp. Add: parameterisation, and a hard rejection (not a warning)
+            when the scope predicate cannot be injected.
+          - executor.py:124 ids are positional (schema-sql-{source}-{i}).
+            Replace with the real PK, which _promote_join_keys() already lifts
+            into metadata at lines 37-85. Without this you cannot deep-link or
+            deduplicate schema-SQL results.
+
+  HARDEN  backend/app/search/space_hybrid.py             (3 KB)
+          - Thread the scope filter through to both the index path and the
+            schema-SQL path.
+
+  HARDEN  backend/app/search/space_indexer.py            (24 KB)
+          - Keep the Events / Event_Agenda / Event_Information special builders.
+            They are the best-modelled documents in the repo.
+          - Populate the ACL fields at index time: project_id (from
+            Event_Information.DimensionId where DimensionType='PROJECT'),
+            plus tenant/company if SPACE has one.
+          - Remove the url field (lines 361, 461, 502, 544). Those routes
+            (/space/...) do not exist and never did. Emit entity_type +
+            entity_id instead; SPACE owns routing.
+
+  HARDEN  backend/app/schema_catalog/                    (5 files, 46 KB)
+          - Keep snapshot.py (INFORMATION_SCHEMA introspection) and the 17
+            cached JSON snapshots - they are real, useful, and expensive to
+            regenerate.
+          - descriptions.py (20 KB of hand-written table hints) is genuine
+            domain knowledge. Keep.
+          - Move refresh from an API endpoint to a scheduled job.
+
+  HARDEN  backend/app/api/routes/search.py               (12 KB)
+          - Keep POST /results and POST /answer.
+          - Move the other 17 endpoints to a separate admin router behind an
+            admin role check. Today any authenticated user can trigger a full
+            reindex or clear the cache.
+
+  HARDEN  backend/app/search/blob_retrieval.py           (29 KB)
+          - Only if document content search is in the 31 Aug scope. Per your
+            Jira it is not - DMS appears only as a deep-link target. Recommend
+            deferring the whole file to Phase 2.
+
+  HARDEN  frontend/lib/global-search/                    (4 files)
+          - This is Jira story "Package SearchBar as reusable module". The types
+            and createSearchClient already exist but are IMPORTED NOWHERE -
+            SearchBar.tsx duplicates TYPE_CONFIG inline instead.
+          - Finish the extraction: make SearchBar consume GlobalSearchConfig,
+            and add the onOpenResult callback so SPACE owns navigation.
+
+  HARDEN  frontend/components/layout/SearchBar.tsx       (1027 lines)
+          - Carry the behaviour: 280 ms debounce, min 2 chars, two-phase
+            (results then AI answer at 1200 ms), grouping, filter tabs,
+            recent searches, empty state.
+          - Strip the ~30-entry BuildTrack TYPE_CONFIG and drive it from props.
+          - ADD what it lacks: role="combobox"/"listbox" ARIA, and arrow-key
+            navigation. Neither exists today. If SPACE has accessibility
+            standards this will be caught in review.
+          - Navigation must call props.onOpenResult(hit), not router.push(url).
+
+--------------------------------------------------------------------------------
+2.3  BUCKET C — REWRITE  (concept survives, implementation does not)
+--------------------------------------------------------------------------------
+
+  REWRITE  Authentication
+           POC: backend/app/core/security.py, api/routes/auth.py, api/deps.py
+           Own HS256 JWT, hardcoded fallback secret (config.py:18), token
+           carries only {sub, exp}, open /register where the caller picks their
+           own role including Admin, and a 90-second cache keyed on the raw
+           token that re-validates nothing.
+           NEW: validate the SPACE token. Issue nothing. Delete all three files.
+           This is Jira story "Map SPACE session user into search security".
+
+  REWRITE  Entitlement resolution                        NEW COMPONENT
+           Resolve SPACE user -> allowed project ids -> a stable scope hash.
+           The POC's security_trim.allowed_project_ids() reads the POC's own
+           TeamMember table. SPACE's equivalent, confirmed present in the schema
+           snapshot, is um.User_Assignment.ProjectId (with IsActive).
+           This one component is what makes everything else safe.
+
+  REWRITE  Caching
+           POC has six in-process dicts: retrieval._search_cache,
+           answer._answer_cache, embeddings._embed_cache, index_reader._cache,
+           cross_db_links._lookup_cache, deps._user_by_token. None are
+           user-scoped.
+           NEW: every cache key gains the scope hash. For DEV, in-process is
+           acceptable if the key is right and you run one replica. Redis before
+           UAT.
+
+  REWRITE  Error handling / partial failure
+           POC swallows source errors. NEW: one error envelope
+           {code, message, correlationId}, plus partial:true and
+           failedSources[] on 200 responses.
+
+  REWRITE  Logging
+           POC: logging.basicConfig(level=INFO), no correlation id, and it logs
+           content prefixes - embeddings.py:101 logs text[:60] of whatever is
+           being embedded, answer.py:1091 logs query[:40].
+           NEW: structured logs, correlation id from SPACE, and do not log query
+           text or content by default.
+
+  REWRITE  Configuration
+           POC: backend/.env read by pydantic-settings.
+           NEW: Key Vault. Verified live secrets currently in that file: Azure
+           SQL connection strings with embedded passwords, SPACE SQL credentials,
+           two Azure OpenAI keys, an Azure AI Search ADMIN key, and a storage
+           connection string. See section 3, fix 0.
+
+  REWRITE  Service boundaries
+           POC runs indexing as asyncio tasks inside the API process
+           (main.py lifespan). NEW: indexing is a separate scheduled worker.
+
+  REWRITE  DB connection management
+           Keep SQLAlchemy, keep per-source engines. But cross_db_links creates
+           and disposes an engine per hop, per query. Pool them.
+
+--------------------------------------------------------------------------------
+2.4  EXTRACT PROMPTS  (small task, easy to forget)
+--------------------------------------------------------------------------------
+You listed "prompts/" as a keeper. There is no prompts folder. The prompts are
+inline string literals:
+
+  app/search/answer.py:382-409          RAG answer prompt (question + summary
+                                        modes), JSON response format
+  app/sql_agent/generator.py:39-56      SQL generation system + user prompt
+  app/search/drawing_vision.py:889+,    vision prompts (out of SPACE scope)
+  app/search/object_inventory.py:410+   inventory prompts (out of SPACE scope)
+  app/search/drawing_sheet_intel.py:89-115
+
+  Carry forward only the first two. Put them in backend/app/prompts/ as
+  versioned templates so they can be changed without a code deploy and so the
+  SPACE team can review what is sent to Azure OpenAI.
+
+--------------------------------------------------------------------------------
+2.5  BUCKET D — DO NOT CARRY
+--------------------------------------------------------------------------------
+
+  Demo application (not search at all)
+    app/api/routes/projects.py, tasks.py, team.py, documents.py,
+      operational.py, files.py, assets.py, auth.py
+    app/models/, app/schemas/ (the POC's own domain model)
+    app/seed_kpi.py, app/seed_operational.py
+    scripts/setup_assets_db.py (and its seeded project names, lines 322-500)
+    All of frontend/ except SearchBar behaviour + lib/global-search
+
+  BuildTrack / assets sources (not SPACE)
+    app/search/assets_indexer.py, sql_source_search.py, workforce_db.py,
+      sql_indexer.py, sql_push_indexer.py, operational_index.py,
+      document_enrich.py, hydrate.py, content_service.py, content_mappers.py,
+      document_strategy.py, static_docs.py
+    app/connectors/buildtrack.py's assets branch (line 114)
+    app/extractors/buildtrack.py
+    catalog/entities/material.yaml
+
+  CAD / drawing vision subsystem (~200 KB, not in SPACE scope)
+    app/search/object_inventory.py         (106 KB - the largest file in the repo)
+    app/search/drawing_vision.py           (54 KB)
+    app/search/drawing_sheet_intel.py      (23 KB)
+    app/search/inventory_validate.py       (11 KB)
+    app/search/drawing_text_extract.py, document_text_extract.py
+    app/storage/drawing_*.py, dwg_preview.py, document_crawl.py
+    app/drawing_crawl_text.py
+    Dependencies this removes: aspose-cad, PyMuPDF, pypdfium2, Pillow.
+    Dropping these makes the container smaller and the security review shorter.
+
+  Dead code
+    frontend/components/search/SearchResults.tsx   imported nowhere
+    frontend/components/search/AIAnswer.tsx        imported nowhere
+    frontend/app/(dashboard)/search/page.tsx       redirects to /dashboard
+    app/search/static_docs.py, operational_index.py  (0 KB)
+    app/schemas/search.py                          (0 KB)
+    answer.py:1160-1170                            unreachable after line 1158
+
+  Temporary / debug scripts (backend/scripts/ - 23 files)
+    Keep only: sync_schema_catalog.py, sync_space_to_search.py,
+               purge_stale_search_index.py   (promote these to jobs)
+    Drop: probe_cross_db_hops.py, smoke_pending_hops.py (hardcodes ProjectId=15,
+          Code=P_AHMPR at lines 13-28), probe_bms_codes.py, diagnose_indexer.py,
+          check_search_view.py, inspect_rag_index.py, verify_azure_sql.py,
+          benchmark_drawing_accuracy.py, reset_drawings.py, update_admin_user.py,
+          rebuild_*.py, seed_*.py, setup_assets_db.py, sync_documents_to_blob.py,
+          sync_drawings_to_blob.py, sync_drawing_crawl_sidecars.py,
+          sync_assets_to_search.py
+
+  Infrastructure
+    docker-compose.yml         local SQL Server 2022 + Azurite
+    docker/                    SQL init scripts
+    backend/.env               ROTATE THE SECRETS, then delete
+    azure/search/provision_indexers.py   marked deprecated in the file itself
+
+  Hardcoded values to strip while lifting
+    cross_db_links.py:51-57    PROJECT_ALIASES (5 demo project name pairs)
+    scripts/smoke_pending_hops.py:13-28   ProjectId=15, P_AHMPR, Ahmedabad
+    config.py:17               default postgres URL (misleading - all MSSQL now)
+    config.py:18               SECRET_KEY default "buildtrack-super-secret-jwt-key"
+    space_databases.py:65-172  17 DB names - keep as config, not constants
+    blob_retrieval.py:112-131  finds the index by substring "rag" in its name
+
+
+================================================================================
+3. THE SIX NON-NEGOTIABLE FIXES BEFORE THE DEV DEMO
+================================================================================
+
+Ordered by risk. Fix 0 is independent of everything and should happen today.
+
+  FIX 0 — ROTATE THE SECRETS.                              [today, 1 hour]
+    backend/.env holds live values: DATABASE_URL and AZURE_SQL_CONNECTION_STRING
+    with embedded passwords, SPACE_DATABASE_URL with on-prem SQL credentials,
+    AZURE_OPENAI_KEY (84 chars), AZURE_OPENAI_EMBEDDING_KEY (84), AZURE_SEARCH_KEY
+    (52, an ADMIN key), AZURE_STORAGE_CONNECTION_STRING (192). The file is
+    gitignored (.gitignore:19) but the values are real and have been on a laptop
+    and in a shared analysis. Rotate all of them.
+
+  FIX 1 — VALIDATE THE SPACE TOKEN.                        [Jira story, 8h]
+    Delete the POC's own JWT issuance. Validate SPACE's token: signature via
+    JWKS, issuer, audience, expiry. Extract user id, roles, and tenant if SPACE
+    has one. Fail closed - no token, no results, 401.
+
+  FIX 2 — RESOLVE SCOPE ONCE PER REQUEST, FAIL CLOSED.
+    Resolve the SPACE user's allowed project ids. Confirmed available in the
+    schema: um.User_Assignment.ProjectId with IsActive, joined to um.Users.
+    If scope cannot be resolved -> return empty, never return everything.
+    Today security_trim.allowed_project_ids() returns [] on failure, which is
+    correct behaviour; but build_security_odata() returns None (= unrestricted)
+    for admin/PM roles, and that role mapping must be re-based on SPACE roles.
+
+  FIX 3 — APPLY THE SCOPE ON EVERY PATH. This is the actual fix.
+    Four paths currently bypass it:
+      a) connectors/buildtrack.py:70   security_filter=None for Space sources
+      b) sql_agent/                    no user predicate in generated SQL
+      c) cross_db_links.py hops        privileged SQL, results appended after
+                                       any filtering would have run
+      d) blob_retrieval.py             no ACL field exists on the chunk index
+                                       (defer the whole path instead)
+    Every one must receive and enforce the resolved project id set.
+
+  FIX 4 — PUT THE SCOPE HASH IN EVERY CACHE KEY.
+    retrieval.py:47-57 and multi_database.py:99-105 both build keys with no user
+    dimension, TTL 120s. answer.py's answer cache is 300s. Until this is fixed,
+    User A's results are served to User B. This is a small change with a large
+    consequence.
+
+  FIX 5 — SPLIT THE ADMIN SURFACE.
+    17 of the 20 endpoints in routes/search.py require only a valid token. A
+    SPACE user with any role can today POST /api/search/index and trigger a full
+    reindex, or POST /api/search/cache/clear. Move them behind an admin role.
+
+  Suggested verification before the demo, in one sitting:
+    Log in as two SPACE users on different projects. Run the same five demo
+    queries as each. Diff the result sets. If they are identical, Fix 3 is not
+    done. Then deliberately break the filter and confirm the test catches it.
+
+
+================================================================================
+4. SEVEN-DAY PLAN  (mapped to your Jira stories)
+================================================================================
+
+  DAY 1  Freeze the POC repo, tag it. Create space-global-search.
+         Rotate all secrets (Fix 0).
+         Lift Bucket A verbatim. Nothing to debug - these files have no auth or
+         DB coupling. You should have a service that starts and searches by end
+         of day, still on POC auth.
+         Send the SPACE team the questions in section 7. Do not wait for answers
+         to continue.
+
+  DAY 2  Auth. Fix 1 + Fix 2.
+         SPACE JWT validation + entitlement resolution component.
+         This is the Jira story "Map SPACE session user into search security".
+         BLOCKED IF: the SPACE team has not given you the JWT spec. That is why
+         section 7's prompt goes out on day 1.
+
+  DAY 3  Fix 3 + Fix 4. Thread the scope through buildtrack.py, space_hybrid.py,
+         sql_agent (validator scope injection), cross_db_links hops.
+         Add the scope hash to all cache keys.
+         Run the two-user diff test at the end of the day.
+
+  DAY 4  Frontend. Jira "Package SearchBar as reusable module" +
+         "Mount Global Search Bar in SPACE shell (DEV)".
+         Finish the lib/global-search extraction, wire SearchBar to props,
+         replace router.push(url) with onOpenResult(hit).
+         Add ARIA roles and arrow-key navigation.
+
+  DAY 5  Deep links. Jira "Deep-link search results into SPACE module screens".
+         Build the SPACE URL mapper in the FRONTEND, keyed on
+         (sourceSystem, entityType, entityId). Remove url emission from
+         space_indexer.py and give schema-SQL hits real PKs
+         (executor.py:124 - use the values _promote_join_keys already lifts).
+         BLOCKED IF: you do not have SPACE's route list. Section 7 asks for it.
+
+  DAY 6  Deploy to SPACE DEV. Jira "Deploy Global Search API for SPACE DEV".
+         CORS for the SPACE origin (main.py:138-153 currently allows only
+         localhost:3000-3003). Key Vault. Health endpoints. One process per port.
+         Fix 5 - split the admin router.
+         Add per-source timeouts and partial:true (multi_database.py:125, 150).
+
+  DAY 7  Jira "SPACE UAT checklist, latency baseline".
+         Run the demo queries from the Jira regression pack: list active
+         projects, HSE reviews, incidents, contracts, EVT/agenda, Linked hops.
+         Measure /results vs /answer latency - there is currently NO benchmark
+         data anywhere in the repo, so this is your first real number.
+         Write the rollback plan and the go/no-go note.
+
+  WHAT TO CUT IF YOU RUN OUT OF TIME, in this order:
+    1. The AI answer endpoint (/search/answer). It is the slowest, costliest,
+       least essential part. Fast results alone still demo well.
+    2. The "Linked" cross-DB hops. Impressive but they are the hardest thing to
+       make scope-safe and they inflate latency.
+    3. Deep links - fall back to opening a filtered SPACE list view.
+    NEVER cut: Fix 1 through Fix 4.
+
+
+================================================================================
+5. WHAT THE ARCHITECTURE ACTUALLY IS AFTER 31 AUG
+================================================================================
+
+  SPACE application shell
+      |
+  SearchBar widget (packaged, props-driven, onOpenResult owned by SPACE)
+      |
+  SPACE JWT
+      |
+  Global Search Service  (the promoted POC backend, standalone)
+      |
+      +-- SPACE JWT validation
+      +-- Entitlement resolution -> allowed project ids + scope hash
+      +-- Query understanding (query_intel, rules only)
+      +-- Source selection (data_sources)
+      +-- Fan-out, scope-filtered on every path:
+      |     - space-action-index (Azure AI Search, ACL fields populated)
+      |     - schema-SQL against Space DBs (scope predicate forced)
+      |     - cross-DB hops (scope predicate added)
+      +-- Merge, rank (rerank_score), dedupe, relevance filter
+      +-- Response { hits, total, partial, failedSources }
+      |
+  SPACE UI renders; SPACE owns navigation
+
+  This is an index-plus-direct-read architecture, not the federated-API
+  architecture I recommended earlier. That is a deliberate, deadline-driven
+  choice and it is defensible ONLY because the scope filter is enforced on every
+  path. Direct DB reads are not the problem; unfiltered direct DB reads are.
+  Write that sentence into your go/no-go note so the trade is explicit.
+
+
+================================================================================
+6. GATES — DEV-ACCEPTABLE vs BLOCKS UAT vs BLOCKS PROD
+================================================================================
+
+  ACCEPTABLE FOR THE 31 AUG DEV DEMO
+    In-process caching (single replica), provided the scope hash is in the key
+    No Redis
+    No Application Insights; basic structured logging
+    No CI/CD; manual deploy with a runbook
+    Schema-SQL LLM path, provided scope injection is mandatory and fails closed
+    No relevance evaluation set
+    Index ACL fields populated for space-action-index only
+
+  BLOCKS UAT
+    Any path that can return a record outside the user's scope
+    Cross-user cache leakage
+    Admin endpoints reachable by non-admin SPACE users
+    Secrets outside Key Vault
+    No partial-failure signalling (a dead source must not look like zero results)
+    No per-source timeout
+    Positional entity ids on the schema-SQL path
+
+  BLOCKS PROD
+    LLM-generated SQL against production databases without a security review
+      sign-off. Get this reviewed early - it is the item most likely to be
+      rejected by a security team, and the fallback (disable SCHEMA_SQL_ENABLED
+      and rely on the index + hops) needs to be tested before you need it.
+    No relevance regression baseline
+    Document/chunk search with no ACL fields (currently the chunk index has
+      none at all) - keep this out of scope until it is designed
+    Full crawl every 15 minutes on the pull indexer (cost)
+    No automated authorization tests in the pipeline
+
+
+================================================================================
+7. QUESTIONS FOR THE SPACE TEAM — COPY-PASTE PROMPTS
+================================================================================
+
+Send PROMPT 1 and PROMPT 2 today. They are the only true blockers.
+
+--------------------------------------------------------------------------------
+PROMPT 1 — AUTH  (send to the SPACE backend team) [BLOCKS DAY 2]
+--------------------------------------------------------------------------------
+We are integrating a Global Search API into the SPACE application. It will be a
+separate backend service that SPACE's frontend calls with the logged-in user's
+token. We need to validate that token and derive the user's identity from it.
+Please provide:
+
+1. Token format: JWT? Signing algorithm (RS256/HS256)? If asymmetric, the JWKS
+   URL. If symmetric, how the key is shared and rotated.
+2. The exact `iss` (issuer) and `aud` (audience) values we should verify, per
+   environment (DEV / UAT / PROD).
+3. A decoded sample payload (redact values, keep the claim NAMES) for: a normal
+   user, a restricted user, and an admin.
+4. Which claim carries the user id, and does it map to um.Users.UserId?
+5. Which claim carries roles, and what is the full list of role values?
+6. Is SPACE multi-tenant? If yes, which claim carries the tenant/company, and is
+   every record tenant-scoped? (We found no TenantId column in any of the 17
+   SPACE database schemas, only CompanyId in admin.Company and
+   um.User_Employment - so we need to know what the real isolation boundary is.)
+7. Token lifetime and refresh mechanism.
+8. Is there a service-to-service or on-behalf-of flow if our service needs to
+   call other SPACE APIs as the user?
+9. Two working DEV tokens for two users with DIFFERENT project access, so we can
+   test that search results differ correctly.
+
+--------------------------------------------------------------------------------
+PROMPT 2 — AUTHORIZATION MODEL  (send to the SPACE backend team) [BLOCKS DAY 3]
+--------------------------------------------------------------------------------
+Global Search must return only records the logged-in SPACE user is allowed to
+see. We plan to resolve the user's accessible project ids on every request and
+apply that as a filter to every source. Please confirm or correct:
+
+1. Is "which projects can this user see" the correct primary authorization
+   dimension in SPACE? Or is there a finer-grained model (module-level
+   permissions, record-level ACLs, role-per-project)?
+2. Is um.User_Assignment (UserId, ProjectId, IsActive) the authoritative source
+   for a user's project access? Are there other tables that grant access -
+   e.g. reporting lines via PrimaryReportingUserId/MatrixReportingUserId, or
+   MasterAssignment, or role-based global access?
+3. Which roles, if any, see ALL projects? Give the exact role identifiers.
+4. Is there an existing API endpoint that returns "all project ids visible to
+   user X"? If yes, the contract. If no, may we query um.User_Assignment
+   directly with a read-only service account?
+5. Do any modules have visibility rules that are NOT project-based? We are
+   specifically concerned about:
+     - Checklist / Work Permit (chkwp.Submission) - is there an "assigned to me"
+       default that governs who normally sees a submission? We found no
+       AssignedTo or AssignmentOption column in the schema.
+     - DMS documents - are there document-level permissions beyond the project
+       link in dms.Document_MetaData?
+     - User / LMS Labour - is searching people acceptable, and are there privacy
+       restrictions?
+6. If we index data into Azure AI Search, what fields must we store per record
+   to reproduce SPACE's permission rules at query time?
+7. Is there a bulk authorization API ("given these record ids, which may this
+   user see?") we could use to verify our filtering is correct?
+
+--------------------------------------------------------------------------------
+PROMPT 3 — FRONTEND / ROUTES  (send to the SPACE frontend team) [BLOCKS DAY 5]
+--------------------------------------------------------------------------------
+We are embedding a Global Search bar into the SPACE application shell. Clicking a
+result must open the correct SPACE screen. Please provide:
+
+1. The route (URL pattern) and the required id parameter for each of these
+   entities, and whether the detail view is directly URL-addressable or only
+   reachable by clicking through a list:
+     Project, Incident, User, Labour, Contractor, DMS Document, DMS Document
+     File / Attachment, Contract (CMS), Meeting/Event (Action), Event Agenda,
+     Event Task, HSE Occupational Review, HSE Environmental Review, Checklist /
+     Work Permit Submission.
+2. For any entity that is NOT directly addressable: what should clicking a
+   search result do instead? Open a filtered list? Open a modal?
+3. Where should the search bar live - header, command palette, or a dedicated
+   page? Is there an existing SearchBar component we should extend rather than
+   replace?
+4. Does SPACE have an existing search SDK or shared types (SearchHit /
+   SearchResult) we must conform to? If yes, the current TypeScript definitions.
+5. What does the SPACE api-client add to outgoing requests - correlation id
+   header name, tenant header, timeout, error envelope, 401 handling?
+6. Design tokens / theme variables we should use.
+7. Accessibility standard the component must meet.
+8. React version, and whether we ship as a package in your monorepo or as a
+   separate installable module.
+
+--------------------------------------------------------------------------------
+PROMPT 4 — PLATFORM / DEPLOY  (send to the SPACE platform team) [BLOCKS DAY 6]
+--------------------------------------------------------------------------------
+We need to deploy a Global Search API service for SPACE DEV by 31 August.
+It is currently Python 3.11 / FastAPI, containerised, and needs the Microsoft
+ODBC Driver 18 for SQL Server. Please confirm:
+
+1. Can we deploy a Python container to SPACE DEV? If not, what runtime is
+   required, and what is the standard deployment unit?
+2. Network: can the service reach the DEV_V1_SPACE_* SQL databases from where it
+   will run? VPN, private endpoint, or firewall rule needed?
+3. Which Azure subscription and resource group should host the Azure AI Search
+   index? Is there an existing SPACE Azure AI Search service we should use?
+4. Is Azure OpenAI approved for SPACE, and is there an existing deployment we
+   should use (chat + text-embedding-3-small)? Any data-residency restriction on
+   sending SPACE record text to it?
+5. Key Vault name and the managed identity we should use. We will have no
+   secrets in files.
+6. The exact origin(s) to allow in CORS for SPACE DEV and UAT.
+7. Is Application Insights the standard, and what is the correlation-id
+   convention?
+8. Is there a shared Redis we can use later for caching?
+9. What is the DEV -> UAT -> PROD promotion process and who approves it?
+
+--------------------------------------------------------------------------------
+PROMPT 5 — SCOPE CONFIRMATION  (send to your product owner / SPACE team)
+--------------------------------------------------------------------------------
+For the 31 August SPACE DEV demo, please confirm the scope:
+
+1. Which SPACE modules MUST be searchable for the demo? Our recommendation based
+   on data quality in the SPACE schemas: Action/Meetings and CMS/Contracts have
+   the richest searchable text; Project is the natural anchor; Incident, HSE,
+   LMS and DMS metadata are feasible. Checklist/Work Permit is NOT ready - the
+   chkwp.Submission table has only SubmissionNumber and LocationDetails as text
+   and no title field.
+2. Which of the 17 SPACE databases must be switched ON for go-live?
+3. Is the AI answer feature (natural-language summary above the results) in
+   scope for the demo, or results-only?
+4. Is searching inside document FILE CONTENT (PDF/Word bodies in DMS) in scope,
+   or is document metadata (title, number, keywords) sufficient?
+5. Is searching people (Users, Labour) acceptable, or is that a privacy concern?
+6. What is the acceptable response time for the search dropdown?
+7. Who are the two DEV test users with different project access we can use for
+   permission testing?
+
+--------------------------------------------------------------------------------
+PROMPT 6 — IF YOU HAVE ACCESS TO THE SPACE FRONTEND REPO
+--------------------------------------------------------------------------------
+Paste this into an agent pointed at the SPACE frontend repository:
+
+  Investigate this repository and report, with exact file paths and code quotes.
+  Do not modify any code.
+  1. Find the existing global search bar / search input in the application shell
+     or header. Is it functional or a placeholder? What does it call?
+  2. Find any search SDK or shared search types. Quote the SearchHit /
+     SearchResult / SearchResponse TypeScript interfaces verbatim, and any
+     search(), registerIndex() or deep-link factory functions.
+  3. Find the shared API client. Report: base URL config, how the auth token is
+     attached, all headers added (correlation id, tenant), timeout, retry, error
+     handling, and 401/403 behaviour. Quote the interceptors.
+  4. List every route in the router. For each, state whether it is a detail page
+     with an id parameter or a list page. I specifically need the routes for:
+     project, incident, user, labour, contractor, document (DMS), contract (CMS),
+     meeting/event, HSE review, checklist/work permit submission.
+  5. How is the logged-in user's token stored and read? Is there an auth
+     context/hook?
+  6. What is the design system? Component library, theme tokens, how a dropdown
+     or command palette is built today.
+  7. React version, TypeScript version, build tooling, and whether this is a
+     monorepo with publishable internal packages.
+  8. Any existing module-specific search implementations - which modules already
+     have their own search UI and what API do they call?
+
+
+================================================================================
+8. WHAT I NEED FROM YOU TO GO FURTHER
+================================================================================
+
+Answer these and I can turn this into a concrete task breakdown:
+
+  1. Do you have access to the SPACE frontend repository, or only to this POC?
+     If yes, run PROMPT 6 and paste the output back to me.
+  2. Is the 31 Aug target a live demo to stakeholders, or a technical DEV
+     milestone? This changes how much polish versus how much hardening to
+     prioritise.
+  3. How many developers are on this, and is it just you?
+  4. Has anyone from the SPACE security team looked at the plan to run
+     LLM-generated SQL against SPACE databases? If not, raise it this week - it
+     is the item most likely to be rejected late.
+  5. Do you already have SPACE DEV credentials and network access from wherever
+     the service will be deployed?
+
+================================================================================
+END
+================================================================================

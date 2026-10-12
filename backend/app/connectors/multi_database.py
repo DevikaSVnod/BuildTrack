@@ -65,27 +65,36 @@ class MultiDatabaseConnector(SearchConnector):
         top_k: int,
         analysis: Any,
     ) -> list[SearchHit]:
-        from app.core.data_sources import get_enabled_sources
+        from app.core.data_sources import select_sources_for_analysis
         from app.search.retrieval import _search_cache, _search_cache_key
 
         source_ids = context.get("source_ids")
-        sources = get_enabled_sources(source_ids)
+        sources = select_sources_for_analysis(analysis, source_ids)
         if not sources:
             raise RuntimeError("No enabled search data sources configured")
 
-        # Pure workforce / role questions live only in BuildTrack — searching
-        # the assets index just adds latency and can pollute with documents.
-        content_types = list(getattr(analysis, "content_types", None) or [])
-        if content_types == ["team"]:
-            bt = [s for s in sources if s.id == "buildtrack"]
-            if bt:
-                sources = bt
-
-        # Single source → same path as before (plus source tags).
+        # Single source: still run Space ProjectId expansion when sibling Space DBs exist.
         if len(sources) == 1:
-            return self._retrieve_one(
+            hits = self._retrieve_one(
                 sources[0], context, query, filter_type, top_k, analysis
             )
+            try:
+                from app.core.data_sources import get_enabled_sources
+                from app.core.space_databases import is_space_source_id
+                from app.search.cross_db_links import attach_related_hits
+                from app.search.query_intel import parse_manager_filter
+
+                enabled_ids = {s.id for s in get_enabled_sources()}
+                space_siblings = {s for s in enabled_ids if is_space_source_id(s)}
+                if len(space_siblings) >= 2 and not parse_manager_filter(query):
+                    hits = attach_related_hits(
+                        hits, query=query, max_related=max(6, top_k)
+                    )
+                    # Keep room for ProjectId hops beyond the seed top_k rows.
+                    hits = hits[: max(top_k * 4, top_k) + 24]
+            except Exception as exc:
+                logger.warning("Single-source cross-DB attach skipped: %s", exc)
+            return hits
 
         cache_key = _search_cache_key(
             query,
@@ -133,7 +142,7 @@ class MultiDatabaseConnector(SearchConnector):
                 merged = attach_related_hits(
                     merged, query=query, max_related=max(6, top_k)
                 )
-                merged = merged[: max(top_k * 2, top_k) + 8]
+                merged = merged[: max(top_k * 4, top_k) + 24]
         except Exception as exc:
             logger.warning("Cross-DB relationship attach skipped: %s", exc)
 

@@ -267,9 +267,25 @@ def _format_result_for_context(r: Dict[str, Any], index: int, query: str = "") -
     ]
     meta_str = ", ".join(meta_parts) if meta_parts else ""
     rel_note = ""
-    if meta.get("relationship") == "same_project" and meta.get("related_key"):
+    if meta.get("relationship") in {"same_project", "same_attachment", "same_user"} and meta.get(
+        "related_key"
+    ):
         via = meta.get("related_via") or "project_name"
-        rel_note = f" [linked across DBs via {via}={meta.get('related_key')}]"
+        if via == "space_project_id":
+            pname = meta.get("project") or meta.get("project_name")
+            key = meta.get("related_key")
+            if pname:
+                rel_note = (
+                    f" [linked across Space DBs via ProjectId={key} ({pname})]"
+                )
+            else:
+                rel_note = f" [linked across Space DBs via ProjectId={key}]"
+        elif via == "space_attachment_id":
+            rel_note = f" [linked via AttachmentId={meta.get('related_key')}]"
+        elif via == "space_user_id":
+            rel_note = f" [linked via UserId={meta.get('related_key')}]"
+        else:
+            rel_note = f" [linked across DBs via {via}={meta.get('related_key')}]"
 
     if _is_blob_content(r) or (
         ctype == "drawing" and (meta.get("sheet_notes") or meta.get("blob_chunk"))
@@ -811,13 +827,22 @@ def _answer_is_metrics_only(answer: str) -> bool:
 
 def _answer_says_not_found(answer: str) -> bool:
     lower = answer.lower()
-    if "could not find" in lower or "couldn't find" in lower or "no information" in lower:
+    if (
+        "could not find" in lower
+        or "couldn't find" in lower
+        or "no information" in lower
+        or "no relevant information" in lower
+        or "was not found" in lower
+        or "were not found" in lower
+    ):
         return True
     return bool(
         re.search(
             r"do(?:es)? not specify|don(?:'|')t specify|does not state|"
             r"not mentioned in the (?:document )?excerpt|"
-            r"excerpts do not specify|excerpt does not specify",
+            r"excerpts do not specify|excerpt does not specify|"
+            r"no(?:\s+\w+){0,3}\s+information.*\b(?:found|available)\b|"
+            r"\bnot found in the (?:provided )?sources\b",
             lower,
         )
     )
@@ -854,6 +879,20 @@ def _best_drawing_result(
         return None
     if len(drawings) == 1:
         return drawings[0]
+
+    qn = re.sub(r"\s+", " ", (query or "").strip().lower())
+
+    # Prefer an exact titled sheet when the user names it (e.g. University Plan).
+    for phrase in ("university plan", "campus plan", "site master plan", "master plan"):
+        if phrase in qn:
+            exact = [
+                r
+                for r in drawings
+                if phrase in (r.get("title") or "").lower()
+            ]
+            if exact:
+                drawings = exact
+                break
 
     def rank(r: Dict[str, Any]) -> float:
         meta = r.get("metadata") or {}
@@ -1162,6 +1201,7 @@ def generate_answer(
         question_mode = analysis.is_question if analysis else is_question(query)
         max_tokens = 700 if is_document_content_query(query) else (450 if question_mode else 280)
 
+        _llm_t0 = time.time()
         response = client.chat.completions.create(
             model=settings.AZURE_OPENAI_CHAT_DEPLOYMENT,
             messages=[
@@ -1178,6 +1218,17 @@ def generate_answer(
             temperature=0.1,
             response_format={"type": "json_object"},
         )
+        try:
+            from app.search.metrics import record_llm
+
+            usage = getattr(response, "usage", None)
+            record_llm(
+                (time.time() - _llm_t0) * 1000,
+                prompt_tokens=int(getattr(usage, "prompt_tokens", 0) or 0),
+                completion_tokens=int(getattr(usage, "completion_tokens", 0) or 0),
+            )
+        except Exception:
+            pass
 
         raw = response.choices[0].message.content or "{}"
         parsed = json.loads(raw)

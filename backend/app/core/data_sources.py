@@ -5,6 +5,7 @@ Each configured source has its own SQL connection and Azure Search index.
 When SEARCH_DATA_SOURCES is unset, sources are:
   1) primary DATABASE_URL + AZURE_SEARCH_INDEX
   2) ASSETS_DATABASE_URL (Azure SQL buildtrack_assets on same server)
+  3) SPACE_DATABASE_URL Space Action (+ enabled sibling Space DBs e.g. Project)
 """
 from __future__ import annotations
 
@@ -71,6 +72,11 @@ def _create_engine_for_source(source: DataSource) -> Engine:
 
     if source.id == "assets" or "buildtrack_assets" in (source.database_url or ""):
         return create_mssql_engine(resolve_assets_database_url())
+    from app.core.space_databases import get_space_db_config, resolve_space_database_url
+
+    space_cfg = get_space_db_config(source.id)
+    if space_cfg is not None:
+        return create_mssql_engine(resolve_space_database_url(space_cfg))
     if source.id == "buildtrack" or (
         source.database_url.startswith("mssql") and "buildtrack" in source.database_url
     ):
@@ -134,7 +140,7 @@ def _default_source() -> DataSource:
         database_url=settings.DATABASE_URL,
         search_index=settings.AZURE_SEARCH_INDEX,
         blob_index=settings.AZURE_SEARCH_BLOB_INDEX,
-        enabled=True,
+        enabled=bool(settings.SEARCH_ENABLE_BUILDTRACK),
         retrieval_mode="azure",
     )
 
@@ -160,9 +166,62 @@ def _assets_source() -> Optional[DataSource]:
             else ""
         ),
         blob_index=None,
-        enabled=True,
+        enabled=bool(settings.SEARCH_ENABLE_ASSETS),
         retrieval_mode="azure" if azure_ready else "sql",
     )
+
+
+def _space_source() -> Optional[DataSource]:
+    """Optional Space Action SQL → Azure AI Search space-action-index."""
+    if not (settings.SPACE_DATABASE_URL or "").strip():
+        return None
+    azure_ready = bool(settings.AZURE_SEARCH_ENDPOINT and settings.AZURE_SEARCH_KEY)
+    return DataSource(
+        id="space",
+        label="Space Action",
+        database_url=settings.SPACE_DATABASE_URL or "",
+        search_index=(
+            (settings.AZURE_SEARCH_SPACE_INDEX or "space-action-index")
+            if azure_ready
+            else ""
+        ),
+        blob_index=None,
+        enabled=bool(settings.SEARCH_ENABLE_SPACE),
+        retrieval_mode="azure" if azure_ready else "sql",
+    )
+
+
+def _sibling_space_sources() -> list[DataSource]:
+    """Schema-first Space DBs other than Action (Project, Common, UM, …)."""
+    if not (settings.SPACE_DATABASE_URL or "").strip():
+        return []
+    from app.core.space_databases import (
+        is_space_db_enabled,
+        list_known_space_db_configs,
+        resolve_space_database_url,
+    )
+
+    out: list[DataSource] = []
+    for cfg in list_known_space_db_configs():
+        if cfg.source_id == "space":
+            continue
+        try:
+            resolve_space_database_url(cfg)
+        except Exception as exc:
+            logger.warning("Could not resolve %s URL: %s", cfg.source_id, exc)
+            continue
+        out.append(
+            DataSource(
+                id=cfg.source_id,
+                label=cfg.label,
+                database_url=f"space://{cfg.database_name}",
+                search_index="",  # schema-SQL only unless has_row_index later
+                blob_index=None,
+                enabled=is_space_db_enabled(cfg),
+                retrieval_mode="azure",  # connector special-cases Space sources
+            )
+        )
+    return out
 
 
 @lru_cache(maxsize=1)
@@ -180,6 +239,10 @@ def list_configured_sources() -> tuple[DataSource, ...]:
     assets = _assets_source()
     if assets is not None:
         sources.append(assets)
+    space = _space_source()
+    if space is not None:
+        sources.append(space)
+    sources.extend(_sibling_space_sources())
     return tuple(sources)
 
 
@@ -190,6 +253,318 @@ def get_enabled_sources(
     if source_ids:
         wanted = {s.strip() for s in source_ids if s and s.strip()}
         sources = [s for s in sources if s.id in wanted]
+    return sources
+
+
+def select_sources_for_analysis(
+    analysis: Any = None,
+    source_ids: Optional[list[str]] = None,
+) -> list[DataSource]:
+    """
+    Same source narrowing used by multi-DB retrieve and answer-cache lookup.
+    Keep these in sync so /results and /answer hit the same indexes.
+
+    When SEARCH_CATALOG_ENABLED, prefer catalog domain → source mapping so
+    queries do not fan out to every database by default.
+    """
+    sources = get_enabled_sources(source_ids)
+    content_types = list(getattr(analysis, "content_types", None) or [])
+
+    original = str(getattr(analysis, "original", "") or "")
+    if original:
+        from app.search.query_intel import is_bms_domain_query
+
+        if is_bms_domain_query(original):
+            bms = [s for s in sources if s.id == "space-bms"]
+            if bms:
+                return bms
+
+    if content_types == ["team"]:
+        bt = [s for s in sources if s.id == "buildtrack"]
+        if bt:
+            return bt
+    space_types = {
+        "event",
+        "event_agenda",
+        "event_information",
+        "event_task",
+        "event_attendee",
+        "event_attachment",
+        "event_task_log",
+        "event_task_user",
+        "event_task_tag",
+        "event_task_reference",
+        "event_task_attachment",
+        "task_reviewprocess",
+        "task_reviewprocessstage",
+    }
+    if content_types and set(content_types).issubset(space_types):
+        space = [s for s in sources if s.id == "space"]
+        if space:
+            return space
+    # Any content_type starting with event_ / task_review → Space Action
+    if content_types and all(
+        t.startswith("event") or t.startswith("task_review") for t in content_types
+    ):
+        space = [s for s in sources if s.id == "space"]
+        if space:
+            return space
+
+    project_types = {
+        "project",
+        "project_location",
+        "project_sublocation",
+        "project_lms_configuration",
+    }
+    if content_types and set(content_types).issubset(project_types):
+        proj = [s for s in sources if s.id == "space-project"]
+        if proj:
+            return proj
+    if content_types and all(t.startswith("project") for t in content_types):
+        proj = [s for s in sources if s.id == "space-project"]
+        if proj:
+            return proj
+
+    common_types = {
+        "person_of_the_month",
+        "personofthemonth",
+        "personofthemonth_attachment",
+        "personofthemonth_nomination",
+    }
+    if content_types and set(content_types).issubset(common_types):
+        common = [s for s in sources if s.id == "space-common"]
+        if common:
+            return common
+
+    um_types = {
+        "user",
+        "users",
+        "user_contact",
+        "user_assignment",
+        "user_employment",
+        "user_education",
+        "user_certification",
+        "user_achievement",
+        "user_auth",
+        "user_attachment",
+        "user_professionalinformation",
+    }
+    if content_types and set(content_types).issubset(um_types):
+        um = [s for s in sources if s.id == "space-um"]
+        if um:
+            return um
+    if content_types and all(
+        t == "users" or t.startswith("user_") or t == "user" for t in content_types
+    ):
+        um = [s for s in sources if s.id == "space-um"]
+        if um:
+            return um
+
+    # Bare "document" is BuildTrack's content type (catalog → buildtrack).
+    # Do not steal it for Space DMS — only DMS-specific types route there.
+    dms_types = {
+        "dms_document",
+        "document_file",
+        "document_metadata",
+        "document_author",
+        "document_access",
+        "document_downloadhistory",
+        "document_externalshare",
+        "document_usershare",
+        "document_reference",
+    }
+    if content_types and set(content_types).issubset(dms_types):
+        dms = [s for s in sources if s.id == "space-dms"]
+        if dms:
+            return dms
+    if content_types and all(
+        t.startswith("document_") or t.startswith("dms") for t in content_types
+    ):
+        dms = [s for s in sources if s.id == "space-dms"]
+        if dms:
+            return dms
+
+    attachment_types = {
+        "attachment",
+        "attachments",
+        "attachment_provisional",
+        "attachmentreference",
+        "attachmentsyncstatus",
+    }
+    if content_types and set(content_types).issubset(attachment_types):
+        att = [s for s in sources if s.id == "space-attachment"]
+        if att:
+            return att
+    if content_types and all(t.startswith("attachment") for t in content_types):
+        att = [s for s in sources if s.id == "space-attachment"]
+        if att:
+            return att
+
+    lms_types = {
+        "attendance",
+        "labour",
+        "labor",
+        "contractor",
+        "lms",
+        "employment",
+        "wage",
+        "device",
+    }
+    if content_types and set(content_types).issubset(lms_types):
+        lms = [s for s in sources if s.id == "space-lms"]
+        if lms:
+            return lms
+    if content_types and all(
+        t in lms_types or t.startswith("labour") or t.startswith("contractor")
+        for t in content_types
+    ):
+        lms = [s for s in sources if s.id == "space-lms"]
+        if lms:
+            return lms
+
+    hse_incident_types = {
+        "safety",
+        "hse",
+        "incident",
+        "environmental_review",
+        "occupational_review",
+    }
+    if content_types and set(content_types).issubset(hse_incident_types):
+        picked = [s for s in sources if s.id in ("space-hse", "space-incident")]
+        if picked:
+            return picked
+    if content_types and all(
+        t.startswith("incident")
+        or t.startswith("environmental")
+        or t.startswith("occupational")
+        or t in ("safety", "hse")
+        for t in content_types
+    ):
+        if all(t.startswith("incident") for t in content_types):
+            inc = [s for s in sources if s.id == "space-incident"]
+            if inc:
+                return inc
+        if all(
+            t.startswith("environmental") or t.startswith("occupational") or t == "hse"
+            for t in content_types
+        ):
+            hse = [s for s in sources if s.id == "space-hse"]
+            if hse:
+                return hse
+        picked = [s for s in sources if s.id in ("space-hse", "space-incident")]
+        if picked:
+            return picked
+
+    admin_types = {
+        "company",
+        "vendor",
+        "material",
+        "holiday",
+        "region",
+        "zone",
+        "vertical",
+        "admin",
+        "picklist",
+    }
+    if content_types and set(content_types).issubset(admin_types):
+        admin = [s for s in sources if s.id == "space-admin"]
+        if admin:
+            return admin
+
+    bms_types = {"bid", "bids", "tender", "tenders", "bms", "bidding"}
+    if content_types and set(content_types).issubset(bms_types):
+        bms = [s for s in sources if s.id == "space-bms"]
+        if bms:
+            return bms
+    if content_types and all(
+        t.startswith("projectbd") or t in bms_types for t in content_types
+    ):
+        bms = [s for s in sources if s.id == "space-bms"]
+        if bms:
+            return bms
+
+    chkwp_types = {
+        "submission",
+        "submissions",
+        "checkpoint",
+        "checklist",
+        "chkwp",
+        "template",
+    }
+    if content_types and set(content_types).issubset(chkwp_types):
+        chkwp = [s for s in sources if s.id == "space-chkwp"]
+        if chkwp:
+            return chkwp
+
+    cms_types = {"contract", "contracts", "cms", "dispute", "disputes"}
+    if content_types and set(content_types).issubset(cms_types):
+        cms = [s for s in sources if s.id == "space-cms"]
+        if cms:
+            return cms
+    if content_types and all(
+        t.startswith("projectcm") or t in cms_types for t in content_types
+    ):
+        cms = [s for s in sources if s.id == "space-cms"]
+        if cms:
+            return cms
+
+    dashboard_types = {"dashboard", "kpi", "pnl"}
+    if content_types and set(content_types).issubset(dashboard_types):
+        dash = [s for s in sources if s.id == "space-dashboard"]
+        if dash:
+            return dash
+    if content_types and all(t.startswith("dashboard") for t in content_types):
+        dash = [s for s in sources if s.id == "space-dashboard"]
+        if dash:
+            return dash
+
+    notification_types = {"notification", "notifications", "alert", "alerts"}
+    if content_types and set(content_types).issubset(notification_types):
+        note = [s for s in sources if s.id == "space-notification"]
+        if note:
+            return note
+
+    analytics_types = {
+        "analytics",
+        "da_chart",
+        "wage_chart",
+        "ot_hours",
+        "punch_chart",
+        "compliance_exceptions",
+    }
+    if content_types and set(content_types).issubset(analytics_types):
+        # Prefer both analytics sources when generic "analytics"
+        picked = [
+            s
+            for s in sources
+            if s.id in ("space-analytics", "space-analytics-new")
+        ]
+        if picked:
+            return picked
+    if content_types and all(
+        t.startswith("da_") or t.startswith("stg_") or t in analytics_types
+        for t in content_types
+    ):
+        picked = [
+            s
+            for s in sources
+            if s.id in ("space-analytics", "space-analytics-new")
+        ]
+        if picked:
+            return picked
+
+    # Catalog-aware routing: only hit sources that own the detected entities.
+    if settings.SEARCH_CATALOG_ENABLED and content_types and not source_ids:
+        try:
+            from app.search.catalog.loader import sources_for_content_types
+
+            wanted = set(sources_for_content_types(content_types))
+            if wanted:
+                narrowed = [s for s in sources if s.id in wanted]
+                if narrowed:
+                    return narrowed
+        except Exception as exc:
+            logger.debug("Catalog source routing skipped: %s", exc)
     return sources
 
 

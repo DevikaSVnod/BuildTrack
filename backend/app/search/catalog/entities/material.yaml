@@ -1,0 +1,32 @@
+entity: material
+source: assets
+table: search_documents
+id_field: id
+entity_type: material
+description: Material delivery / procurement record in Site Assets DB
+title_field: title
+url_template: "/assets?id={id}"
+search_fields:
+  - title
+  - content
+filter_fields:
+  - content_type
+sortable_fields: []
+embedding_enabled: true
+sql_only_fields:
+  - metadata_json
+hydrate_fields:
+  - id
+  - title
+  - content
+  - content_type
+  - url
+  - metadata_json
+acl_fields: []
+updated_at_field: null
+domain_signals:
+  - material
+  - materials
+  - delivery
+  - procurement
+  - ppe

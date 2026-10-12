@@ -1,0 +1,2626 @@
+{
+  "source_id": "space",
+  "source_label": "Space Action",
+  "database_name": "DEV_V1_SPACE_ACTION",
+  "schema_name": "action",
+  "version": 1,
+  "captured_at": "2026-08-17T08:46:46.836038+00:00",
+  "tables": [
+    {
+      "schema_name": "action",
+      "name": "Event_Agenda",
+      "columns": [
+        {
+          "name": "EventAgendaId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventAgendaId"
+        },
+        {
+          "name": "EventId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventId"
+        },
+        {
+          "name": "Agenda",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Agenda text content"
+        },
+        {
+          "name": "AddedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "AddedBy (bigint)"
+        },
+        {
+          "name": "AddedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventAgendaId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EventId",
+          "to_table": "Events",
+          "to_column": "EventId"
+        }
+      ],
+      "description": "Agenda items belonging to events/meetings",
+      "search_hints": [
+        "agenda",
+        "agenda item",
+        "meeting agenda",
+        "topics"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Attachment",
+      "columns": [
+        {
+          "name": "EventAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventAttachmentId"
+        },
+        {
+          "name": "EventId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventId"
+        },
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "ProvisionalAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProvisionalAttachmentId"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "Tag",
+          "data_type": "nvarchar",
+          "max_length": 25,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Tag (nvarchar)"
+        },
+        {
+          "name": "UploadedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UploadedByUserId"
+        },
+        {
+          "name": "UploadDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventAttachmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EventId",
+          "to_table": "Events",
+          "to_column": "EventId"
+        }
+      ],
+      "description": "Files attached to events",
+      "search_hints": [
+        "attachment",
+        "event file",
+        "upload"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Attendee",
+      "columns": [
+        {
+          "name": "EventAttendeeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventAttendeeId"
+        },
+        {
+          "name": "EventId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventId"
+        },
+        {
+          "name": "EmployeeType",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "EmployeeType (nvarchar)"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "Email",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Email (nvarchar)"
+        },
+        {
+          "name": "RoleId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RoleId"
+        },
+        {
+          "name": "IsPresent",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsPreside",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventAttendeeId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EventId",
+          "to_table": "Events",
+          "to_column": "EventId"
+        }
+      ],
+      "description": "People attending events",
+      "search_hints": [
+        "attendee",
+        "participant",
+        "who attended"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Information",
+      "columns": [
+        {
+          "name": "EventInformationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventInformationId"
+        },
+        {
+          "name": "EventId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventId"
+        },
+        {
+          "name": "DimensionType",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DimensionType (nvarchar)"
+        },
+        {
+          "name": "DimensionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DimensionId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventInformationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EventId",
+          "to_table": "Events",
+          "to_column": "EventId"
+        }
+      ],
+      "description": "Event dimension metadata (region, vertical, etc.) linked to events",
+      "search_hints": [
+        "event information",
+        "dimension",
+        "region",
+        "vertical"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Task",
+      "columns": [
+        {
+          "name": "EventTaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventTaskId"
+        },
+        {
+          "name": "TaskNumber",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TaskNumber (nvarchar)"
+        },
+        {
+          "name": "EventId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventId"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "Suggestion",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Suggestion (nvarchar)"
+        },
+        {
+          "name": "IsActionable",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "PriorityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PriorityId"
+        },
+        {
+          "name": "PrimaryStatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PrimaryStatusId"
+        },
+        {
+          "name": "SecondaryStatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SecondaryStatusId"
+        },
+        {
+          "name": "Resolution",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Resolution (nvarchar)"
+        },
+        {
+          "name": "ResolutionDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "CompletionDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventTaskId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EventId",
+          "to_table": "Events",
+          "to_column": "EventId"
+        }
+      ],
+      "description": "Tasks under an event",
+      "search_hints": [
+        "event task",
+        "action item",
+        "follow up"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Task_Attachment",
+      "columns": [
+        {
+          "name": "EventTaskAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventTaskAttachmentId"
+        },
+        {
+          "name": "EventTaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventTaskId"
+        },
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "ProvisionalAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProvisionalAttachmentId"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "Tag",
+          "data_type": "nvarchar",
+          "max_length": 25,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Tag (nvarchar)"
+        },
+        {
+          "name": "UploadedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UploadedByUserId"
+        },
+        {
+          "name": "UploadDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventTaskAttachmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EventTaskId",
+          "to_table": "Event_Task",
+          "to_column": "EventTaskId"
+        }
+      ],
+      "description": "Space Action table Event_Task_Attachment",
+      "search_hints": [
+        "event task attachment",
+        "event_task_attachment"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Task_Audit_Observation",
+      "columns": [
+        {
+          "name": "EventTaskAuditObservationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventTaskAuditObservationId"
+        },
+        {
+          "name": "EventTaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventTaskId"
+        },
+        {
+          "name": "SectionConstant",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SectionConstant (nvarchar)"
+        },
+        {
+          "name": "SectionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SectionId"
+        },
+        {
+          "name": "SectionParentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SectionParentId"
+        },
+        {
+          "name": "IsReviewApplicable",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventTaskAuditObservationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EventTaskId",
+          "to_table": "Event_Task",
+          "to_column": "EventTaskId"
+        }
+      ],
+      "description": "Space Action table Event_Task_Audit_Observation",
+      "search_hints": [
+        "event task audit observation",
+        "event_task_audit_observation"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Task_DueDate_ChangeRequest",
+      "columns": [
+        {
+          "name": "EventTaskDueDateChangeRequestId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventTaskDueDateChangeRequestId"
+        },
+        {
+          "name": "EventTaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventTaskId"
+        },
+        {
+          "name": "RequestedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RequestedBy (bigint)"
+        },
+        {
+          "name": "RequestedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RequestReferenceEventTaskUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RequestReferenceEventTaskUserId"
+        },
+        {
+          "name": "RequestedAs",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RequestedAs (nvarchar)"
+        },
+        {
+          "name": "RequestRemark",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RequestRemark (nvarchar)"
+        },
+        {
+          "name": "PreviousCompleteByDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ProposedCompleteByDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ProposedDifferenceDays",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ProposedDifferenceDays (int)"
+        },
+        {
+          "name": "ApprovedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ApprovedBy (bigint)"
+        },
+        {
+          "name": "ApprovedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ApprovedRemark",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ApprovedRemark (nvarchar)"
+        },
+        {
+          "name": "ApprovedReferenceEventTaskUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ApprovedReferenceEventTaskUserId"
+        },
+        {
+          "name": "ApprovedAs",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ApprovedAs (nvarchar)"
+        },
+        {
+          "name": "RevisedCompletionDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ApprovedDifferenceDays",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ApprovedDifferenceDays (int)"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventTaskDueDateChangeRequestId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ApprovedReferenceEventTaskUserId",
+          "to_table": "Event_Task_User",
+          "to_column": "EventTaskUserId"
+        },
+        {
+          "from_column": "EventTaskId",
+          "to_table": "Event_Task",
+          "to_column": "EventTaskId"
+        },
+        {
+          "from_column": "RequestReferenceEventTaskUserId",
+          "to_table": "Event_Task_User",
+          "to_column": "EventTaskUserId"
+        }
+      ],
+      "description": "Space Action table Event_Task_DueDate_ChangeRequest",
+      "search_hints": [
+        "event task duedate changerequest",
+        "event_task_duedate_changerequest"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Task_Inspection_Observation",
+      "columns": [
+        {
+          "name": "EventTaskInspectionObservationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventTaskInspectionObservationId"
+        },
+        {
+          "name": "EventTaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventTaskId"
+        },
+        {
+          "name": "ObservationTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ObservationTypeId"
+        },
+        {
+          "name": "CorrectiveActionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CorrectiveActionId"
+        },
+        {
+          "name": "CorrectiveActionDescription",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "ProjectLocationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectLocationId"
+        },
+        {
+          "name": "ProjectSubLocationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectSubLocationId"
+        },
+        {
+          "name": "ProjectLocationDetails",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Location / place"
+        },
+        {
+          "name": "ConstructionActivityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ConstructionActivityId"
+        },
+        {
+          "name": "ConstructionActivityDescription",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "CategoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CategoryId"
+        },
+        {
+          "name": "CategoryDescription",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "DefectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DefectId"
+        },
+        {
+          "name": "RootCauseId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RootCauseId"
+        },
+        {
+          "name": "RootCauseDescription",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "IssuedToUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IssuedToUserId"
+        },
+        {
+          "name": "ImpactId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ImpactId"
+        },
+        {
+          "name": "LikelihoodId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LikelihoodId"
+        },
+        {
+          "name": "BestPracticeLevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying BestPracticeLevelId"
+        },
+        {
+          "name": "BestPracticeStatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying BestPracticeStatusId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventTaskInspectionObservationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EventTaskId",
+          "to_table": "Event_Task",
+          "to_column": "EventTaskId"
+        }
+      ],
+      "description": "Space Action table Event_Task_Inspection_Observation",
+      "search_hints": [
+        "event task inspection observation",
+        "event_task_inspection_observation"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Task_Log",
+      "columns": [
+        {
+          "name": "EventTaskLogId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventTaskLogId"
+        },
+        {
+          "name": "EventTaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventTaskId"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "LogDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "EventTaskDueDateChangeRequestId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventTaskDueDateChangeRequestId"
+        },
+        {
+          "name": "EventTaskUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventTaskUserId"
+        }
+      ],
+      "primary_keys": [
+        "EventTaskLogId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EventTaskDueDateChangeRequestId",
+          "to_table": "Event_Task_DueDate_ChangeRequest",
+          "to_column": "EventTaskDueDateChangeRequestId"
+        },
+        {
+          "from_column": "EventTaskId",
+          "to_table": "Event_Task",
+          "to_column": "EventTaskId"
+        },
+        {
+          "from_column": "EventTaskUserId",
+          "to_table": "Event_Task_User",
+          "to_column": "EventTaskUserId"
+        }
+      ],
+      "description": "Activity log for event tasks",
+      "search_hints": [
+        "task log",
+        "history"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Task_Reference",
+      "columns": [
+        {
+          "name": "EventTaskReferenceId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventTaskReferenceId"
+        },
+        {
+          "name": "FromEventTaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FromEventTaskId"
+        },
+        {
+          "name": "ToEventTaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ToEventTaskId"
+        },
+        {
+          "name": "IsDeleted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "DeletedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DeletedBy (bigint)"
+        },
+        {
+          "name": "DeletedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "IsDeleteRestricted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventTaskReferenceId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "FromEventTaskId",
+          "to_table": "Event_Task",
+          "to_column": "EventTaskId"
+        },
+        {
+          "from_column": "ToEventTaskId",
+          "to_table": "Event_Task",
+          "to_column": "EventTaskId"
+        }
+      ],
+      "description": "Space Action table Event_Task_Reference",
+      "search_hints": [
+        "event task reference",
+        "event_task_reference"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Task_Tag",
+      "columns": [
+        {
+          "name": "EventTaskTagId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventTaskTagId"
+        },
+        {
+          "name": "EventTaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventTaskId"
+        },
+        {
+          "name": "EventTaskUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventTaskUserId"
+        },
+        {
+          "name": "DimensionType",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DimensionType (nvarchar)"
+        },
+        {
+          "name": "DimensionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DimensionId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventTaskTagId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EventTaskId",
+          "to_table": "Event_Task",
+          "to_column": "EventTaskId"
+        },
+        {
+          "from_column": "EventTaskUserId",
+          "to_table": "Event_Task_User",
+          "to_column": "EventTaskUserId"
+        }
+      ],
+      "description": "Space Action table Event_Task_Tag",
+      "search_hints": [
+        "event task tag",
+        "event_task_tag"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Event_Task_User",
+      "columns": [
+        {
+          "name": "EventTaskUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventTaskUserId"
+        },
+        {
+          "name": "EventTaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventTaskId"
+        },
+        {
+          "name": "ActionType",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ActionType (bigint)"
+        },
+        {
+          "name": "IsSPCPLUser",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "UserName",
+          "data_type": "nvarchar",
+          "max_length": 300,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "UserName (nvarchar)"
+        },
+        {
+          "name": "UserEmail",
+          "data_type": "nvarchar",
+          "max_length": 300,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "UserEmail (nvarchar)"
+        },
+        {
+          "name": "IsCurrent",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ForwardFromUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ForwardFromUserId"
+        },
+        {
+          "name": "ForwardToUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ForwardToUserId"
+        },
+        {
+          "name": "WrongAssignFromUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying WrongAssignFromUserId"
+        },
+        {
+          "name": "WrongAssignToUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying WrongAssignToUserId"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        }
+      ],
+      "primary_keys": [
+        "EventTaskUserId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EventTaskId",
+          "to_table": "Event_Task",
+          "to_column": "EventTaskId"
+        }
+      ],
+      "description": "Space Action table Event_Task_User",
+      "search_hints": [
+        "event task user",
+        "event_task_user"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Events",
+      "columns": [
+        {
+          "name": "EventId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventId"
+        },
+        {
+          "name": "EventNumber",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EventNumber (nvarchar)"
+        },
+        {
+          "name": "Title",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "Information",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "Location",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Location / place"
+        },
+        {
+          "name": "CategoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CategoryId"
+        },
+        {
+          "name": "TypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TypeId"
+        },
+        {
+          "name": "SubTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubTypeId"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        },
+        {
+          "name": "ScheduledStartDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ScheduledEndDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ActualStartDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ActualEndDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "OpeningNote",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "ClosingNote",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "IsFollowUpRequired",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "FollowUpEventId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FollowUpEventId"
+        },
+        {
+          "name": "CalendarReferenceId",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CalendarReferenceId"
+        },
+        {
+          "name": "RaisedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RaisedBy (bigint)"
+        },
+        {
+          "name": "RaisedDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ScheduledBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ScheduledBy (bigint)"
+        },
+        {
+          "name": "ScheduledDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "StartedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "StartedBy (bigint)"
+        },
+        {
+          "name": "StartedDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "EndedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EndedBy (bigint)"
+        },
+        {
+          "name": "EndedDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "CancelledBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CancelledBy (bigint)"
+        },
+        {
+          "name": "CancelledDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RescheduledBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RescheduledBy (bigint)"
+        },
+        {
+          "name": "RescheduledDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ClosedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ClosedBy (bigint)"
+        },
+        {
+          "name": "ClosedDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "FollowUpEventId",
+          "to_table": "Events",
+          "to_column": "EventId"
+        }
+      ],
+      "description": "Core event/meeting records with title, location, schedule, and notes",
+      "search_hints": [
+        "event",
+        "meeting",
+        "schedule",
+        "location",
+        "agenda parent"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Task_ReviewProcess",
+      "columns": [
+        {
+          "name": "TaskReviewProcessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying TaskReviewProcessId"
+        },
+        {
+          "name": "TaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TaskId"
+        },
+        {
+          "name": "ReviewProcessStageId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewProcessStageId"
+        },
+        {
+          "name": "Stage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Stage (int)"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "Remark",
+          "data_type": "varchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remark (varchar)"
+        },
+        {
+          "name": "IsReviewCompleted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "ReviewerUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewerUserId"
+        },
+        {
+          "name": "ReviewDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "VersionNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "VersionNo (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "TaskReviewProcessId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ReviewProcessStageId",
+          "to_table": "Task_ReviewProcessStage",
+          "to_column": "TaskReviewProcessStageId"
+        },
+        {
+          "from_column": "TaskId",
+          "to_table": "Event_Task",
+          "to_column": "EventTaskId"
+        }
+      ],
+      "description": "Space Action table Task_ReviewProcess",
+      "search_hints": [
+        "task reviewprocess",
+        "task_reviewprocess"
+      ]
+    },
+    {
+      "schema_name": "action",
+      "name": "Task_ReviewProcessStage",
+      "columns": [
+        {
+          "name": "TaskReviewProcessStageId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying TaskReviewProcessStageId"
+        },
+        {
+          "name": "TaskId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TaskId"
+        },
+        {
+          "name": "Stage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Stage (int)"
+        },
+        {
+          "name": "StageSequence",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "StageSequence (int)"
+        },
+        {
+          "name": "VersionNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "VersionNo (int)"
+        },
+        {
+          "name": "IsStageReviewCompleted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "TaskReviewProcessStageId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "TaskId",
+          "to_table": "Event_Task",
+          "to_column": "EventTaskId"
+        }
+      ],
+      "description": "Space Action table Task_ReviewProcessStage",
+      "search_hints": [
+        "task reviewprocessstage",
+        "task_reviewprocessstage"
+      ]
+    }
+  ],
+  "change_summary": [
+    "No schema structure change"
+  ]
+}

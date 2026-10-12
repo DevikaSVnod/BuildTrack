@@ -14,6 +14,8 @@ DOMAIN_SIGNALS: dict[str, list[str]] = {
     "drawing": [
         "drawing", "drawings", "specification", "specs", "revision", "rev ",
         "structural plan", "architectural", "discipline", "floor plan", "dwg",
+        "master plan", "site plan", "campus plan", "university plan", "grading plan",
+        "components in", "components on",
     ],
     "safety": [
         "safety", "hse", "incident", "near miss", "violation", "injury",
@@ -39,6 +41,84 @@ DOMAIN_SIGNALS: dict[str, list[str]] = {
         "workforce", "personnel", "staff", "members of", "member in",
         "project manager", "site engineer", "contractor", "engineers",
         "who is", "who are", "who work", "working for", "working on",
+    ],
+    "event": [
+        "event", "events", "meeting", "meetings", "event list",
+        "scheduled event", "space event",
+    ],
+    "event_agenda": [
+        "agenda", "agendas", "event agenda", "meeting agenda",
+        "agenda list", "agenda item", "agenda items",
+    ],
+    "event_information": [
+        "event information", "event dimension", "event dimensions",
+    ],
+    "person_of_the_month": [
+        "person of the month", "employee of the month", "potm",
+        "personofthemonth",
+    ],
+    "users": [
+        "users list", "list users", "user profile", "user profiles",
+        "space user", "space users", "employee profile", "employee profiles",
+    ],
+    "user_assignment": [
+        "user assignment", "user assignments", "assigned users",
+    ],
+    "user_contact": [
+        "user contact", "user email", "user phone",
+    ],
+    "dms_document": [
+        "dms", "dms document", "dms documents", "document management",
+        "space document", "space documents", "space dms",
+    ],
+    "attachment": [
+        "attachment", "attachments", "file attachment", "file attachments",
+        "space attachment", "blob attachment", "stored file",
+    ],
+    "labour": [
+        "labour", "labor", "labours", "labors", "worker list", "workers list",
+        "lms labour", "space labour", "workforce register",
+    ],
+    "contractor": [
+        "contractor", "contractors", "lms contractor", "space contractor",
+    ],
+    "hse": [
+        "hse review", "environmental review", "occupational review",
+        "space hse", "ehs review",
+    ],
+    "incident": [
+        "incident", "incidents", "accident", "accidents", "near miss",
+        "space incident", "injured person",
+    ],
+    "company": [
+        "company", "companies", "space company", "admin company",
+    ],
+    "vendor": [
+        "vendor", "vendors", "space vendor",
+    ],
+    "bid": [
+        "bid", "bids", "tender", "tenders", "bidding", "bms", "space bid",
+    ],
+    "submission": [
+        "submission", "submissions", "checkpoint", "checklist",
+        "checkpoint submission", "chkwp",
+    ],
+    "contract": [
+        "contract", "contracts", "cms", "contract management", "space contract",
+    ],
+    "dispute": [
+        "dispute", "disputes", "contract dispute",
+    ],
+    "dashboard": [
+        "dashboard", "dashboard kpi", "space dashboard", "pnl",
+    ],
+    "notification": [
+        "notification", "notifications", "alert", "alerts", "space notification",
+    ],
+    "analytics": [
+        "analytics", "da chart", "wage chart", "ot hours", "odd punches",
+        "labour at site average", "punch in out chart", "space analytics",
+        "compliance exceptions analytics",
     ],
 }
 
@@ -102,6 +182,28 @@ def is_question(query: str) -> bool:
     if re.search(r"\b(how many|how much|number of|no\.?\s*of|what is|what are|which)\b", q):
         return True
     return False
+
+
+def is_bms_domain_query(query: str) -> bool:
+    """Queries explicitly about Space BMS / bidding (not generic 'project')."""
+    q = _normalize(query)
+    return bool(re.search(r"\bbms\b", q))
+
+
+def extract_space_project_code(query: str) -> str:
+    """Extract project code from phrases like 'code P_AHMPR' or 'code SMK-TEST-01'."""
+    q = (query or "").strip()
+    m = re.search(
+        r"\bcode\s+['\"]?([A-Za-z0-9][A-Za-z0-9_-]{1,})['\"]?",
+        q,
+        flags=re.IGNORECASE,
+    )
+    if not m:
+        return ""
+    code = m.group(1).strip()
+    if re.fullmatch(r"[A-Za-z0-9_-]+", code):
+        return code
+    return ""
 
 
 def is_workforce_aggregate_query(query: str) -> bool:
@@ -289,7 +391,18 @@ def target_content_types_for_filter(query: str, analysis: QueryAnalysis) -> List
         return ["project"]
     if analysis.content_types:
         return list(dict.fromkeys(analysis.content_types))
-    return ["project", "task", "timeline", "document", "handover", "drawing", "safety"]
+    return [
+        "project",
+        "task",
+        "timeline",
+        "document",
+        "handover",
+        "drawing",
+        "safety",
+        "event",
+        "event_agenda",
+        "event_information",
+    ]
 
 
 def extract_search_terms(query: str) -> str:
@@ -343,6 +456,13 @@ def analyze_query(query: str, default_top_k: int = 8) -> QueryAnalysis:
             content_types = ["document", *content_types]
         top_k = max(top_k, 12)
 
+    if is_drawing_content_query(q) or is_drawing_component_plan_query(q):
+        if "drawing" not in content_types:
+            content_types = ["drawing", *content_types]
+        question = True
+        top_k = max(top_k, 12)
+        search_text = q
+
     if is_asset_inventory_query(q):
         ql = _normalize(q)
         asset_types: List[str] = []
@@ -369,7 +489,9 @@ def analyze_query(query: str, default_top_k: int = 8) -> QueryAnalysis:
         # Prefer team answers for "who is working…"
         content_types = ["team", *[t for t in content_types if t != "team"]]
         top_k = max(top_k, 16)
-    elif is_document_content_query(q):
+    elif is_document_content_query(q) and not (
+        is_drawing_content_query(q) or is_drawing_component_plan_query(q)
+    ):
         if "document" not in content_types:
             content_types = ["document", *content_types]
         top_k = max(top_k, 12)
@@ -537,10 +659,29 @@ _OBJECT_QUERY = re.compile(
     re.I,
 )
 
+# "Components in university plan" / "components on the campus master plan"
+_COMPONENT_PLAN_QUERY = re.compile(
+    r"\bcomponents?\b.{0,48}\b(?:in|on|of|from|for)\b.{0,48}\b("
+    r"university|campus|site|master|floor|grading|civil|architectural"
+    r")?\s*plans?\b|"
+    r"\b("
+    r"university|campus|site|master|floor|grading"
+    r")\s+plans?\b.{0,48}\bcomponents?\b|"
+    r"\b(?:list|show|name|identify|what)\b.{0,24}\bcomponents?\b.{0,40}\bplans?\b",
+    re.I,
+)
+
+
+def is_drawing_component_plan_query(query: str) -> bool:
+    """Ask for components/features shown on a named plan (site/campus/university/etc.)."""
+    return bool(_COMPONENT_PLAN_QUERY.search(_normalize(query)))
+
 
 def is_drawing_object_query(query: str) -> bool:
     """Questions about objects visible in an uploaded image/drawing."""
     q = _normalize(query)
+    if is_drawing_component_plan_query(q):
+        return True
     if not _OBJECT_QUERY.search(q):
         return False
     # Treat as drawing/image content even without explicit "drawing" keyword
@@ -586,14 +727,22 @@ def is_drawing_furniture_inventory_query(query: str) -> bool:
 
 def is_drawing_site_inventory_query(query: str) -> bool:
     """List buildings, roads, utilities, or site features on a civil/site plan."""
+    q = _normalize(query)
+    # Component/plan asks are site-inventory style even before content-query gates.
+    if is_drawing_component_plan_query(q) and re.search(
+        r"\b(university|campus|site|master|grading|civil)\b", q
+    ):
+        return True
     if not is_drawing_content_query(query):
         return False
-    q = _normalize(query)
     if _SITE_INVENTORY.search(q):
         return True
     return bool(
-        re.search(r"\b(site\s+plan|grading\s+plan|campus\s+plan|master\s+plan)\b", q)
-        and re.search(r"\b(what|list|show|name|identify)\b", q)
+        re.search(
+            r"\b(site\s+plan|grading\s+plan|campus\s+plan|university\s+plan|master\s+plan)\b",
+            q,
+        )
+        and re.search(r"\b(what|list|show|name|identify|components?)\b", q)
     )
 
 
@@ -640,6 +789,8 @@ def is_drawing_content_query(query: str) -> bool:
     q = _normalize(query).rstrip("?")
     if is_file_detail_query(query):
         return False
+    if is_drawing_component_plan_query(q):
+        return True
     if is_drawing_object_query(query):
         return True
     from app.search.drawing_sheet_intel import is_sheet_intel_query
@@ -830,6 +981,25 @@ def score_drawing_match(query: str, title: str, metadata: Optional[dict] = None)
         score += 10.0
     if re.search(r"\bmaster\s*plan\b", qn) and "master plan" in title_l:
         score += 12.0
+    # Exact / near-exact title wins over fuzzy campus≈university aliases.
+    if re.search(r"\buniversity\s+plans?\b", qn):
+        if "university plan" in title_l:
+            score += 80.0
+        elif "university" in title_l:
+            score += 55.0
+        elif re.search(r"\b(site\s*master|master\s*plan)\b", title_l) and "university" not in title_l:
+            # Soft campus alias only — never beat a titled University Plan.
+            score += 6.0
+        if "university" in title_l or "campus" in title_l:
+            score += 12.0
+    elif re.search(r"\b(university|campus)\b", qn) and re.search(
+        r"\b(campus|site\s*master|master\s*plan|site\s*plan|university)\b", title_l
+    ):
+        score += 22.0
+    if re.search(r"\bcomponents?\b", qn) and re.search(
+        r"\b(university\s*plan|master\s*plan|site\s*plan|campus|floor\s*plan)\b", title_l
+    ):
+        score += 10.0
     if re.search(r"\bconveyor\b", qn) and "conveyor" in title_l:
         score += 16.0
     if re.search(r"\boffice\b", qn) and ("office" in title_l or "workstation" in title_l):

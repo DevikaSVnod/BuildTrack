@@ -1,0 +1,4833 @@
+{
+  "source_id": "space-um",
+  "source_label": "Space User Management",
+  "database_name": "DEV_V1_SPACE_UM",
+  "schema_name": "um",
+  "version": 1,
+  "captured_at": "2026-08-17T08:46:47.259117+00:00",
+  "tables": [
+    {
+      "schema_name": "um",
+      "name": "User_Achievement",
+      "columns": [
+        {
+          "name": "AchievementId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AchievementId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "ExperienceMasterAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ExperienceMasterAssignmentId"
+        },
+        {
+          "name": "ExperienceAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ExperienceAssignmentId"
+        },
+        {
+          "name": "ExternalExperienceId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ExternalExperienceId"
+        },
+        {
+          "name": "Achievements",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Achievements (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AchievementId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ExperienceAssignmentId",
+          "to_table": "User_SPExperience_Assignment",
+          "to_column": "ExperienceAssignmentId"
+        },
+        {
+          "from_column": "ExternalExperienceId",
+          "to_table": "User_ExternalExperience",
+          "to_column": "ExternalExperienceId"
+        },
+        {
+          "from_column": "ExperienceMasterAssignmentId",
+          "to_table": "User_SPExperience_MasterAssignment",
+          "to_column": "ExperienceMasterAssignmentId"
+        },
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Achievements and awards for users",
+      "search_hints": [
+        "achievement",
+        "award",
+        "recognition"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Assignment",
+      "columns": [
+        {
+          "name": "AssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AssignmentId"
+        },
+        {
+          "name": "MasterAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "PrimaryReportingUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PrimaryReportingUserId"
+        },
+        {
+          "name": "MatrixReportingUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MatrixReportingUserId"
+        },
+        {
+          "name": "ApprovedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ApprovedByUserId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AssignmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "MasterAssignmentId",
+          "to_table": "User_MasterAssignment",
+          "to_column": "MasterAssignmentId"
+        },
+        {
+          "from_column": "ApprovedByUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "MatrixReportingUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "PrimaryReportingUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "User role/project assignments",
+      "search_hints": [
+        "user assignment",
+        "assigned to",
+        "assignment",
+        "reporting"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Assignment_Change_Request",
+      "columns": [
+        {
+          "name": "AssignmentChangeRequestId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AssignmentChangeRequestId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "DoActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DoActive (bit)"
+        },
+        {
+          "name": "DoInActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DoInActive (bit)"
+        },
+        {
+          "name": "DoDelete",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DoDelete (bit)"
+        },
+        {
+          "name": "FromDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ToDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AssignmentChangeRequestId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_Assignment_Change_Request",
+      "search_hints": [
+        "user assignment change request",
+        "user_assignment_change_request"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Assignment_Change_Request_Execution",
+      "columns": [
+        {
+          "name": "AssignmentChangeRequestExecutionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AssignmentChangeRequestExecutionId"
+        },
+        {
+          "name": "AssignmentChangeRequestId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AssignmentChangeRequestId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "DoActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DoActive (bit)"
+        },
+        {
+          "name": "DoInActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DoInActive (bit)"
+        },
+        {
+          "name": "DoDelete",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DoDelete (bit)"
+        },
+        {
+          "name": "ExecutionDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AssignmentChangeRequestExecutionId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "AssignmentChangeRequestId",
+          "to_table": "User_Assignment_Change_Request",
+          "to_column": "AssignmentChangeRequestId"
+        },
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_Assignment_Change_Request_Execution",
+      "search_hints": [
+        "user assignment change request execution",
+        "user_assignment_change_request_execution"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Assignment_History",
+      "columns": [
+        {
+          "name": "AssignmentHistoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AssignmentHistoryId"
+        },
+        {
+          "name": "AssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AssignmentId"
+        },
+        {
+          "name": "MasterAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "PrimaryReportingUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PrimaryReportingUserId"
+        },
+        {
+          "name": "MatrixReportingUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MatrixReportingUserId"
+        },
+        {
+          "name": "ExecutionDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AssignmentHistoryId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "MatrixReportingUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "PrimaryReportingUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_Assignment_History",
+      "search_hints": [
+        "user assignment history",
+        "user_assignment_history"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Assignment_Transfer",
+      "columns": [
+        {
+          "name": "AssignmentTransferId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AssignmentTransferId"
+        },
+        {
+          "name": "AssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AssignmentId"
+        },
+        {
+          "name": "MasterAssignmentTransferId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentTransferId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "PrimaryReportingUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PrimaryReportingUserId"
+        },
+        {
+          "name": "MatrixReportingUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MatrixReportingUserId"
+        },
+        {
+          "name": "IsCanceled",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CanceledByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CanceledByUserId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AssignmentTransferId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "MasterAssignmentTransferId",
+          "to_table": "User_MasterAssignment_Transfer",
+          "to_column": "MasterAssignmentTransferId"
+        },
+        {
+          "from_column": "CanceledByUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "MatrixReportingUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "PrimaryReportingUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_Assignment_Transfer",
+      "search_hints": [
+        "user assignment transfer",
+        "user_assignment_transfer"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Assignment_Transfer_History",
+      "columns": [
+        {
+          "name": "AssignmentTransferHistoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AssignmentTransferHistoryId"
+        },
+        {
+          "name": "AssignmentTransferId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AssignmentTransferId"
+        },
+        {
+          "name": "AssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AssignmentId"
+        },
+        {
+          "name": "MasterAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "PrimaryReportingUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PrimaryReportingUserId"
+        },
+        {
+          "name": "MatrixReportingUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MatrixReportingUserId"
+        },
+        {
+          "name": "IsCanceled",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CanceledByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CanceledByUserId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "MasterAssignmentTransferId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentTransferId"
+        }
+      ],
+      "primary_keys": [
+        "AssignmentTransferHistoryId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "CanceledByUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "MatrixReportingUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "PrimaryReportingUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_Assignment_Transfer_History",
+      "search_hints": [
+        "user assignment transfer history",
+        "user_assignment_transfer_history"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Assignment_Transfer_Reporting_Replacement",
+      "columns": [
+        {
+          "name": "ReportingReplacementId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReportingReplacementId"
+        },
+        {
+          "name": "MasterAssignmentTransferId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentTransferId"
+        },
+        {
+          "name": "AssignmentChangeRequestId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AssignmentChangeRequestId"
+        },
+        {
+          "name": "RequestSource",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RequestSource (nvarchar)"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "PrimaryReportingId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PrimaryReportingId"
+        },
+        {
+          "name": "MatrixReportingId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MatrixReportingId"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReportingReplacementId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "AssignmentChangeRequestId",
+          "to_table": "User_Assignment_Change_Request",
+          "to_column": "AssignmentChangeRequestId"
+        },
+        {
+          "from_column": "MasterAssignmentTransferId",
+          "to_table": "User_MasterAssignment_Transfer",
+          "to_column": "MasterAssignmentTransferId"
+        },
+        {
+          "from_column": "MatrixReportingId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "PrimaryReportingId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_Assignment_Transfer_Reporting_Replacement",
+      "search_hints": [
+        "user assignment transfer reporting replacement",
+        "user_assignment_transfer_reporting_replacement"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Assignment_Transfer_Reporting_Replacement_History",
+      "columns": [
+        {
+          "name": "ReportingReplacementHistoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReportingReplacementHistoryId"
+        },
+        {
+          "name": "ReportingReplacementId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReportingReplacementId"
+        },
+        {
+          "name": "MasterAssignmentTransferId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentTransferId"
+        },
+        {
+          "name": "AssignmentChangeRequestId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AssignmentChangeRequestId"
+        },
+        {
+          "name": "RequestSource",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RequestSource (nvarchar)"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "PrimaryReportingId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PrimaryReportingId"
+        },
+        {
+          "name": "MatrixReportingId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MatrixReportingId"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        }
+      ],
+      "primary_keys": [
+        "ReportingReplacementHistoryId"
+      ],
+      "foreign_keys": [],
+      "description": "Space User Management table User_Assignment_Transfer_Reporting_Replacement_History",
+      "search_hints": [
+        "user assignment transfer reporting replacement history",
+        "user_assignment_transfer_reporting_replacement_history"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Attachment",
+      "columns": [
+        {
+          "name": "UserAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserAttachmentId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "EntityType",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "EntityType (nvarchar)"
+        },
+        {
+          "name": "EntityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EntityId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "UserAttachmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Files attached to a user profile",
+      "search_hints": [
+        "user attachment",
+        "user file",
+        "profile document"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Auth",
+      "columns": [
+        {
+          "name": "AuthId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AuthId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "Email",
+          "data_type": "nvarchar",
+          "max_length": 255,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Email (nvarchar)"
+        },
+        {
+          "name": "Username",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Username (nvarchar)"
+        },
+        {
+          "name": "Password",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Password (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AuthId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "User authentication / login related records",
+      "search_hints": [
+        "user auth",
+        "login",
+        "authentication"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Certification",
+      "columns": [
+        {
+          "name": "CertificationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying CertificationId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "NameId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NameId"
+        },
+        {
+          "name": "TypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TypeId"
+        },
+        {
+          "name": "InstituteId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying InstituteId"
+        },
+        {
+          "name": "YearOfCertification",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "YearOfCertification (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "CertificationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Certifications held by users",
+      "search_hints": [
+        "certification",
+        "certificate",
+        "licensed"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_ChangeLog",
+      "columns": [
+        {
+          "name": "ChangeLogId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ChangeLogId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "OldValue",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OldValue (nvarchar)"
+        },
+        {
+          "name": "NewValue",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "NewValue (nvarchar)"
+        },
+        {
+          "name": "ColumnName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ColumnName (nvarchar)"
+        },
+        {
+          "name": "ChangeLogDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ActionType",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ActionType (nvarchar)"
+        },
+        {
+          "name": "ModifiedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ModifiedByUserId"
+        },
+        {
+          "name": "ModifiedUserFirstName",
+          "data_type": "nvarchar",
+          "max_length": 80,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ModifiedUserFirstName (nvarchar)"
+        },
+        {
+          "name": "ModifiedUserLastName",
+          "data_type": "nvarchar",
+          "max_length": 80,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ModifiedUserLastName (nvarchar)"
+        }
+      ],
+      "primary_keys": [
+        "ChangeLogId"
+      ],
+      "foreign_keys": [],
+      "description": "Space User Management table User_ChangeLog",
+      "search_hints": [
+        "user changelog",
+        "user_changelog"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Contact",
+      "columns": [
+        {
+          "name": "ContactId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ContactId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "MobileNo",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "MobileNo (nvarchar)"
+        },
+        {
+          "name": "AlternateMobileNo",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "AlternateMobileNo (nvarchar)"
+        },
+        {
+          "name": "PanCard",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PanCard (nvarchar)"
+        },
+        {
+          "name": "AadharCard",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "AadharCard (nvarchar)"
+        },
+        {
+          "name": "OfficeNo",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OfficeNo (nvarchar)"
+        },
+        {
+          "name": "OfficeExtension",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OfficeExtension (nvarchar)"
+        },
+        {
+          "name": "EmailPersonal",
+          "data_type": "nvarchar",
+          "max_length": 255,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EmailPersonal (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ContactId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "User contact details (email, phone, address)",
+      "search_hints": [
+        "user contact",
+        "email",
+        "phone",
+        "contact details"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Education",
+      "columns": [
+        {
+          "name": "EducationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EducationId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "DegreeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DegreeId"
+        },
+        {
+          "name": "DegreeNameId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DegreeNameId"
+        },
+        {
+          "name": "BranchId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying BranchId"
+        },
+        {
+          "name": "CourseTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CourseTypeId"
+        },
+        {
+          "name": "YearOfCourse",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "YearOfCourse (int)"
+        },
+        {
+          "name": "InstituteId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying InstituteId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EducationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Education records for users",
+      "search_hints": [
+        "education",
+        "degree",
+        "qualification"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Employment",
+      "columns": [
+        {
+          "name": "EmploymentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EmploymentId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "TypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TypeId"
+        },
+        {
+          "name": "SubTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubTypeId"
+        },
+        {
+          "name": "SpGatePassId",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SpGatePassId"
+        },
+        {
+          "name": "CadreId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CadreId"
+        },
+        {
+          "name": "DesignationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DesignationId"
+        },
+        {
+          "name": "FunctionUserTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionUserTypeId"
+        },
+        {
+          "name": "JoiningDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "EmployeeCode",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "EmployeeCode (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "CompanyId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CompanyId"
+        }
+      ],
+      "primary_keys": [
+        "EmploymentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Employment history for users",
+      "search_hints": [
+        "employment",
+        "job history",
+        "employer"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_ExternalExperience",
+      "columns": [
+        {
+          "name": "ExternalExperienceId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ExternalExperienceId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "CompanyId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CompanyId"
+        },
+        {
+          "name": "IndustryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IndustryId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "RoleId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RoleId"
+        },
+        {
+          "name": "EmploymentTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EmploymentTypeId"
+        },
+        {
+          "name": "LocationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LocationId"
+        },
+        {
+          "name": "StartDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "EndDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Designation",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Designation (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ExternalExperienceId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_ExternalExperience",
+      "search_hints": [
+        "user externalexperience",
+        "user_externalexperience"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Favorite",
+      "columns": [
+        {
+          "name": "UserFavoriteId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserFavoriteId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "FavoriteType",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FavoriteType (nvarchar)"
+        },
+        {
+          "name": "ReferenceId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReferenceId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "UserFavoriteId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "User favorites / bookmarks",
+      "search_hints": [
+        "favorite",
+        "bookmark"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Feature_Access",
+      "columns": [
+        {
+          "name": "UserFeatureAccessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserFeatureAccessId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "FeatureId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FeatureId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "UserFeatureAccessId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_Feature_Access",
+      "search_hints": [
+        "user feature access",
+        "user_feature_access"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_LMS_ReportAccess",
+      "columns": [
+        {
+          "name": "UserLMSReportAccessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserLMSReportAccessId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "ReportSectionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReportSectionId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "AssignmentGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AssignmentGroupId"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "UserLMSReportAccessId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_LMS_ReportAccess",
+      "search_hints": [
+        "user lms reportaccess",
+        "user_lms_reportaccess"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_LMS_ReportAccess_Assignment",
+      "columns": [
+        {
+          "name": "UserLMSReportAccessAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserLMSReportAccessAssignmentId"
+        },
+        {
+          "name": "AssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AssignmentId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "AssignmentGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AssignmentGroupId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "UserLMSReportAccessAssignmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "AssignmentId",
+          "to_table": "User_Assignment",
+          "to_column": "AssignmentId"
+        },
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_LMS_ReportAccess_Assignment",
+      "search_hints": [
+        "user lms reportaccess assignment",
+        "user_lms_reportaccess_assignment"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_MasterAssignment",
+      "columns": [
+        {
+          "name": "MasterAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "MasterAssignmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_MasterAssignment",
+      "search_hints": [
+        "user masterassignment",
+        "user_masterassignment"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_MasterAssignment_History",
+      "columns": [
+        {
+          "name": "MasterAssignmentHistoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentHistoryId"
+        },
+        {
+          "name": "MasterAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "MasterAssignmentHistoryId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_MasterAssignment_History",
+      "search_hints": [
+        "user masterassignment history",
+        "user_masterassignment_history"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_MasterAssignment_Transfer",
+      "columns": [
+        {
+          "name": "MasterAssignmentTransferId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentTransferId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "MasterAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentId"
+        },
+        {
+          "name": "TransferDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RequestByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RequestByUserId"
+        },
+        {
+          "name": "IsCanceled",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CanceledByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CanceledByUserId"
+        },
+        {
+          "name": "IsCompleted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CompletedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "MasterAssignmentTransferId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "MasterAssignmentId",
+          "to_table": "User_MasterAssignment",
+          "to_column": "MasterAssignmentId"
+        },
+        {
+          "from_column": "CanceledByUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "RequestByUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_MasterAssignment_Transfer",
+      "search_hints": [
+        "user masterassignment transfer",
+        "user_masterassignment_transfer"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_MasterAssignment_Transfer_History",
+      "columns": [
+        {
+          "name": "MasterAssignmentTransferHistoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentTransferHistoryId"
+        },
+        {
+          "name": "MasterAssignmentTransferId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentTransferId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "MasterAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterAssignmentId"
+        },
+        {
+          "name": "TransferDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RequestByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RequestByUserId"
+        },
+        {
+          "name": "IsCanceled",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CanceledByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CanceledByUserId"
+        },
+        {
+          "name": "IsCompleted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CompletedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "MasterAssignmentTransferHistoryId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "CanceledByUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "RequestByUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_MasterAssignment_Transfer_History",
+      "search_hints": [
+        "user masterassignment transfer history",
+        "user_masterassignment_transfer_history"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Module_Access_Matrix",
+      "columns": [
+        {
+          "name": "UserModuleAccessMatrixId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserModuleAccessMatrixId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "ModuleId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ModuleId"
+        },
+        {
+          "name": "AccessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AccessId"
+        },
+        {
+          "name": "VersionNo",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "VersionNo (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "UserModuleAccessMatrixId"
+      ],
+      "foreign_keys": [],
+      "description": "Space User Management table User_Module_Access_Matrix",
+      "search_hints": [
+        "user module access matrix",
+        "user_module_access_matrix"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_OTP",
+      "columns": [
+        {
+          "name": "UserOTPId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserOTPId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "OTP",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "OTP (nvarchar)"
+        },
+        {
+          "name": "IssuedOn",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "ExpiresOn",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ExpiresOn (datetime2)"
+        },
+        {
+          "name": "IsFirstTimeLogin",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "UserOTPId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_OTP",
+      "search_hints": [
+        "user otp",
+        "user_otp"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_OTP_Reporting",
+      "columns": [
+        {
+          "name": "UserOTPReportingId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserOTPReportingId"
+        },
+        {
+          "name": "UserOTPId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserOTPId"
+        },
+        {
+          "name": "ReportingUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReportingUserId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "UserOTPReportingId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ReportingUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "UserOTPId",
+          "to_table": "User_OTP",
+          "to_column": "UserOTPId"
+        }
+      ],
+      "description": "Space User Management table User_OTP_Reporting",
+      "search_hints": [
+        "user otp reporting",
+        "user_otp_reporting"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_ProfessionalInformation",
+      "columns": [
+        {
+          "name": "ProfessionalInformationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProfessionalInformationId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "Summary",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Summary (nvarchar)"
+        },
+        {
+          "name": "Interest",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Interest (nvarchar)"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Skill",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Skill (nvarchar)"
+        },
+        {
+          "name": "RoleSummary",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RoleSummary (nvarchar)"
+        }
+      ],
+      "primary_keys": [
+        "ProfessionalInformationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Professional profile information for users",
+      "search_hints": [
+        "professional information",
+        "profile",
+        "designation"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_ProfessionalMembership",
+      "columns": [
+        {
+          "name": "ProfessionalMembershipId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProfessionalMembershipId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "Title",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "InstituteId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying InstituteId"
+        },
+        {
+          "name": "StartDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "EndDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProfessionalMembershipId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_ProfessionalMembership",
+      "search_hints": [
+        "user professionalmembership",
+        "user_professionalmembership"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_Setting",
+      "columns": [
+        {
+          "name": "UserSettingId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserSettingId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "Theme_Mode",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Theme_Mode (nvarchar)"
+        },
+        {
+          "name": "Theme_Font",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Theme_Font (nvarchar)"
+        },
+        {
+          "name": "Theme_FontSize",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Theme_FontSize (nvarchar)"
+        },
+        {
+          "name": "Theme_Color",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Theme_Color (nvarchar)"
+        },
+        {
+          "name": "Theme_Layout",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Theme_Layout (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "UserSettingId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Per-user application settings",
+      "search_hints": [
+        "user setting",
+        "preferences"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_SPExperience_Assignment",
+      "columns": [
+        {
+          "name": "ExperienceAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ExperienceAssignmentId"
+        },
+        {
+          "name": "ExperienceMasterAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ExperienceMasterAssignmentId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "PrimaryReportingUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PrimaryReportingUserId"
+        },
+        {
+          "name": "MatrixReportingUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MatrixReportingUserId"
+        },
+        {
+          "name": "IsCurrentAssignment",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ExperienceAssignmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ExperienceMasterAssignmentId",
+          "to_table": "User_SPExperience_MasterAssignment",
+          "to_column": "ExperienceMasterAssignmentId"
+        },
+        {
+          "from_column": "MatrixReportingUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "PrimaryReportingUserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        },
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_SPExperience_Assignment",
+      "search_hints": [
+        "user spexperience assignment",
+        "user_spexperience_assignment"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "User_SPExperience_MasterAssignment",
+      "columns": [
+        {
+          "name": "ExperienceMasterAssignmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ExperienceMasterAssignmentId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "StartDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "EndDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Designation",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Designation (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "DesignationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DesignationId"
+        }
+      ],
+      "primary_keys": [
+        "ExperienceMasterAssignmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserId",
+          "to_table": "Users",
+          "to_column": "UserId"
+        }
+      ],
+      "description": "Space User Management table User_SPExperience_MasterAssignment",
+      "search_hints": [
+        "user spexperience masterassignment",
+        "user_spexperience_masterassignment"
+      ]
+    },
+    {
+      "schema_name": "um",
+      "name": "Users",
+      "columns": [
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "FirstName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FirstName (nvarchar)"
+        },
+        {
+          "name": "MiddleName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "MiddleName (nvarchar)"
+        },
+        {
+          "name": "LastName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "LastName (nvarchar)"
+        },
+        {
+          "name": "Title",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "Gender",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Gender (nvarchar)"
+        },
+        {
+          "name": "BirthDate",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        }
+      ],
+      "primary_keys": [
+        "UserId"
+      ],
+      "foreign_keys": [],
+      "description": "Core user/employee master records",
+      "search_hints": [
+        "user",
+        "users",
+        "employee",
+        "employees",
+        "people",
+        "staff profile"
+      ]
+    }
+  ],
+  "change_summary": [
+    "No schema structure change"
+  ]
+}

@@ -1,0 +1,4103 @@
+{
+  "source_id": "space-chkwp",
+  "source_label": "Space Checkpoints",
+  "database_name": "DEV_V1_SPACE_CHKWP",
+  "schema_name": "chkwp",
+  "version": 1,
+  "captured_at": "2026-08-17T08:46:49.061572+00:00",
+  "tables": [
+    {
+      "schema_name": "chkwp",
+      "name": "Mobile_Offline_Db_Version",
+      "columns": [
+        {
+          "name": "VersionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying VersionId"
+        },
+        {
+          "name": "VersionNumber",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "VersionNumber (nvarchar)"
+        },
+        {
+          "name": "LastUpdatedAt",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "Checksum",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Checksum (nvarchar)"
+        },
+        {
+          "name": "FileSizeBytes",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FileSizeBytes (bigint)"
+        },
+        {
+          "name": "TablesJson",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TablesJson (nvarchar)"
+        }
+      ],
+      "primary_keys": [
+        "VersionId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Checkpoints table Mobile_Offline_Db_Version",
+      "search_hints": [
+        "mobile offline db version",
+        "mobile_offline_db_version"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "MobileOfflineDatabaseMetadata",
+      "columns": [
+        {
+          "name": "Id",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Id (bigint)"
+        },
+        {
+          "name": "Version",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Version (nvarchar)"
+        },
+        {
+          "name": "Checksum",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Checksum (nvarchar)"
+        },
+        {
+          "name": "FileSize",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FileSize (bigint)"
+        },
+        {
+          "name": "GeneratedAt",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "GeneratedAt (datetime2)"
+        },
+        {
+          "name": "LastUpdatedAt",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "MinCompatibleAppVersion",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "MinCompatibleAppVersion (nvarchar)"
+        },
+        {
+          "name": "DatabaseFileName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DatabaseFileName (nvarchar)"
+        },
+        {
+          "name": "Status",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Status (nvarchar)"
+        },
+        {
+          "name": "Remarks",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remarks (nvarchar)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "TablesJson",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TablesJson (nvarchar)"
+        },
+        {
+          "name": "IsDirty",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        }
+      ],
+      "primary_keys": [
+        "Id"
+      ],
+      "foreign_keys": [],
+      "description": "Space Checkpoints table MobileOfflineDatabaseMetadata",
+      "search_hints": [
+        "mobileofflinedatabasemetadata",
+        "mobileofflinedatabasemetadata"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "MobileOfflineDbDownloadSession",
+      "columns": [
+        {
+          "name": "DownloadId",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying DownloadId"
+        },
+        {
+          "name": "Status",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Status (nvarchar)"
+        },
+        {
+          "name": "Version",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Version (nvarchar)"
+        },
+        {
+          "name": "GeneratedAt",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "GeneratedAt (datetime2)"
+        },
+        {
+          "name": "FileSize",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FileSize (bigint)"
+        },
+        {
+          "name": "Checksum",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Checksum (nvarchar)"
+        },
+        {
+          "name": "Remarks",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remarks (nvarchar)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "DownloadId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Checkpoints table MobileOfflineDbDownloadSession",
+      "search_hints": [
+        "mobileofflinedbdownloadsession",
+        "mobileofflinedbdownloadsession"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "ResponseControl_Definition",
+      "columns": [
+        {
+          "name": "ResponseControlId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ResponseControlId"
+        },
+        {
+          "name": "FullName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FullName (nvarchar)"
+        },
+        {
+          "name": "ShortName",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ShortName (nvarchar)"
+        },
+        {
+          "name": "DataTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DataTypeId"
+        },
+        {
+          "name": "Options",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Options (nvarchar)"
+        },
+        {
+          "name": "IsSystemResponse",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArithmeticResponse",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ResponseControlId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Checkpoints table ResponseControl_Definition",
+      "search_hints": [
+        "responsecontrol definition",
+        "responsecontrol_definition"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission",
+      "columns": [
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "TemplateId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TemplateId"
+        },
+        {
+          "name": "SubmissionNumber",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SubmissionNumber (nvarchar)"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "LocationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LocationId"
+        },
+        {
+          "name": "SubLocationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubLocationId"
+        },
+        {
+          "name": "LocationDetails",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Location / place"
+        },
+        {
+          "name": "CaptureDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RequiredFromDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RequiredToDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "SubmissionDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        },
+        {
+          "name": "ProjectManagerId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectManagerId"
+        },
+        {
+          "name": "PrimaryEngineerId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PrimaryEngineerId"
+        },
+        {
+          "name": "SecondaryEngineerId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SecondaryEngineerId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "SubmissionId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "TemplateId",
+          "to_table": "Template_Definition",
+          "to_column": "TemplateId"
+        }
+      ],
+      "description": "Checkpoint / checklist submission records",
+      "search_hints": [
+        "submission",
+        "submissions",
+        "checkpoint submission",
+        "checklist"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_Additional_Information",
+      "columns": [
+        {
+          "name": "AdditionalInformationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AdditionalInformationId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "ConfigurationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ConfigurationId"
+        },
+        {
+          "name": "Information",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AdditionalInformationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_Additional_Information",
+      "search_hints": [
+        "submission additional information",
+        "submission_additional_information"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_Attachment",
+      "columns": [
+        {
+          "name": "SubmissionAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying SubmissionAttachmentId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "ProvisionalAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProvisionalAttachmentId"
+        },
+        {
+          "name": "UploadedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UploadedByUserId"
+        },
+        {
+          "name": "UploadDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Tag",
+          "data_type": "nvarchar",
+          "max_length": 25,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Tag (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "SubmissionAttachmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_Attachment",
+      "search_hints": [
+        "submission attachment",
+        "submission_attachment"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_CheckPoint_Response",
+      "columns": [
+        {
+          "name": "ResponseId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ResponseId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "IsCreatorResponse",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "SubmissionReviewProcessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionReviewProcessId"
+        },
+        {
+          "name": "VersionNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "VersionNo (int)"
+        },
+        {
+          "name": "ResponseByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ResponseByUserId"
+        },
+        {
+          "name": "ResponseDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ResponseId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "SubmissionReviewProcessId",
+          "to_table": "Submission_ReviewProcess",
+          "to_column": "ReviewProcessId"
+        },
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Responses to checkpoint questions on a submission",
+      "search_hints": [
+        "checkpoint response",
+        "checklist answer"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_CheckPoint_ResponseDetail",
+      "columns": [
+        {
+          "name": "ResponseDetailId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ResponseDetailId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "SubmissionCheckPointResponseId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionCheckPointResponseId"
+        },
+        {
+          "name": "CheckPointQuestionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CheckPointQuestionId"
+        },
+        {
+          "name": "Response",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Response (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ResponseDetailId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "CheckPointQuestionId",
+          "to_table": "Template_CheckPoint_Question",
+          "to_column": "CheckPointQuestionId"
+        },
+        {
+          "from_column": "SubmissionCheckPointResponseId",
+          "to_table": "Submission_CheckPoint_Response",
+          "to_column": "ResponseId"
+        },
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_CheckPoint_ResponseDetail",
+      "search_hints": [
+        "submission checkpoint responsedetail",
+        "submission_checkpoint_responsedetail"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_CheckPoint_Score",
+      "columns": [
+        {
+          "name": "SubmissionCheckPointScoreId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying SubmissionCheckPointScoreId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "CheckPointQuestionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CheckPointQuestionId"
+        },
+        {
+          "name": "Score",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Score (decimal)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "SubmissionCheckPointResponseId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionCheckPointResponseId"
+        }
+      ],
+      "primary_keys": [
+        "SubmissionCheckPointScoreId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "CheckPointQuestionId",
+          "to_table": "Template_CheckPoint_Question",
+          "to_column": "CheckPointQuestionId"
+        },
+        {
+          "from_column": "SubmissionCheckPointResponseId",
+          "to_table": "Submission_CheckPoint_Response",
+          "to_column": "ResponseId"
+        },
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_CheckPoint_Score",
+      "search_hints": [
+        "submission checkpoint score",
+        "submission_checkpoint_score"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_Letter",
+      "columns": [
+        {
+          "name": "LetterId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying LetterId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "IsSPCPLEmployee",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IssuedToUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IssuedToUserId"
+        },
+        {
+          "name": "IssuedToUserName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IssuedToDesignation",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "ContractorName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ContractorName (nvarchar)"
+        },
+        {
+          "name": "ObservedTime",
+          "data_type": "time",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Activity",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Activity (nvarchar)"
+        },
+        {
+          "name": "IssuedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ReviewerId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewerId"
+        },
+        {
+          "name": "ReviewerName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ReviewerName (nvarchar)"
+        },
+        {
+          "name": "ReviewerDesignation",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ReviewerDesignation (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "LetterId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_Letter",
+      "search_hints": [
+        "submission letter",
+        "submission_letter"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_Log",
+      "columns": [
+        {
+          "name": "SubmissionLogId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying SubmissionLogId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "EventId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventId"
+        },
+        {
+          "name": "ActionByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ActionByUserId"
+        },
+        {
+          "name": "ActionDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "MobileGUID",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MobileGUID"
+        },
+        {
+          "name": "MobileDeviceNumber",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "MobileDeviceNumber (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "SubmissionLogId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_Log",
+      "search_hints": [
+        "submission log",
+        "submission_log"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_Member",
+      "columns": [
+        {
+          "name": "SubmissionMemberId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying SubmissionMemberId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "Type",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Type (nvarchar)"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "Email",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Email (nvarchar)"
+        },
+        {
+          "name": "AddedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AddedByUserId"
+        },
+        {
+          "name": "AddedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "SubmissionMemberId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_Member",
+      "search_hints": [
+        "submission member",
+        "submission_member"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_Observation",
+      "columns": [
+        {
+          "name": "SubmissionObservationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying SubmissionObservationId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "ObservationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ObservationId"
+        },
+        {
+          "name": "Tag",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Tag (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "SubmissionObservationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Observations recorded on a submission",
+      "search_hints": [
+        "submission observation",
+        "checkpoint observation"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_OtherQuestion",
+      "columns": [
+        {
+          "name": "OtherQuestionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying OtherQuestionId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "Question",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Question (nvarchar)"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "ReportedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReportedByUserId"
+        },
+        {
+          "name": "ReportedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "OtherQuestionId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_OtherQuestion",
+      "search_hints": [
+        "submission otherquestion",
+        "submission_otherquestion"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_Remark",
+      "columns": [
+        {
+          "name": "SubmissionRemarkId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying SubmissionRemarkId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "ReportedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReportedByUserId"
+        },
+        {
+          "name": "ReportedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "SubmissionRemarkId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_Remark",
+      "search_hints": [
+        "submission remark",
+        "submission_remark"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_ReviewProcess",
+      "columns": [
+        {
+          "name": "ReviewProcessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReviewProcessId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "CheckPointGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CheckPointGroupId"
+        },
+        {
+          "name": "Stage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Stage (int)"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        },
+        {
+          "name": "ReviewerUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewerUserId"
+        },
+        {
+          "name": "ReviewDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "VersionNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "VersionNo (int)"
+        },
+        {
+          "name": "IsEnabled",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReviewProcessId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "CheckPointGroupId",
+          "to_table": "Template_CheckPoint_Group",
+          "to_column": "CheckPointGroupId"
+        },
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_ReviewProcess",
+      "search_hints": [
+        "submission reviewprocess",
+        "submission_reviewprocess"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_ReviewProcess_History",
+      "columns": [
+        {
+          "name": "ReviewProcessHistoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReviewProcessHistoryId"
+        },
+        {
+          "name": "ReviewProcessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewProcessId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "CheckPointGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CheckPointGroupId"
+        },
+        {
+          "name": "Stage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Stage (int)"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        },
+        {
+          "name": "ReviewerUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewerUserId"
+        },
+        {
+          "name": "ReviewDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "VersionNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "VersionNo (int)"
+        },
+        {
+          "name": "IsEnabled",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReviewProcessHistoryId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "CheckPointGroupId",
+          "to_table": "Template_CheckPoint_Group",
+          "to_column": "CheckPointGroupId"
+        },
+        {
+          "from_column": "ReviewProcessId",
+          "to_table": "Submission_ReviewProcess",
+          "to_column": "ReviewProcessId"
+        },
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_ReviewProcess_History",
+      "search_hints": [
+        "submission reviewprocess history",
+        "submission_reviewprocess_history"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_ReviewProcess_Stage",
+      "columns": [
+        {
+          "name": "ReviewProcessStageId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReviewProcessStageId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "Stage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Stage (int)"
+        },
+        {
+          "name": "StageSequence",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "StageSequence (int)"
+        },
+        {
+          "name": "VersionNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "VersionNo (int)"
+        },
+        {
+          "name": "IsStageReviewCompleted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsEnabledForReview",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsNotificationTriggred",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsApprovedNotificationTriggred",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsRejectionNotificationTriggred",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReviewProcessStageId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_ReviewProcess_Stage",
+      "search_hints": [
+        "submission reviewprocess stage",
+        "submission_reviewprocess_stage"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Submission_ReviewProcess_Stage_History",
+      "columns": [
+        {
+          "name": "ReviewProcessStageHistoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReviewProcessStageHistoryId"
+        },
+        {
+          "name": "ReviewProcessStageId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewProcessStageId"
+        },
+        {
+          "name": "SubmissionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubmissionId"
+        },
+        {
+          "name": "Stage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Stage (int)"
+        },
+        {
+          "name": "StageSequence",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "StageSequence (int)"
+        },
+        {
+          "name": "VersionNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "VersionNo (int)"
+        },
+        {
+          "name": "IsStageReviewCompleted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsEnabledForReview",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsNotificationTriggred",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsApprovedNotificationTriggred",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsRejectionNotificationTriggred",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReviewProcessStageHistoryId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ReviewProcessStageId",
+          "to_table": "Submission_ReviewProcess_Stage",
+          "to_column": "ReviewProcessStageId"
+        },
+        {
+          "from_column": "SubmissionId",
+          "to_table": "Submission",
+          "to_column": "SubmissionId"
+        }
+      ],
+      "description": "Space Checkpoints table Submission_ReviewProcess_Stage_History",
+      "search_hints": [
+        "submission reviewprocess stage history",
+        "submission_reviewprocess_stage_history"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Template_Access_Configuration",
+      "columns": [
+        {
+          "name": "AccessConfigurationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AccessConfigurationId"
+        },
+        {
+          "name": "TemplateId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TemplateId"
+        },
+        {
+          "name": "Constant",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Constant (nvarchar)"
+        },
+        {
+          "name": "ObjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ObjectId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AccessConfigurationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "TemplateId",
+          "to_table": "Template_Definition",
+          "to_column": "TemplateId"
+        }
+      ],
+      "description": "Space Checkpoints table Template_Access_Configuration",
+      "search_hints": [
+        "template access configuration",
+        "template_access_configuration"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Template_AdditionalInfo_Configuration",
+      "columns": [
+        {
+          "name": "AdditionalInfoConfigurationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AdditionalInfoConfigurationId"
+        },
+        {
+          "name": "TemplateId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TemplateId"
+        },
+        {
+          "name": "FieldName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "FieldName (nvarchar)"
+        },
+        {
+          "name": "FieldTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FieldTypeId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AdditionalInfoConfigurationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "TemplateId",
+          "to_table": "Template_Definition",
+          "to_column": "TemplateId"
+        }
+      ],
+      "description": "Space Checkpoints table Template_AdditionalInfo_Configuration",
+      "search_hints": [
+        "template additionalinfo configuration",
+        "template_additionalinfo_configuration"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Template_Attachment",
+      "columns": [
+        {
+          "name": "TemplateAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying TemplateAttachmentId"
+        },
+        {
+          "name": "TemplateId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TemplateId"
+        },
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "ProvisionalAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProvisionalAttachmentId"
+        },
+        {
+          "name": "UploadedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UploadedByUserId"
+        },
+        {
+          "name": "UploadDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Tag",
+          "data_type": "nvarchar",
+          "max_length": 25,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Tag (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        }
+      ],
+      "primary_keys": [
+        "TemplateAttachmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "TemplateId",
+          "to_table": "Template_Definition",
+          "to_column": "TemplateId"
+        }
+      ],
+      "description": "Space Checkpoints table Template_Attachment",
+      "search_hints": [
+        "template attachment",
+        "template_attachment"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Template_CheckPoint_Group",
+      "columns": [
+        {
+          "name": "CheckPointGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying CheckPointGroupId"
+        },
+        {
+          "name": "TemplateId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TemplateId"
+        },
+        {
+          "name": "GroupNo",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "GroupNo (decimal)"
+        },
+        {
+          "name": "GroupName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "GroupName (nvarchar)"
+        },
+        {
+          "name": "ParentCheckPointGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ParentCheckPointGroupId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "CheckPointGroupId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ParentCheckPointGroupId",
+          "to_table": "Template_CheckPoint_Group",
+          "to_column": "CheckPointGroupId"
+        },
+        {
+          "from_column": "TemplateId",
+          "to_table": "Template_Definition",
+          "to_column": "TemplateId"
+        }
+      ],
+      "description": "Space Checkpoints table Template_CheckPoint_Group",
+      "search_hints": [
+        "template checkpoint group",
+        "template_checkpoint_group"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Template_CheckPoint_Question",
+      "columns": [
+        {
+          "name": "CheckPointQuestionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying CheckPointQuestionId"
+        },
+        {
+          "name": "CheckPointGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CheckPointGroupId"
+        },
+        {
+          "name": "Question",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Question (nvarchar)"
+        },
+        {
+          "name": "ShortInformation",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ArithmeticOperatorId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ArithmeticOperatorId"
+        },
+        {
+          "name": "ArithmeticOperator",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ArithmeticOperator (nvarchar)"
+        }
+      ],
+      "primary_keys": [
+        "CheckPointQuestionId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "CheckPointGroupId",
+          "to_table": "Template_CheckPoint_Group",
+          "to_column": "CheckPointGroupId"
+        }
+      ],
+      "description": "Questions within a checkpoint template",
+      "search_hints": [
+        "checkpoint question",
+        "template question"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Template_CheckPoint_Question_ResponseControl",
+      "columns": [
+        {
+          "name": "QuestionResponseControlId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying QuestionResponseControlId"
+        },
+        {
+          "name": "CheckPointQuestionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CheckPointQuestionId"
+        },
+        {
+          "name": "ResponseControlId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ResponseControlId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "QuestionResponseControlId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ResponseControlId",
+          "to_table": "ResponseControl_Definition",
+          "to_column": "ResponseControlId"
+        },
+        {
+          "from_column": "CheckPointQuestionId",
+          "to_table": "Template_CheckPoint_Question",
+          "to_column": "CheckPointQuestionId"
+        }
+      ],
+      "description": "Space Checkpoints table Template_CheckPoint_Question_ResponseControl",
+      "search_hints": [
+        "template checkpoint question responsecontrol",
+        "template_checkpoint_question_responsecontrol"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Template_CheckPointGroup_Access_Configuration",
+      "columns": [
+        {
+          "name": "CheckPointGroupAccessConfigurationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying CheckPointGroupAccessConfigurationId"
+        },
+        {
+          "name": "CheckPointGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CheckPointGroupId"
+        },
+        {
+          "name": "Constant",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Constant (nvarchar)"
+        },
+        {
+          "name": "ObjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ObjectId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "CheckPointGroupAccessConfigurationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "CheckPointGroupId",
+          "to_table": "Template_CheckPoint_Group",
+          "to_column": "CheckPointGroupId"
+        }
+      ],
+      "description": "Space Checkpoints table Template_CheckPointGroup_Access_Configuration",
+      "search_hints": [
+        "template checkpointgroup access configuration",
+        "template_checkpointgroup_access_configuration"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Template_Definition",
+      "columns": [
+        {
+          "name": "TemplateId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying TemplateId"
+        },
+        {
+          "name": "CategoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CategoryId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "TypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TypeId"
+        },
+        {
+          "name": "TemplateName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "TemplateName (nvarchar)"
+        },
+        {
+          "name": "TemplateNumber",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TemplateNumber (nvarchar)"
+        },
+        {
+          "name": "TemplateDescription",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "SubType",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SubType (nvarchar)"
+        },
+        {
+          "name": "FrequencyId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FrequencyId"
+        },
+        {
+          "name": "Weightage",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Weightage (nvarchar)"
+        },
+        {
+          "name": "ProcessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProcessId"
+        },
+        {
+          "name": "AnnexureId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AnnexureId"
+        },
+        {
+          "name": "Note",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "CreationDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "CreatedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CreatedByUserId"
+        },
+        {
+          "name": "ClientName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ClientName (nvarchar)"
+        },
+        {
+          "name": "LogoAndFooterAlignment",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "LogoAndFooterAlignment (nvarchar)"
+        },
+        {
+          "name": "IsForAllVerticals",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsForAllRegions",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsForAllProjects",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsAttachmentSectionApplicable",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsStatusSectionApplicable",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsOtherQuestionSectionApplicable",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsMemberPresentSectionApplicable",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsReviewProcessApplicable",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "TemplateStatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TemplateStatusId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "TemplateId"
+      ],
+      "foreign_keys": [],
+      "description": "Checkpoint / checklist template definitions",
+      "search_hints": [
+        "template",
+        "checklist template",
+        "checkpoint template"
+      ]
+    },
+    {
+      "schema_name": "chkwp",
+      "name": "Template_ReviewProcess",
+      "columns": [
+        {
+          "name": "ReviewProcessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReviewProcessId"
+        },
+        {
+          "name": "TemplateId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TemplateId"
+        },
+        {
+          "name": "CheckPointGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CheckPointGroupId"
+        },
+        {
+          "name": "Stage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Stage (int)"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "ProcessGroupGUID",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProcessGroupGUID"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReviewProcessId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "CheckPointGroupId",
+          "to_table": "Template_CheckPoint_Group",
+          "to_column": "CheckPointGroupId"
+        },
+        {
+          "from_column": "TemplateId",
+          "to_table": "Template_Definition",
+          "to_column": "TemplateId"
+        }
+      ],
+      "description": "Space Checkpoints table Template_ReviewProcess",
+      "search_hints": [
+        "template reviewprocess",
+        "template_reviewprocess"
+      ]
+    }
+  ],
+  "change_summary": [
+    "No schema structure change"
+  ]
+}

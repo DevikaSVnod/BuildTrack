@@ -1,0 +1,416 @@
+================================================================================
+SPACE INTEGRATION — ARCHITECTURE DECISION AFTER FRONTEND INVESTIGATION
+Supersedes sections 3, 4 and 5 of CARRY_FORWARD_PLAN.txt.
+Written 24 Aug, after reading the SPACE frontend investigation report.
+No code created, modified or deleted.
+================================================================================
+
+
+================================================================================
+1. THREE FINDINGS THAT CHANGE THE ARCHITECTURE
+================================================================================
+
+FINDING 1 — SPACE ALREADY HAS A GLOBAL SEARCH, AND IT FEDERATES TO MODULE APIs.
+  "Global Search currently fans out to Action + CMS with the user JWT; it does
+   not call a dedicated Search Query API yet (search.apiUrl exists in config as
+   unused target for that future service)."
+  There is also globalSearchNavigation.ts with hrefForActionMeeting() and
+  hrefForCmsContract() already written.
+
+  This means the integration socket is already cut. SPACE has reserved
+  search.apiUrl for exactly the service we are building. We are not inventing a
+  boundary, we are filling one that exists.
+
+  It also means SPACE's own answer to "how does global search stay
+  permission-safe" is already decided: call the module APIs with the user's JWT
+  and let each module enforce its own rules.
+
+FINDING 2 — PROJECT-BASED SCOPING IS THE WRONG AUTHORIZATION MODEL.
+  This is the finding that invalidates my previous plan. The report is explicit:
+
+    Primary dimension is an assignment hierarchy, not a project list:
+        Level -> Vertical -> Region -> Project -> Function (+ Position)
+
+    And every module layers its own rule on top:
+        DMS        per-document accessMatrix (share / view / noAccess)
+        Checklist  assignmentOption, default "AssignedToMe",
+                   plus submissionAccess = EDIT | VIEW | NOACCESS per row
+        Action     assignmentOption = AssignedToMe / RaisedByMe /
+                   EscalatedToMe / MyTeam
+        CMS        feature-access matrix
+        Incident   isEditable / investigation flags per row
+
+    And the admin bypass is not a JWT role at all:
+        const SPECIAL_ADMIN_FUNCTION_NAMES = ["SPACE Admin"];
+        return SPECIAL_ADMIN_FUNCTION_NAMES.includes(res.result.functionName);
+    It is a functionName fetched from getUserInfoDetails(userId) at runtime.
+
+  My proposed fix — resolve allowed project ids from um.User_Assignment and
+  inject "ProjectId IN (...)" everywhere — is not just incomplete, it is wrong
+  in a specific and dangerous direction. A Checklist submission list defaults to
+  AssignedToMe. If we filtered by project instead, we would show a user every
+  submission on every project they are assigned to. That is far MORE than SPACE
+  shows them today. We would have built an over-disclosure and called it a
+  security control.
+
+  The same applies to DMS: a project filter ignores accessMatrix entirely.
+
+  Conclusion: SPACE's permission rules cannot be reproduced with a WHERE clause
+  or an OData filter, because they are not stored as a filterable attribute.
+  They are computed by the module services. Therefore we must ask the modules.
+
+FINDING 3 — ALMOST NOTHING IS DEEP-LINKABLE.
+  Only two entities are URL-addressable in the entire application:
+      Meeting / Event     /action/meeting/edit/:eventId
+      CMS Contract        /cms/search-contract?projectId=&projectCMId=
+
+  Everything else — Project, Incident, User, Labour, Contractor, DMS Document,
+  HSE Review, Checklist Submission — opens from in-memory React state on the
+  list page (editingItem.id, selectedIncidentId, Redux labourId,
+  selectedItem, editingReviewId). The report notes refresh loses the open record.
+
+  This confirms the dead-link analysis from the earlier assessment, and it is
+  worse than expected: the problem is not that the POC emits wrong URLs, it is
+  that the destination routes do not exist. See section 5 for the cheap fix.
+
+
+================================================================================
+2. THE REVISED ARCHITECTURE
+================================================================================
+
+  SPACE shell
+      |
+  SearchBar widget  (POC UX, packaged, props-driven)
+      |  Bearer <SPACE token>, x-correlation-id, x-tenant-id
+      v
+  Global Search Orchestration Service     <-- this is search.apiUrl
+      |
+      +-- verify SPACE token (signature, exp) — see section 4
+      +-- query understanding      query_intel.py   (POC, lifted whole)
+      +-- module selection         which modules can answer this query
+      +-- parallel fan-out, forwarding the USER'S OWN TOKEN:
+      |       Action    meeting search API
+      |       CMS       /api/search/advanced
+      |       DMS       documentSearchApi
+      |       Checklist submission SearchAPI
+      |       Project   /api/project/paged-list
+      |       Incident  incident search
+      |       LMS       /api/labours/search
+      |       UM        user list
+      +-- merge + rank + dedupe    result_filter.py, rerank_score  (POC)
+      +-- optional AI answer       answer.py  (POC, over merged results only)
+      v
+  { hits[], total, partial, failedModules[] }
+      |
+  SPACE renders; SPACE owns navigation via onOpenResult
+
+  WHY THIS IS THE RIGHT CALL
+  Authorization is delegated to the services that own it. We never reproduce
+  assignmentOption, accessMatrix or submissionAccess — we let Action, DMS and
+  Checklist apply them. We inherit SPACE's existing security posture rather than
+  inventing a parallel one that will drift.
+
+  It is also the lower-risk path for a security review. "We call your own APIs
+  with the user's own token" is a sentence that passes review. "We run
+  LLM-generated SQL against your production databases" is the sentence most
+  likely to stop this project, and section 3 removes it.
+
+  WHAT WE GIVE UP, STATED PLAINLY
+  The cross-database "Linked" hops, the schema-SQL path, and the
+  space-action-index all depend on direct database access. They come out of v1.
+  Your Jira story "Harden Space ProjectId / DocumentId hops" cannot ship as
+  written. That is a real loss of a demo feature and you should tell your
+  manager this week, not on the 30th.
+
+  WHAT THE SERVICE STILL ADDS OVER SPACE'S EXISTING FAN-OUT
+  SPACE today fans out to two modules from the browser with no ranking. We add:
+  query understanding that decides which modules to call and extracts filters,
+  eight modules instead of two, cross-module merging and relevance ranking, the
+  AI answer (which must be server-side because it needs the Azure OpenAI key),
+  caching, and one contract instead of N browser calls. That is a real service,
+  not a proxy.
+
+  THE ALTERNATIVE I CONSIDERED AND REJECTED
+  Extend SPACE's existing client-side fan-out and skip our backend entirely.
+  Faster to demo, but it cannot host the AI answer (key exposure), cannot reuse
+  the 48 KB of Python query understanding, and abandons search.apiUrl which
+  SPACE has already reserved. Rejected — but if you lose two days, this is the
+  fallback that still produces something on the 31st.
+
+
+================================================================================
+3. CARRY-FORWARD DELTA
+================================================================================
+
+  MOVES OUT OF v1  (was "LIFT + HARDEN", now "PHASE 2 OR NEVER")
+  All of these depend on direct database access, which v1 no longer does.
+
+    app/sql_agent/            4 files, 25 KB   — the security-review blocker,
+                                                 now simply not needed
+    app/schema_catalog/       5 files, 46 KB   — plus the 17 cached JSON
+                                                 snapshots
+    app/search/cross_db_links.py     59 KB     — the 16 ProjectId hops
+    app/search/space_indexer.py      24 KB
+    app/search/space_hybrid.py
+    app/search/sql_indexer.py, sql_push_indexer.py
+    app/core/space_databases.py                — no SQL URLs needed at all
+    app/search/indexer.py, retrieval.py, embeddings.py,
+      incremental_sync.py, sync_state.py, blob_retrieval.py
+                                               — the whole Azure AI Search
+                                                 layer defers to Phase 2
+
+    Do not delete these. Keep them in the frozen POC repo. If Phase 2 adds an
+    index for document content, they come back.
+
+    Bonus: v1 needs no SQL credentials, no VPN to the SPACE databases, no Key
+    Vault entries for 17 connection strings, and no ODBC driver in the
+    container. Your day-6 deploy story just got much shorter.
+
+  STILL LIFT AS-IS  (unchanged, and now carrying more of the weight)
+    app/search/query_intel.py        48 KB  — the core asset. Retarget
+                                              DOMAIN_SIGNALS from BuildTrack
+                                              vocabulary to SPACE modules.
+    app/search/query_planner.py
+    app/search/result_filter.py      32 KB  — relevance and dedupe
+    app/search/metrics.py
+    global_search_core/models.py            — the response contract
+    frontend SearchBar behaviour            — debounce 280 ms, min 2 chars,
+                                              two-phase results-then-answer,
+                                              grouping, filter tabs
+
+  STILL LIFT + HARDEN
+    app/connectors/multi_database.py        — keep the ThreadPoolExecutor
+                                              fan-out PATTERN, replace database
+                                              targets with HTTP module clients.
+                                              Fix line 125 (no timeout) and
+                                              lines 150-155 (swallowed errors).
+    app/search/answer.py             50 KB  — keep, but it now summarises module
+                                              API results instead of index hits.
+                                              Extract the prompt at lines 382-409
+                                              into app/prompts/.
+    app/api/routes/search.py                — keep /results and /answer, drop
+                                              the 17 index-admin endpoints
+                                              entirely (they have nothing left
+                                              to administer in v1)
+
+  NEW, DID NOT EXIST IN THE POC
+    app/auth/space_token.py                 — verify the SPACE token
+    app/connectors/space/*.py               — one thin client per module.
+                                              Eight small files. This is the
+                                              bulk of the new work.
+    app/prompts/                            — extracted templates
+
+  DELETED FROM MY OWN PREVIOUS PLAN
+    The entitlement-resolution component. Not needed. The modules own it.
+    Fix 2 and Fix 3 from CARRY_FORWARD_PLAN.txt section 3 are void.
+    Fix 0 (rotate secrets), Fix 1 (validate the token), Fix 4 (scope in the
+    cache key — now keyed on user id rather than project set) and Fix 5 (admin
+    surface) still stand.
+
+
+================================================================================
+4. THE NEW CRITICAL UNKNOWN
+================================================================================
+
+  Everything above rests on one assumption:
+
+      SPACE's module APIs enforce authorization server-side from the JWT.
+
+  The report cannot confirm it and flags the opposite risk:
+
+    "Server-side filtering of /api/project/list, /api/project/paged-list,
+     CMS /api/search/advanced, labour search, user list — UNKNOWN; UI often
+     sends no ACL besides JWT."
+
+    "DMS loggedInUserId in the body is client-supplied (from the same JWT id).
+     Whether the backend re-validates against the token is NOT FOUND here.
+     Same risk for other loggedInUserId fields."
+
+  Two consequences.
+
+  First, we must never send loggedInUserId derived from anything but the
+  verified token. If a module API requires that field, our service fills it from
+  the token it just verified, never from the request body.
+
+  Second, if a module API does NOT filter server-side, federating to it is no
+  safer than querying the database. That module must be excluded from v1 until
+  it does. This is a per-module go/no-go, and it is the question to send today.
+
+  A note worth making to the SPACE team without drama: their existing global
+  search already relies on this same assumption for Action and CMS. We are not
+  introducing a new risk class; we are asking them to confirm one they already
+  depend on. If the answer is uncomfortable, better to find out now.
+
+  Two smaller items from the report worth raising in the same message:
+    - runtimeCfg().skipAuth bypasses login entirely. Confirm it is impossible to
+      enable outside local development.
+    - The existing global search connector sends assignmentOption: "" and
+      raisedById: null, which the report notes is "broader than the meeting
+      list". That looks like an existing over-disclosure in the Action module.
+      Our service must send the correct assignmentOption, not copy this.
+
+
+================================================================================
+5. DEEP LINKS — THE CHEAP FIX
+================================================================================
+
+  Works today, use as-is:
+    Meeting      /action/meeting/edit/:eventId
+    CMS Contract /cms/search-contract?projectId=&projectCMId=
+  Both already implemented in globalSearchNavigation.ts.
+
+  For everything else, do NOT ask SPACE to build detail routes. That is weeks of
+  work across eight modules. Use the pattern SPACE already uses for Labour:
+
+      navigate(listRoute, { state: { globalSearchOpenId: id } })
+
+  Then each list page reads location.state in one hook and opens the record with
+  the same in-memory mechanism it already uses. It is roughly an hour per module,
+  it is SPACE frontend work in SPACE's own idiom, and it needs no backend change.
+
+  Degraded fallback if even that does not fit: navigate to the list route and
+  prefill the search box with the record's number or title. Worse UX, near-zero
+  effort, still better than a dead link.
+
+  Our service must therefore emit { sourceModule, entityType, entityId } and
+  never a URL. SPACE owns the mapping. This also means the POC's url field —
+  emitted in space_indexer.py at lines 361, 461, 502 and 544 — is correctly
+  dropped along with that file.
+
+
+================================================================================
+6. REVISED SEVEN-DAY PLAN
+================================================================================
+
+  DAY 1  Freeze the POC repo. Create space-global-search. Rotate the secrets in
+         backend/.env regardless of the architecture change.
+         Lift query_intel, query_planner, result_filter, metrics, models.
+         Send the section 7 prompt to the SPACE backend team. This is the
+         critical path — everything from day 2 depends on the answer.
+
+  DAY 2  Token verification, once the backend team confirms alg / issuer /
+         audience / key. Until then, build against a stub verifier and a sample
+         token. Do not let this block day 3.
+         Retarget DOMAIN_SIGNALS in query_intel from BuildTrack vocabulary to
+         SPACE module vocabulary. This is unglamorous and it is what makes the
+         demo look intelligent.
+
+  DAY 3  Module clients for the two modules that already work and are already
+         deep-linkable: Action and CMS. Forward the user's token. Correct
+         assignmentOption. Fan-out, merge, rank.
+         End of day: a working two-module global search through our service,
+         with real deep links. This is your demo floor — from here everything
+         is upside.
+
+  DAY 4  Add modules cleared by the backend team's answer, in this order of
+         value: Project, Incident, DMS, Checklist, Labour, User.
+         Any module not cleared stays behind a feature flag, off.
+
+  DAY 5  Frontend. Point SPACE's search.apiUrl at the service. Package the POC
+         SearchBar with props and onOpenResult. Add the ARIA roles and arrow-key
+         navigation the POC bar lacks.
+         Add the location.state deep-link pattern for the highest-value
+         non-addressable modules.
+
+  DAY 6  Deploy to SPACE DEV. Far simpler than before: no SQL, no VPN, no ODBC,
+         no index. Needs the Azure OpenAI key, Key Vault, CORS for the SPACE
+         origin, health endpoint.
+         Per-module timeouts and partial:true.
+
+  DAY 7  AI answer over merged results if time allows — this is the first thing
+         to cut. Latency baseline. Two-user permission test. Demo script.
+         Rollback plan: SPACE's existing client-side Action+CMS fan-out.
+
+  CUT ORDER IF TIME RUNS SHORT
+    1. AI answer
+    2. Modules beyond Action, CMS, Project, Incident
+    3. The location.state deep links (fall back to list routes)
+    Never cut: token verification, per-module authorization confirmation.
+
+
+================================================================================
+7. PROMPT FOR THE SPACE BACKEND TEAM — SEND TODAY
+================================================================================
+
+Copy from here.
+
+--------------------------------------------------------------------------------
+We are building the Global Search service that the SPACE frontend already has a
+config slot for (search.apiUrl). It will receive the logged-in user's Bearer
+token from the SPACE UI, call SPACE module APIs on that user's behalf with the
+same token, merge and rank the results, and return them to the UI.
+
+We deliberately are NOT querying the SPACE databases directly, because the
+frontend investigation showed that visibility depends on the assignment
+hierarchy (Level / Vertical / Region / Project / Function) plus per-module rules
+(DMS accessMatrix, Checklist assignmentOption and submissionAccess, Action
+assignmentOption, CMS feature-access) that cannot be reproduced as a SQL filter.
+So we need your module APIs to do the filtering. Please confirm the following.
+
+TOKEN
+1. Which service issues the access token from api/Authentication/login, and what
+   signing algorithm does it use?
+2. What are the exact issuer and audience values per environment (DEV/UAT/PROD)?
+3. How do we obtain the verification key — JWKS endpoint, shared symmetric
+   secret, or certificate? What is the rotation process?
+4. Will the same token be accepted by every module API (Action, CMS, DMS,
+   Checklist, Project, Incident, LMS, UM), or are there per-audience
+   restrictions? If restricted, is there an on-behalf-of or token-exchange flow?
+5. Token lifetime, and what our service should do on expiry mid-request.
+6. Can you give us two DEV accounts with clearly DIFFERENT access, so we can
+   prove results differ correctly?
+
+AUTHORIZATION — THIS IS THE BLOCKER
+7. For each API below, does it filter results server-side based on the JWT
+   identity, or does it return everything and rely on the UI to filter?
+   Please answer per endpoint, yes or no:
+     - Action     meeting search
+     - CMS        /api/search/advanced
+     - DMS        document search
+     - Checklist  submission search
+     - Project    /api/project/list and /api/project/paged-list
+     - Incident   incident search
+     - LMS        /api/labours/search
+     - UM         user list
+8. Several endpoints take loggedInUserId in the request BODY (DMS document
+   search, and others). Does the backend validate that this matches the user in
+   the JWT, or does it trust the value as sent? We will always populate it from
+   the verified token, but we need to know whether the endpoint is safe if
+   someone does not.
+9. For Checklist, the UI defaults to assignmentOption "AssignedToMe". For a
+   global search across all of a user's visible work, which assignmentOption
+   value gives exactly what that user is permitted to see and no more? Same
+   question for Action.
+10. Admin bypass in the UI is functionName == "SPACE Admin" from
+    getUserInfoDetails, not a JWT role. Do the module APIs apply an equivalent
+    bypass server-side from the token, or do they expect the caller to have
+    already widened the query?
+11. Do any of these search endpoints support a free-text query parameter across
+    multiple fields? For each, tell us the parameter name and which fields it
+    searches. If a module has no free-text search, say so — we will exclude it.
+12. Rate limits, pagination limits, and typical p95 latency for each. We may
+    call up to eight of them in parallel per user query.
+
+We are happy to be told "do not call module X yet". A module we exclude is a
+feature we ship later; a module that returns unfiltered data is an incident.
+--------------------------------------------------------------------------------
+
+
+================================================================================
+8. WHAT I NEED FROM YOU
+================================================================================
+
+  1. Who built the existing Global Search in the SPACE frontend that fans out to
+     Action and CMS, and globalSearchNavigation.ts? Was that you or your team?
+     If it was, that is the codebase we should extend, and I need to see it.
+  2. Is search.apiUrl already pointed anywhere, or is it an empty placeholder?
+  3. Does your manager know the cross-database "Linked" hops are likely out of
+     the 31 Aug scope? That Jira story cannot ship as written under this
+     architecture, and it is better raised now.
+  4. Do you have any access to the SPACE BACKEND repository, or only the
+     frontend? If you have it, the section 7 questions can be answered from code
+     in an hour instead of waiting on a team.
+
+================================================================================
+END
+================================================================================

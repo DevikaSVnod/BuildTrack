@@ -1,0 +1,101 @@
+Type,Component,Title,Est. Hours,Description
+Story,global search bar,Document completed Global Search POC baseline for SPACE integration,4,"Capture what is already live in the Global Search POC so SPACE integration does not re-do that work.
+
+Already done:
+- Multi-source search (BuildTrack, Assets, Space Action + sibling Space DBs)
+- Azure AI Search as discovery layer; SQL as source of truth; Top-K + LLM answers
+- Space Action schema-aware indexing (action.* tables, text columns only; excluded OfflineSyncLog / Synonyms_Configuration; ~6.6k docs in space-action-index)
+- Production flags: hydrate from SQL, catalog, incremental sync, security trim, metrics
+- Space ProjectId cross-DB hops (Project, HSE, Incident, LMS, CMS, Dashboard)
+- SearchBar types + Linked badge for related Space records
+- APIs: POST /api/search/results, POST /api/search/answer, GET /api/search/sources
+- Widget client under frontend/lib/global-search (createSearchClient)
+
+Deliverable: 1-page baseline note for SPACE app team (architecture, sources, APIs)."
+Story,global search bar,Agree SPACE embed strategy: widget vs iframe vs shared package,8,"Workshop with SPACE application team to pick how Global Search Bar is hosted.
+
+Decide:
+- Embed SearchBar in SPACE header (shared React) vs iframe vs copy of lib/global-search
+- Auth: reuse SPACE session / SSO vs pass JWT to Global Search API
+- API base URL, CORS, DEV vs UAT vs PROD
+- Which Space SQL databases must be on for go-live (Action, Project, HSE, etc.)
+
+Deliverable: short integration design (embed choice, auth, env matrix)."
+Story,global search bar,Freeze Global Search API contract for SPACE host app,6,"Publish a stable contract SPACE can call without depending on BuildTrack UI.
+
+Include:
+- POST /api/search/results (fast hits, no LLM)
+- POST /api/search/answer (Top-K + AI summary)
+- GET /api/search/sources
+- Request fields: query, filter_type, top_k, source_ids
+- Response fields: results[], metadata.database_id, content_type, url, score
+- Auth header (Bearer) and 401/422/503 behaviour
+
+Deliverable: API contract page + example payloads SPACE can implement against."
+Story,global search bar,Package SearchBar as reusable module with SPACE-ready props,8,"Extract frontend/lib/global-search so SPACE can mount it without forking BuildTrack.
+
+Props/config:
+- apiBaseUrl, getAuthToken, theme tokens (SPACE colours)
+- contentTypes map (project, event, HSE, incident, document, etc.)
+- onOpenResult callback for SPACE routing
+- source_ids default for SPACE-only search
+
+Deliverable: reusable SearchBar module + README for SPACE developers."
+Story,global search bar,Map SPACE session user into search security and project scope,8,"Wire SPACE logged-in user into Global Search so results respect SPACE permissions.
+
+Work:
+- Pass SPACE JWT/session token to GET/POST /api/search/*
+- Map user id / roles to search security_trim (project membership)
+- Pass active SPACE project/company as filter so queries are scoped
+- Fail closed on missing token; document empty vs forbidden states
+
+Deliverable: auth mapping table + working DEV login from SPACE shell."
+Story,global search bar,Mount Global Search Bar in SPACE application shell (DEV),8,"Embed Global Search Bar in SPACE header/shell on DEV.
+
+Work:
+- Place bar in SPACE chrome (header or command palette)
+- Match SPACE visual tokens where required
+- Point to Global Search API DEV (Space SQL via VPN / on-prem)
+- Smoke test: inspection / EVT number / list active projects / Linked hops
+
+Deliverable: SearchBar visible and usable inside SPACE DEV."
+Story,global search bar,Deep-link search results into SPACE module screens,8,"Clicking a search result must open the correct SPACE screen, not BuildTrack routes.
+
+Map hit types to SPACE URLs, including:
+- space-project / project ? SPACE project page
+- event / event_agenda / event_task ? SPACE Action/event screens
+- HSE occupational/environmental review ? SPACE HSE
+- incident ? SPACE Incident
+- employment / LMS ? SPACE LMS
+- contract / CMS ? SPACE CMS
+- documents / DMS / attachment ? SPACE DMS where keys exist
+
+Deliverable: url mapper + verified clicks for top content types."
+Story,global search bar,Harden Space ProjectId / DocumentId hops for SPACE demo queries,6,"POC already hops ProjectId across Project, HSE, Incident, LMS, CMS, Dashboard. For SPACE integration, lock demo queries and fill remaining high-value hops.
+
+Work:
+- Regression pack: list active projects, HSE reviews, incidents, contracts, EVT/agenda
+- Add DocumentId hop (DMS/Attachment ? project) where FKs exist
+- Reduce duplicate schema_sql vs space_project cards in UI
+- Document which of 17 Space DBs are searchable vs hop-only
+
+Deliverable: demo query list + expected Linked badges."
+Story,global search bar,Deploy Global Search API for SPACE DEV with runbook,8,"Stand up Global Search API for SPACE DEV (and note UAT path).
+
+Work:
+- Env: Space SQL URLs, Azure AI Search indexes, Azure OpenAI, CORS for SPACE origin
+- Schema catalog / space-index sync runbook (POST /api/search/space-index)
+- Health: /api/health, /api/search/space-index/status, /api/search/sources
+- Secrets: Key Vault or equivalent; no keys in SPACE frontend
+- One-process-per-port notes (avoid duplicate uvicorn on 8000)
+
+Deliverable: DEV deploy + 1-page runbook for SPACE ops."
+Story,global search bar,"SPACE UAT checklist, latency baseline",8,"
+
+Work:
+- Checklist: login from SPACE, results, AI answer, Linked hops, empty query, 401
+- Measure /search/results vs /search/answer latency on SPACE DEV
+- Fix P1 UAT issues (auth, CORS, wrong deep-links, missing Space source)
+- Go/no-go: CORS, VPN/SQL, flags, rollback, demo script for manager
+- Backlog after 31 Aug: UserId hops, BMS name match, UAT/PROD full rollout
+"

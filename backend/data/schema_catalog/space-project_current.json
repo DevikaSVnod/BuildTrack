@@ -1,0 +1,793 @@
+{
+  "source_id": "space-project",
+  "source_label": "Space Project",
+  "database_name": "DEV_V1_SPACE_PROJECT",
+  "schema_name": "project",
+  "version": 1,
+  "captured_at": "2026-08-17T08:46:46.905763+00:00",
+  "tables": [
+    {
+      "schema_name": "project",
+      "name": "Project",
+      "columns": [
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsLMSEnabled",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "LmsEnabledDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "SiteAddress",
+          "data_type": "varchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SiteAddress (varchar)"
+        },
+        {
+          "name": "ContractualStartDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ContractualEndDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ActualStartDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ActualEndDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectId"
+      ],
+      "foreign_keys": [],
+      "description": "Core project master records (code, name, status, site address, dates)",
+      "search_hints": [
+        "project",
+        "projects",
+        "site",
+        "site address",
+        "project code",
+        "project name"
+      ]
+    },
+    {
+      "schema_name": "project",
+      "name": "Project_LMS_Configuration",
+      "columns": [
+        {
+          "name": "ProjectLMSConfigurationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectLMSConfigurationId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "IsCentralGovernmentProject",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "StatutoryZoneId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatutoryZoneId"
+        },
+        {
+          "name": "StateId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StateId"
+        },
+        {
+          "name": "DistrictId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DistrictId"
+        },
+        {
+          "name": "CityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CityId"
+        },
+        {
+          "name": "Pin",
+          "data_type": "varchar",
+          "max_length": 10,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Pin (varchar)"
+        },
+        {
+          "name": "WorkingStartTime",
+          "data_type": "time",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "WorkingEndTime",
+          "data_type": "time",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RestStartTime",
+          "data_type": "time",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RestEndTime",
+          "data_type": "time",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RestMinutes",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RestMinutes (int)"
+        },
+        {
+          "name": "GraceTimePerDay",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "WeeklyOffDay",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "WeeklyOffDay (int)"
+        },
+        {
+          "name": "WeeklyOffDayName",
+          "data_type": "varchar",
+          "max_length": 10,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "WeeklyOffDayName (varchar)"
+        },
+        {
+          "name": "JointVentureName",
+          "data_type": "varchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "JointVentureName (varchar)"
+        },
+        {
+          "name": "NatureOfWork",
+          "data_type": "varchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "NatureOfWork (varchar)"
+        },
+        {
+          "name": "NatureOfBuilding",
+          "data_type": "varchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "NatureOfBuilding (varchar)"
+        },
+        {
+          "name": "LocationOfWork",
+          "data_type": "varchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Location / place"
+        },
+        {
+          "name": "ContractorName",
+          "data_type": "varchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ContractorName (varchar)"
+        },
+        {
+          "name": "ContractorAddress1",
+          "data_type": "varchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ContractorAddress1 (varchar)"
+        },
+        {
+          "name": "EstablishmentName",
+          "data_type": "varchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EstablishmentName (varchar)"
+        },
+        {
+          "name": "EstablishmentAddress1",
+          "data_type": "varchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EstablishmentAddress1 (varchar)"
+        },
+        {
+          "name": "PrincipalEmployerName",
+          "data_type": "varchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PrincipalEmployerName (varchar)"
+        },
+        {
+          "name": "PrincipalEmployerAddress1",
+          "data_type": "varchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PrincipalEmployerAddress1 (varchar)"
+        },
+        {
+          "name": "IsEnabledForRestrictAccessProcess",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "AllowableWorkingHoursPerDay",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "AllowableWorkingHoursPerDay (int)"
+        },
+        {
+          "name": "AllowableWorkingHoursPerWeek",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "AllowableWorkingHoursPerWeek (int)"
+        },
+        {
+          "name": "AllowableOTPerWeek",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "AllowableOTPerWeek (int)"
+        },
+        {
+          "name": "MinimumPermissibleHoursPerWeek",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "MinimumPermissibleHoursPerWeek (int)"
+        },
+        {
+          "name": "AccessAllowedForConsecutiveDays",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "AccessAllowedForConsecutiveDays (int)"
+        },
+        {
+          "name": "IsAttendanceApprovalDisabled",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CompanyId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CompanyId"
+        },
+        {
+          "name": "ComplianceReportTemplateSetId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ComplianceReportTemplateSetId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectLMSConfigurationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectId",
+          "to_table": "Project",
+          "to_column": "ProjectId"
+        }
+      ],
+      "description": "LMS / labour compliance configuration for a project",
+      "search_hints": [
+        "lms",
+        "labour",
+        "compliance",
+        "working hours",
+        "contractor"
+      ]
+    },
+    {
+      "schema_name": "project",
+      "name": "Project_Location",
+      "columns": [
+        {
+          "name": "ProjectLocationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectLocationId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "Location",
+          "data_type": "nvarchar",
+          "max_length": 250,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Location / place"
+        },
+        {
+          "name": "Details",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Details (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectLocationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectId",
+          "to_table": "Project",
+          "to_column": "ProjectId"
+        }
+      ],
+      "description": "Locations belonging to a project",
+      "search_hints": [
+        "project location",
+        "location",
+        "site location"
+      ]
+    },
+    {
+      "schema_name": "project",
+      "name": "Project_SubLocation",
+      "columns": [
+        {
+          "name": "ProjectSubLocationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectSubLocationId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "ProjectLocationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectLocationId"
+        },
+        {
+          "name": "SubLocation",
+          "data_type": "nvarchar",
+          "max_length": 250,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Location / place"
+        },
+        {
+          "name": "Details",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Details (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectSubLocationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectId",
+          "to_table": "Project",
+          "to_column": "ProjectId"
+        },
+        {
+          "from_column": "ProjectLocationId",
+          "to_table": "Project_Location",
+          "to_column": "ProjectLocationId"
+        }
+      ],
+      "description": "Sub-locations under a project location",
+      "search_hints": [
+        "sublocation",
+        "sub location",
+        "project sublocation"
+      ]
+    }
+  ],
+  "change_summary": [
+    "No schema structure change"
+  ]
+}

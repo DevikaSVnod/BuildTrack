@@ -1,0 +1,875 @@
+{
+  "source_id": "space-hse",
+  "source_label": "Space HSE",
+  "database_name": "DEV_V1_SPACE_HSE",
+  "schema_name": "hse",
+  "version": 1,
+  "captured_at": "2026-08-17T08:46:48.083718+00:00",
+  "tables": [
+    {
+      "schema_name": "hse",
+      "name": "Environmental_Review",
+      "columns": [
+        {
+          "name": "EnvironmentalReviewId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EnvironmentalReviewId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "ReviewBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ReviewBy (bigint)"
+        },
+        {
+          "name": "Number",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Number (nvarchar)"
+        },
+        {
+          "name": "ReviewDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsSubmitted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EnvironmentalReviewId"
+      ],
+      "foreign_keys": [],
+      "description": "Environmental HSE review records",
+      "search_hints": [
+        "environmental review",
+        "environment",
+        "hse environment",
+        "ehs"
+      ]
+    },
+    {
+      "schema_name": "hse",
+      "name": "Environmental_Review_Activity",
+      "columns": [
+        {
+          "name": "EnvironmentalReviewActivityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EnvironmentalReviewActivityId"
+        },
+        {
+          "name": "EnvironmentalReviewId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EnvironmentalReviewId"
+        },
+        {
+          "name": "ActivityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ActivityId"
+        },
+        {
+          "name": "ControlMeasureId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ControlMeasureId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EnvironmentalReviewActivityId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EnvironmentalReviewId",
+          "to_table": "Environmental_Review",
+          "to_column": "EnvironmentalReviewId"
+        }
+      ],
+      "description": "Activities under an environmental review",
+      "search_hints": [
+        "environmental activity",
+        "environment checklist"
+      ]
+    },
+    {
+      "schema_name": "hse",
+      "name": "Environmental_Review_Activity_Detail",
+      "columns": [
+        {
+          "name": "EnvironmentalReviewActivityDetailId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EnvironmentalReviewActivityDetailId"
+        },
+        {
+          "name": "EnvironmentalReviewActivityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EnvironmentalReviewActivityId"
+        },
+        {
+          "name": "EnvironmentalAspectIds",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "EnvironmentalAspectIds (nvarchar)"
+        },
+        {
+          "name": "ImpactIds",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ImpactIds (nvarchar)"
+        },
+        {
+          "name": "ConditionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ConditionId"
+        },
+        {
+          "name": "QualityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying QualityId"
+        },
+        {
+          "name": "OccurrenceId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying OccurrenceId"
+        },
+        {
+          "name": "MeasureTakenFrequencyId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MeasureTakenFrequencyId"
+        },
+        {
+          "name": "ControlId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ControlId"
+        },
+        {
+          "name": "SignificantImpactId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SignificantImpactId"
+        },
+        {
+          "name": "LCInputsForControl",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "LCInputsForControl (bit)"
+        },
+        {
+          "name": "IPCInputsForControl",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "IPCInputsForControl (bit)"
+        },
+        {
+          "name": "BCInputsForControl",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "BCInputsForControl (bit)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EnvironmentalReviewActivityDetailId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "EnvironmentalReviewActivityId",
+          "to_table": "Environmental_Review_Activity",
+          "to_column": "EnvironmentalReviewActivityId"
+        }
+      ],
+      "description": "Space HSE table Environmental_Review_Activity_Detail",
+      "search_hints": [
+        "environmental review activity detail",
+        "environmental_review_activity_detail"
+      ]
+    },
+    {
+      "schema_name": "hse",
+      "name": "Occupational_Review",
+      "columns": [
+        {
+          "name": "OccupationalReviewId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying OccupationalReviewId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "ReviewBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ReviewBy (bigint)"
+        },
+        {
+          "name": "Number",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Number (nvarchar)"
+        },
+        {
+          "name": "ReviewDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsSubmitted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "OccupationalReviewId"
+      ],
+      "foreign_keys": [],
+      "description": "Occupational health & safety review records",
+      "search_hints": [
+        "occupational review",
+        "occupational safety",
+        "ohs",
+        "hse"
+      ]
+    },
+    {
+      "schema_name": "hse",
+      "name": "Occupational_Review_Activity",
+      "columns": [
+        {
+          "name": "OccupationalReviewActivityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying OccupationalReviewActivityId"
+        },
+        {
+          "name": "OccupationalReviewId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying OccupationalReviewId"
+        },
+        {
+          "name": "ActivityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ActivityId"
+        },
+        {
+          "name": "HazardConditionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying HazardConditionId"
+        },
+        {
+          "name": "ControlMeasureId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ControlMeasureId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "OccupationalReviewActivityId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "OccupationalReviewId",
+          "to_table": "Occupational_Review",
+          "to_column": "OccupationalReviewId"
+        }
+      ],
+      "description": "Activities under an occupational review",
+      "search_hints": [
+        "occupational activity",
+        "safety checklist"
+      ]
+    },
+    {
+      "schema_name": "hse",
+      "name": "Occupational_Review_Activity_Detail",
+      "columns": [
+        {
+          "name": "OccupationalReviewActivityDetailId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying OccupationalReviewActivityDetailId"
+        },
+        {
+          "name": "OccupationalReviewActivityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying OccupationalReviewActivityId"
+        },
+        {
+          "name": "HazardTypeIds",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "HazardTypeIds (nvarchar)"
+        },
+        {
+          "name": "HazardCategoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying HazardCategoryId"
+        },
+        {
+          "name": "HazardConditionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying HazardConditionId"
+        },
+        {
+          "name": "RiskTypeIds",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RiskTypeIds (nvarchar)"
+        },
+        {
+          "name": "LikelihoodId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LikelihoodId"
+        },
+        {
+          "name": "SeverityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SeverityId"
+        },
+        {
+          "name": "RiskPrioritizationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RiskPrioritizationId"
+        },
+        {
+          "name": "Elimination",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Elimination (bit)"
+        },
+        {
+          "name": "Substitution",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Substitution (bit)"
+        },
+        {
+          "name": "EngineeringControl",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "EngineeringControl (bit)"
+        },
+        {
+          "name": "AdministrativeControl",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "AdministrativeControl (bit)"
+        },
+        {
+          "name": "PersonalProtectiveEquipment",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "PersonalProtectiveEquipment (bit)"
+        },
+        {
+          "name": "InputForControls",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "InputForControls (nvarchar)"
+        },
+        {
+          "name": "IsRiskLevelAcceptable",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "OccupationalReviewActivityDetailId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "OccupationalReviewActivityId",
+          "to_table": "Occupational_Review_Activity",
+          "to_column": "OccupationalReviewActivityId"
+        }
+      ],
+      "description": "Space HSE table Occupational_Review_Activity_Detail",
+      "search_hints": [
+        "occupational review activity detail",
+        "occupational_review_activity_detail"
+      ]
+    }
+  ],
+  "change_summary": [
+    "No schema structure change"
+  ]
+}

@@ -1,0 +1,45 @@
+entity: project
+source: buildtrack
+table: projects
+id_field: id
+entity_type: project
+description: Construction project master record
+title_field: name
+url_template: "/projects/{id}"
+search_fields:
+  - name
+  - description
+  - location
+filter_fields:
+  - status
+  - location
+  - project_manager_id
+  - progress
+sortable_fields:
+  - created_at
+  - progress
+embedding_enabled: true
+sql_only_fields:
+  - budget
+hydrate_fields:
+  - id
+  - name
+  - description
+  - status
+  - location
+  - progress
+  - budget
+  - start_date
+  - end_date
+  - project_manager_id
+  - created_at
+acl_fields:
+  - project_id
+updated_at_field: created_at
+domain_signals:
+  - project
+  - projects
+  - construction site
+relationships:
+  - field: project_manager_id
+    ref: users.id

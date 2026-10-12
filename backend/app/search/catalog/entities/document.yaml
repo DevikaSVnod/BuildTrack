@@ -1,0 +1,42 @@
+entity: document
+source: buildtrack
+table: documents
+id_field: id
+entity_type: document
+description: Uploaded project document metadata (body text lives in blob/RAG chunks)
+title_field: name
+url_template: "/documents?docId={id}"
+search_fields:
+  - name
+  - file_type
+filter_fields:
+  - project_id
+  - file_type
+sortable_fields:
+  - created_at
+embedding_enabled: true
+# Full file body is Tier 3 for the entity index — use chunk index for clauses.
+sql_only_fields:
+  - body_text
+  - file_url
+index_body_text: false
+hydrate_fields:
+  - id
+  - name
+  - file_type
+  - file_url
+  - project_id
+  - uploaded_by
+  - file_size
+  - created_at
+acl_fields:
+  - project_id
+updated_at_field: created_at
+domain_signals:
+  - document
+  - documents
+  - pdf
+  - report
+relationships:
+  - field: project_id
+    ref: projects.id

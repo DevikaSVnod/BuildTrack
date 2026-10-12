@@ -43,7 +43,9 @@ async def lifespan(app: FastAPI):
     if settings.SKIP_DB_INIT:
         logger.info("Skipping DB init (SKIP_DB_INIT=true)")
     else:
-        asyncio.create_task(asyncio.to_thread(_init_database_sync))
+        # Await create_all before seeding — otherwise seed races and hits
+        # "Invalid object name" on a fresh database (e.g. local SQL Server).
+        await asyncio.to_thread(_init_database_sync)
         asyncio.create_task(_run_seed_tasks())
 
     from app.plugins import register_all_plugins
@@ -53,11 +55,26 @@ async def lifespan(app: FastAPI):
 
     # Second Global Search database on Azure SQL: buildtrack_assets
     try:
-        from app.core.data_sources import clear_data_source_caches, ensure_assets_database
+        from app.core.data_sources import (
+            clear_data_source_caches,
+            ensure_assets_database,
+            list_configured_sources,
+        )
 
         db_name = await asyncio.to_thread(ensure_assets_database)
         clear_data_source_caches()
         logger.info("Site Assets Azure SQL database ready: %s", db_name)
+        logger.info(
+            "Search data sources: %s",
+            ", ".join(f"{s.id}->{s.search_index or s.retrieval_mode}" for s in list_configured_sources()),
+        )
+        if settings.SPACE_DATABASE_URL:
+            logger.info(
+                "Space Action source enabled (index=%s)",
+                settings.AZURE_SEARCH_SPACE_INDEX or "space-action-index",
+            )
+        else:
+            logger.warning("SPACE_DATABASE_URL is not set — Space Action search source disabled")
     except Exception as exc:
         logger.warning("Could not initialize Site Assets Azure SQL database: %s", exc)
 
@@ -118,14 +135,26 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+_cors_origins = []
+for origin in [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://localhost:3002",
+    "http://127.0.0.1:3002",
+    "http://localhost:3003",
+    "http://127.0.0.1:3003",
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
+    *[part.strip() for part in settings.SPACE_CORS_ORIGINS.split(",") if part.strip()],
+]:
+    if origin not in _cors_origins:
+        _cors_origins.append(origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-    ],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -388,10 +417,11 @@ def seed_database_sync():
         db.close()
 
 
+@app.get("/health")
 @app.get("/api/health")
 async def health_check():
-    """Always instant — does not touch the database."""
-    return {"status": "healthy", "service": "BuildTrack API"}
+    """Always instant — does not touch the database. Gateway probes /health."""
+    return {"status": "healthy", "service": "SPACE.Search"}
 
 
 @app.get("/api/health/db")

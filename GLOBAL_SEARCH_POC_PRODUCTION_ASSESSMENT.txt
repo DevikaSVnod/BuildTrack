@@ -1,0 +1,1069 @@
+================================================================================
+GLOBAL SEARCH POC -> PRODUCTION INTEGRATION ASSESSMENT
+Repo analysed: global-search-poc (backend/ FastAPI + frontend/ Next.js)
+Analysis type: architecture & production-readiness review. NO CODE WAS MODIFIED.
+Scope note: only decision-relevant findings are recorded here. Every claim below
+is backed by a file path in the POC.
+================================================================================
+
+
+================================================================================
+VERDICT (read this first)
+================================================================================
+
+NO-GO -- BLOCKED BY INFORMATION, and additionally BLOCKED BY AUTHORIZATION DESIGN.
+
+Two independent blockers:
+
+BLOCKER 1 (technical, in the POC):
+  The POC has effectively NO working authorization on the search path in its
+  current configuration. It cannot be promoted, wrapped, or "hardened later".
+  The permission model must be designed before any code is written.
+  Evidence:
+    - security_trim.py is the ONLY ACL mechanism. It builds a single OData
+      filter: project_id eq 'N' or project_id eq 'M'.
+    - It is called from exactly ONE place: connectors/buildtrack.py:99-102.
+    - That path is explicitly bypassed for all Space sources:
+      connectors/buildtrack.py:70  ->  security_filter=None
+    - In the current backend/.env, SEARCH_ENABLE_BUILDTRACK=false and
+      SEARCH_ENABLE_ASSETS=false; only the 17 Space DBs are enabled.
+      => Today, ZERO permission filtering runs on any search request.
+    - The LLM-generated SQL path (sql_agent/) executes against Space DBs with
+      NO user predicate injected at all (sql_agent/executor.py).
+    - hydrate._authorize_row() (search/hydrate.py:45-84) fails open in three
+      branches ("return True" when db is None, when project_id is None, when
+      user is None) and callers NEVER DROP a hit that fails it.
+    - The multi-DB result cache key contains no user/entitlement dimension
+      (connectors/multi_database.py:99-105) -> User A's results can be served
+      to User B for 120s.
+
+BLOCKER 2 (information, from the real application):
+  Nine facts are required before design can be finalised. They are listed in
+  section "O. QUESTIONS TO ASK THE BACKEND/PLATFORM TEAM" and summarised in
+  "MUST HAVE BEFORE DEVELOPMENT". Chief among them: the production backend
+  architecture and runtime are unknown, so we cannot yet say whether a Python
+  service is deployable at all.
+
+WHAT IS SALVAGEABLE: the search *intelligence* (query understanding, ranking
+heuristics, hybrid retrieval strategy, index schema shape, catalog/ incremental
+sync design, two-phase UX pattern). That is real, non-trivial, and worth
+porting. Roughly 25-30% of the POC by value; the plumbing around it is not
+production material.
+
+
+================================================================================
+A. POC ARCHITECTURE SUMMARY
+================================================================================
+
+RUNTIME / STACK
+  Backend        FastAPI 0.111.0 on Python 3.11 (Dockerfile: python:3.11-slim-bookworm)
+                 uvicorn 0.29.0, SQLAlchemy 2.0.30, pydantic 2.7.1,
+                 pydantic-settings 2.2.1, python-jose 3.3.0, passlib/bcrypt
+  Frontend       Next.js 14.2.3 (App Router), React 18.3.1, TypeScript 5.9.3,
+                 Tailwind 3.4.x, axios 1.7.x, js-cookie. No state library.
+  Databases      Microsoft SQL Server / Azure SQL via pyodbc + ODBC Driver 18.
+                 (config.py default string says postgres, but the real .env is
+                 all MSSQL. psycopg2 is installed but unused in practice.)
+  Search engine  Azure AI Search - hybrid BM25 + vector (HNSW, 1536 dims) +
+                 semantic ranker.
+  LLM            Azure OpenAI. Chat = gpt-4o-mini. Vision = separate deployment
+                 (gpt-4o class). Embeddings = text-embedding-3-small (1536).
+  Vector DB      None separate - vectors live in Azure AI Search.
+  Storage        Azure Blob Storage (container "buildtrack-documents") +
+                 Azurite emulator locally.
+  LangGraph      NOT USED. LangChain NOT USED. LlamaIndex/Semantic Kernel/
+  / LangChain    AutoGen NOT USED. Confirmed by full-repo search and by
+                 requirements.txt (only `openai==1.30.1`). The orchestration is
+                 plain Python functions. Do not plan around a graph framework.
+  Queues         None. No Celery, no Service Bus, no Redis.
+  Background     asyncio tasks started in main.py lifespan: DB keepalive loop,
+  workers        assets index sync, page-cache warm-up. Plus Azure-hosted pull
+                 indexers on a PT15M schedule. No dedicated worker process.
+  Caching        In-process Python dicts only (5 separate caches, no Redis).
+  Config         pydantic-settings reading backend/.env. No Key Vault.
+  Logging        logging.basicConfig(level=INFO). No structure, no App Insights,
+                 no OpenTelemetry, no correlation ID.
+  Deployment     Local docker-compose only. No CI/CD (.github, azure-pipelines,
+                 Jenkinsfile all absent). No IaC (no bicep/terraform/ARM).
+  Auth           Own HS256 JWT issued by the POC's own /api/auth/login.
+
+COMPONENT MAP (requested pipeline shape, with actual POC components)
+
+  User
+   |
+  Frontend                     frontend/components/layout/SearchBar.tsx (1027 lines)
+   |                           280ms debounce, min 2 chars, 2-phase UX
+   |                           lib/api.ts (axios, Bearer from cookie)
+   |
+  API                          backend/app/api/routes/search.py
+   |                           POST /api/search/results   (fast, no chat LLM)
+   |                           POST /api/search/answer    (adds RAG answer)
+   |                           POST /api/search/          (legacy combined)
+   |
+  AuthN                        api/deps.py get_current_user -> core/security.py
+   |                           (90s in-memory token->User cache)
+   |
+  Search Orchestrator          global_search_core/pipeline.py  SearchPipeline
+   |                           analyze -> retrieve -> filter -> (answer)
+   |
+  Query Understanding          app/search/query_intel.py   (100% RULE-BASED)
+   |                           app/search/query_planner.py (rule-based modes)
+   |
+  Source Selection             app/core/data_sources.py select_sources_for_analysis()
+   |                           content_type -> source_id maps; fallback = ALL sources
+   |                           app/routing/source_router.py (keyword scoring, DB vs TOOL)
+   |
+  Search Sources               app/connectors/multi_database.py
+   |                           ThreadPoolExecutor(max_workers=4) fan-out
+   |                             |-- app/search/retrieval.py hybrid_search()  (Azure AI Search)
+   |                             |-- app/search/space_hybrid.py  (Space DBs)
+   |                             |     |-- app/sql_agent/  LLM-generated T-SQL
+   |                             |-- app/search/sql_source_search.py (search_documents table)
+   |                             |-- app/search/blob_retrieval.py  (RAG chunk index)
+   |
+  Enrichment / Hydration       app/search/document_enrich.py, app/search/hydrate.py
+   |                           app/search/cross_db_links.py (cross-DB soft joins)
+   |
+  Result Normalization         connectors/buildtrack.py _tag_hits_with_source()
+   |                           id prefixed "{source_id}::{raw_id}"
+   |
+  Ranking                      app/search/query_intel.py rerank_score()
+   |                           + connectors/multi_database.py _merge_by_score()
+   |                           + app/search/result_filter.py relevance threshold
+   |
+  Response                     global_search_core/models.py SearchResponse
+
+  ** NOTE: there is NO "Permission Filtering" box in this diagram because the
+     POC does not have one on the active path. That is the core gap. **
+
+
+================================================================================
+B. POC SEARCH FLOW (actual traced implementation, query = "payment terms")
+================================================================================
+
+ 1. SearchBar.tsx onChange -> 280ms debounce (RESULTS_DEBOUNCE_MS), min 2 chars.
+    No AbortController on the fast-search request (only on the AI request).
+ 2. lib/api.ts searchApi.searchFast -> POST {API}/api/search/results
+    Headers: Authorization: Bearer <cookie buildtrack_token>. Timeout 60s.
+    NO correlation ID header. NO tenant header.
+ 3. routes/search.py fast_search() -> Depends(get_current_user).
+    deps.py: 90s in-memory cache keyed by the RAW JWT string; on cache hit the
+    signature is NOT re-verified and is_active is NOT re-checked.
+    Context built = {"db": session, "user": User}.
+ 4. pipeline.search_results() -> analyze_query() (query_intel.py).
+    Pure rules: DOMAIN_SIGNALS keyword map, STATUS_WORDS, QUESTION_STARTERS,
+    regex for drawing numbers / progress / manager. No LLM.
+ 5. select_sources_for_analysis() narrows by content_type. "payment terms"
+    matches no narrow rule -> FALLS BACK TO ALL ENABLED SOURCES (17 Space DBs).
+ 6. MultiDatabaseConnector.retrieve(): checks the shared _search_cache with key
+    md5(query|filter|top_k|analysis_suffix|"multi:<source ids>").
+    *** NO USER IDENTITY IN THIS KEY. *** TTL 120s.
+ 7. Cache miss -> ThreadPoolExecutor(4).submit per source, as_completed().
+    Per-source try/except returns ([], error_string). NO per-source timeout
+    (fut.result() has no timeout argument). Errors are logged only.
+ 8. Per Space source -> retrieve_space_hybrid():
+      - source_router.route_query() keyword score -> DB / TOOL / BOTH
+      - if SCHEMA_SQL_ENABLED and looks_structured_db_query():
+          schema_catalog/search.py search_relevant_tables()
+             -> may embed the query (Azure OpenAI embedding call)
+          sql_agent/generator.py generate_select_sql()
+             -> *** AZURE OPENAI CHAT CALL, gpt-4o-mini, temp 0, 600 max_tokens ***
+          sql_agent/validator.py validate_select_sql() (regex read-only guard,
+             table allowlist, forced TOP N; column allowlist is explicitly soft;
+             SQL is NOT parameterised)
+          sql_agent/executor.py execute_readonly_sql() (15s timeout, 50 rows)
+      - optional Azure index hybrid_search() with security_filter=None
+ 9. Merge: _merge_by_score() dedupes on id, then on
+    "content_type|title.lower()|database_id". Sort by score desc. Cap top_k*2.
+10. cross_db_links.attach_related_hits(): fans out ~16 hardcoded SQL hops across
+    sibling Space DBs joined in-memory on ProjectId. Cap top_k*4+24.
+11. result_filter.filter_results_for_query(): RELEVANCE filter (min_score =
+    max(8.0, top_score*0.55)). This is NOT a permission filter.
+12. pipeline._to_items(); total_results = len(filtered).
+    *** totalCount is therefore computed after relevance filtering but never
+        after permission filtering. ***
+13. Frontend renders grouped by content_type, 3 per group preview.
+14. Click -> router.push(result.url) where url came from the BACKEND.
+15. Separately, at 1200ms debounce (or immediately if the query is a question),
+    SearchBar fires POST /api/search/answer -> generate_answer() -> chat LLM.
+    IMPORTANT: pipeline.search_with_answer() calls generate_answer(raw) BEFORE
+    filter_for_display(). The LLM therefore sees the UNFILTERED hit set.
+
+
+================================================================================
+C. CORE SEARCH INTELLIGENCE WORTH REUSING  (port this)
+================================================================================
+
+C1. Query understanding - query_intel.py + query_planner.py
+    Deterministic, no LLM, no network. DOMAIN_SIGNALS keyword->content_type map,
+    question detection, status/progress/manager/drawing-number extraction,
+    dynamic top_k. This is domain knowledge earned over the POC and is the
+    single most reusable asset. Port as a pure library with unit tests.
+    Caveat: the vocabulary is BuildTrack/Space specific and must be re-derived
+    against the real application's entity names.
+
+C2. Ranking heuristics - query_intel.rerank_score()
+    Formula is: final = azure_base_score + sum(boosts). Notable boosts:
+      content_type in analysis.content_types      +12   (miss: -10)
+      workforce query and hit is team             +20   (other types: -25)
+      project qualifier match ratio >= 0.6        +10   (>=0.3: +3, miss: -12)
+      status hint present in title/snippet        +5    (in metadata.status: +6)
+      exact upload-date match                     +30
+      document-content query + document type      +28 + title-match score
+      blob RAG chunk + question                   +20   (long snippet: +10)
+      drawing-content query + drawing type        +40 + drawing-match score
+      token overlap with question                 +min(overlap*0.8, 4.0)
+    Thresholds: min_score = max(8.0, top_score * 0.55)  (0.72 for "which drawing")
+    Fetch: SEMANTIC_FETCH_MIN=20, SEMANTIC_FETCH_MAX=40, EXHAUSTIVE_CAP=100.
+    These weights are hand-tuned and undocumented. PRESERVE THE STRUCTURE, but
+    they MUST be re-tuned against a real evaluation set (which does not exist -
+    see K).
+
+C3. Hybrid retrieval strategy - retrieval.py hybrid_search()
+    Runs BM25 + semantic + vector in parallel and merges, with a "fast path"
+    (BM25 only, 8s cap) vs "deep path" (semantic + keyword, 10s cap each) chosen
+    by query shape. Query embedding is skipped for short non-question queries
+    (gate: analysis.is_question OR len(query.split()) >= 5). Good instinct -
+    keep this gate.
+
+C4. Index document design - search/catalog/ (loader, builder, models + 5 YAML
+    entity files: project, task, document, drawing, material)
+    Declarative per-entity field tiers, sql_only_fields, index_body_text flag,
+    acl_fields declaration, deterministic search_text + sha256 content hash.
+    This is a genuinely good production pattern. Reuse the pattern; rewrite the
+    entity definitions for the real application.
+
+C5. Incremental sync design - incremental_sync.py + sync_state.py
+    Watermark table search_sync_state (source, entity, watermark ISO timestamp)
+    + content-hash gating that reuses the existing vector when search_text_hash
+    is unchanged (indexer.py:26-35). Genuinely reduces embedding cost. Reuse.
+
+C6. Azure AI Search index schema shape - indexer.py ensure_index_exists()
+    Field set (id key, title, content, content_type, url, metadata JSON,
+    search_text, search_text_hash, entity_id, entity_type, source_database,
+    updated_at, project_id, organization_id, tenant_id, access_groups, location,
+    status, progress_pct, record_status, content_vector[1536] HNSW profile
+    "buildtrack-hnsw", semantic config "default"). The ACL FIELD NAMES ARE
+    ALREADY THERE - they are simply never populated. Reuse the schema, populate
+    the ACL fields for real.
+
+C7. Two-phase search UX - fast results first, AI answer as a separate
+    lower-priority request with its own debounce and AbortController.
+    Correct pattern. Port the pattern, not the component.
+
+C8. Partial-failure instinct - multi_database.py per-source try/except so one
+    dead source does not fail the request. Right idea, incomplete execution
+    (no timeout, no partial flag) - see section on error handling.
+
+
+================================================================================
+D. POC COMPONENTS THAT MUST NOT BE PORTED
+================================================================================
+
+D1. The entire authentication stack.
+    core/security.py, api/routes/auth.py, api/deps.py.
+    HS256 with a hardcoded fallback secret ("buildtrack-super-secret-jwt-key",
+    config.py:18). Token carries only {sub, exp}. No iss, no aud, no kid, no
+    verification of issuer/audience, no refresh. OPEN /api/auth/register that
+    lets the caller choose their own role including Admin. This would be a
+    second login mechanism. DELETE IT ENTIRELY.
+
+D2. Direct multi-database access.
+    core/data_sources.py, core/space_databases.py, connectors/multi_database.py.
+    19 configured sources (buildtrack, assets, and 17 Space DBs) each opened
+    with a full SQLAlchemy engine using credentials from .env, with sibling DB
+    URLs DERIVED BY STRING-SWAPPING THE DATABASE NAME on a base connection
+    string. Every query runs with the same privileged DB account regardless of
+    who is searching. This bypasses every authorization rule the real backend
+    services enforce. MUST BE REPLACED by federated calls to existing module
+    APIs.
+
+D3. The LLM SQL agent.
+    sql_agent/ (generator, validator, executor).
+    An LLM writes T-SQL against production schemas and it is executed. The
+    validator is regex-based; the column allowlist is explicitly "soft"; the SQL
+    is not parameterised; there is no user/tenant predicate. Also, this LLM call
+    sits on the /search/results path, i.e. on the typeahead critical path.
+    DO NOT PORT. If natural-language-to-SQL is wanted later it is a separate
+    product with its own security review.
+
+D4. The POC frontend search UI.
+    components/layout/SearchBar.tsx (1027 lines) plus SearchResults.tsx and
+    AIAnswer.tsx (both already dead code, imported nowhere).
+    The real application already has a SearchBar, design system, api-client,
+    auth SDK, routing, loaders and error UI. Bring the BEHAVIOUR (debounce
+    values, two-phase pattern, grouping, filter tabs, empty state) as a written
+    spec; bring no TSX. The POC UI additionally has no ARIA combobox/listbox
+    roles and no arrow-key navigation, so it is not a quality baseline.
+
+D5. Backend-generated SPA URLs.
+    URLs are baked into index documents and patched during enrichment:
+      indexer.py:306   "url": f"/projects/{project.id}"
+      indexer.py:410   "url": f"/documents?docId={doc.id}"
+      document_enrich.py:164 / :272, blob_retrieval.py:373-378,
+      cross_db_links.py:1177 / :1241, space_indexer.py:461 "/space/{table}/{id}"
+    The backend owns SPA routing today. If the real application expects
+    frontend-owned deep links, this must be inverted (see section on the
+    result model).
+
+D6. cross_db_links.py as written.
+    ~16 hardcoded SQL hops with hardcoded schema names, table names and join
+    columns, plus 5 hardcoded demo project-name aliases (PROJECT_ALIASES,
+    cross_db_links.py:51-57), plus name-string matching between BuildTrack and
+    the assets DB. Assumes numeric ProjectId means the same project in every
+    Space DB - unverified except by two manual probe scripts. The IDEA (related
+    records across sources) is worth keeping; the implementation is not.
+
+D7. All in-process caches.
+    retrieval._search_cache, answer._answer_cache, embeddings._embed_cache,
+    index_reader._cache/_doc_cache, cross_db_links._lookup_cache,
+    deps._user_by_token. None are user-scoped, none survive restart, none work
+    behind more than one replica.
+
+D8. Drawing vision / object inventory subsystem.
+    object_inventory.py (2832 lines), drawing_vision.py, drawing_sheet_intel.py,
+    drawing_text_extract.py, inventory_validate.py, aspose-cad, PyMuPDF,
+    pypdfium2, Pillow. This is a CAD/vision feature, not global search, and it
+    can issue dozens of vision calls per request when it runs live at query
+    time (drawing_vision.py:805 and :948 call extract_object_inventory()).
+    Out of scope for Global Search v1.
+
+D9. Admin/index-management endpoints as designed.
+    POST /api/search/index, /space-index, /assets-index, /schema-index,
+    /blob-index, /sync/incremental, /cache/clear, GET /metrics, /plugins,
+    /sources, /catalog. ALL of these require only a valid JWT - no role check.
+    Any authenticated contractor can trigger a full reindex or clear the cache.
+    These belong on an internal/ops surface with admin authorization, not on the
+    user-facing search API.
+
+
+================================================================================
+E. SECURITY GAPS
+================================================================================
+
+E1. Secrets. backend/.env is correctly gitignored (.gitignore:19) BUT it holds
+    live values on the developer machine: Azure SQL connection strings with
+    embedded passwords (DATABASE_URL 156 chars, AZURE_SQL_CONNECTION_STRING 197,
+    SPACE_DATABASE_URL 165), AZURE_OPENAI_KEY (84), AZURE_OPENAI_EMBEDDING_KEY
+    (84), AZURE_SEARCH_KEY (52, an ADMIN key), AZURE_STORAGE_CONNECTION_STRING
+    (192), and SECRET_KEY. No Key Vault, no managed identity anywhere.
+    ACTION: rotate every one of these credentials before this repo is shared
+    further, and move to Key Vault + managed identity for production.
+
+E2. Azure AI Search admin key used for query traffic.
+    indexer.py get_search_client() uses AzureKeyCredential(AZURE_SEARCH_KEY) for
+    BOTH admin operations and user query operations. There is no query key and
+    no DefaultAzureCredential anywhere in the backend.
+
+E3. Hardcoded JWT fallback secret in source (config.py:18).
+
+E4. Open self-service registration with caller-chosen role
+    (routes/auth.py:14-34, UserCreate.role).
+
+E5. Token cache keyed on the raw bearer token, 90s TTL, no re-validation of
+    signature/exp/is_active on hit (api/deps.py:23-44). Deactivating a user does
+    not take effect for up to 90 seconds.
+
+E6. LLM SQL execution against production databases (see D3).
+
+E7. Unauthenticated file access by ID. routes/files.py serves
+    /api/files/documents/{id}, /api/files/drawings/{id} and
+    /api/files/drawings/by-no/{drawing_no} to ANY authenticated user with no
+    project-membership check.
+
+E8. Log leakage. embeddings.py:101 logs the first 60 characters of the text
+    being embedded on failure - that text can be document content. answer.py:1091
+    logs query[:40]. drawing_vision.py:686 logs query[:50].
+    object_inventory.py:2816 logs query[:80]. Search queries are therefore
+    partially logged today. Do not carry this forward; queries are PII-adjacent.
+
+E9. CORS allows localhost:3000-3003 with allow_credentials=True and
+    allow_methods/headers = "*" (main.py:138-153). Dev-only configuration.
+
+
+================================================================================
+F. AUTHORIZATION GAPS  (the decisive section)
+================================================================================
+
+CHECKLIST -- does the POC do it?
+
+  Knows who the user is?                      YES  (JWT required on every route)
+  Receives a JWT?                             YES  (its own, not the real app's)
+  Extracts identity from JWT?                 YES  ("sub" -> users table lookup)
+  Checks roles?                               PARTIAL - only inside
+                                              security_trim.allowed_project_ids
+  Checks project access?                      PARTIAL - only on the BuildTrack
+                                              source, which is DISABLED today
+  Checks document ACLs?                       NO
+  Checks tenant access?                       NO - the User model has no tenant
+                                              field at all (only free-text
+                                              company_name)
+  Filters database rows by user?              NO - no search SQL contains a user
+                                              predicate
+  Filters Azure AI Search by user?            ONLY on the buildtrack index, via
+                                              a project_id OData filter
+  Filters after retrieval?                    Attempted in hydrate.py but the
+                                              result is DISCARDED - failing rows
+                                              are still returned
+  Filters BEFORE ranking?                     NO
+  Filters BEFORE totalCount?                  NO - total_results = len(filtered)
+                                              where "filtered" is the RELEVANCE
+                                              filter (pipeline.py:134)
+
+EVERY PERMISSION CHECK IN THE POC (exhaustive list - there are only two):
+  1. api/deps.py get_current_user  -> "are you logged in and active?"
+  2. search/security_trim.py build_security_odata -> project_id OData filter,
+     invoked from connectors/buildtrack.py:99-102 only.
+     - Returns None (= unrestricted) for role "admin" or "project_manager".
+     - BUG: UserRole.project_manager.value is "Project Manager", so
+       .lower() yields "project manager", which does NOT match the
+       {"admin","project_manager"} set at security_trim.py:20. Project Managers
+       are silently treated as restricted here while hydrate.py treats them as
+       unrestricted. The two ACL paths disagree.
+     - Returns [] (= see nothing) when db is None.
+     - Only ever filters on project_id. organization_id, tenant_id and
+       access_groups exist as filterable index fields but are NEVER POPULATED
+       at index time and NEVER USED in a filter.
+
+ANSWER TO "CAN THIS POC SAFELY RUN FOR TWO USERS WITH DIFFERENT PERMISSIONS?"
+
+  NO.
+
+  With the current backend/.env (BuildTrack and Assets disabled, 17 Space DBs
+  enabled): User A, User B and Admin receive IDENTICAL results for an identical
+  query. The only difference between users is whether they can call the API at
+  all. There is no per-user partitioning of any kind.
+
+  Even if BuildTrack were re-enabled, it would still be unsafe:
+    - Space sources hardcode security_filter=None (buildtrack.py:70).
+    - The LLM-SQL path injects no user predicate.
+    - cross_db_links hops run unfiltered privileged SQL and ADD hits to the
+      result set after the (already absent) filter.
+    - The multi-DB cache is not user-scoped -> cross-user result leakage
+      within a 120s window.
+    - answer._answer_cache (300s) and embeddings._embed_cache are likewise
+      global; the generated AI answer for a query is reused across users.
+    - generate_answer() runs on the raw, unfiltered hit list, so the LLM can
+      summarise content the user is not entitled to see even if the result list
+      were later trimmed.
+
+  Do NOT interpret "search works when logged in" as "search is authorization
+  safe". These are separate properties and only the first holds.
+
+AZURE AI SEARCH SECURITY TRIMMING -- EXPLICIT STATEMENT
+
+  CURRENT POC INDEXING IS NOT SUFFICIENT FOR PRODUCTION AUTHORIZATION.
+
+  Per index:
+    buildtrack-index        project_id populated ONLY on the push/catalog path.
+                            The pull SQL indexer maps only id/title/content/
+                            content_type/url/metadata plus progress_pct and
+                            record_status - project_id is NOT promoted to a
+                            top-level filterable field, it stays inside the
+                            metadata JSON string, which cannot be filtered on.
+    buildtrack-assets-index no ACL fields populated (material.yaml acl_fields: [])
+    space-action-index      no ACL fields populated
+    space-schema-index      no ACL fields populated (schema descriptions)
+    rag/blob index          Portal-provisioned, not defined in this repo.
+                            Fields consumed are chunk_id, parent_id, chunk,
+                            title, text_vector. NO ACL FIELD AT ALL. Document
+                            chunks are therefore completely untrimmed.
+
+  MINIMUM METADATA THAT MUST BE ADDED TO EVERY INDEXED RECORD BEFORE PRODUCTION:
+    tenant_id            filterable, always populated, never null
+    acl_principals       Collection(Edm.String), filterable - the flattened set
+                         of group/role/user principal IDs allowed to see the row
+    project_id / scope_id  filterable, populated for every scoped entity
+    entity_type, entity_id, source_system   filterable (already present)
+    visibility / classification  filterable (public / internal / restricted)
+    updated_at, deleted_flag     for freshness and soft-delete trimming
+  And the production query must ALWAYS append, server-side and non-overridable:
+    tenant_id eq '<from JWT>' and acl_principals/any(p: search.in(p, '<user principals>'))
+  The blob/RAG index needs the same fields propagated onto every chunk, which
+  means the chunk pipeline must inherit ACLs from the parent document. That
+  pipeline does not exist in this repo (it was built in the Azure Portal wizard).
+
+
+================================================================================
+G. PRODUCTION ARCHITECTURE RECOMMENDATION
+================================================================================
+
+Adjusted from the proposed target to match what the POC actually proved.
+
+  Existing Application (React/TS monorepo)
+     |
+  Existing SearchBar  (reuse the component; implement the POC's UX behaviours:
+     |                 280ms debounce, min 2 chars, two-phase, grouped results,
+     |                 filter tabs -- PLUS the ARIA combobox/listbox and
+     |                 arrow-key navigation the POC lacks)
+     |
+  Existing search-sdk  (extend SearchHit/SearchResult; keep registerIndex() and
+     |                  the deep-link factories -- deep links stay FRONTEND-OWNED)
+     |
+  Existing api-client  (JWT, correlation ID, tenant ID, timeout, errors, logout
+     |                  all come for free -- the POC has none of these)
+     |
+  === network boundary ===
+     |
+  Global Search API  (NEW service, thin. Runtime TBD -- see Infrastructure)
+     |
+  JWT validation  (VALIDATE the existing application JWT: issuer, audience,
+     |             signature via JWKS/kid, expiry. Issue NO tokens. Extract
+     |             user id, tenant id, roles, and derive the principal set.)
+     |
+  Entitlement resolution  (user -> {tenant, roles, group/principal ids,
+     |                     accessible scope ids}. Cached with a short TTL and a
+     |                     hash used as the "entitlement fingerprint".)
+     |
+  Query Understanding  (PORTED from query_intel.py -- deterministic, NO LLM,
+     |                  sub-millisecond, no network)
+     |
+  Query Router  (PORTED from select_sources_for_analysis -- deterministic
+     |           content_type -> source map, with fan-out-to-all as the explicit
+     |           fallback. NO LLM.)
+     |
+     +----------------------------------------------------------+
+     |                                                          |
+  Federated fan-out to EXISTING module search APIs          Document/Drawing
+  (DMS, CMS, Project, HSE, LMS, Incident, ...)              search via
+  - called WITH the caller's JWT (on-behalf-of), so each     Azure AI Search
+    service enforces its own authorization                   with MANDATORY
+  - per-source timeout (hard budget, e.g. 800ms typeahead)   server-side ACL
+  - asyncio.gather(return_exceptions=True) equivalent        filter injection
+  - circuit breaker per source                               (tenant_id +
+  - THIS REPLACES all direct DB access in the POC            acl_principals)
+     |                                                          |
+     +----------------------------------------------------------+
+     |
+  Permission assertion  (defence in depth: assert every hit carries a tenant_id
+     |                   matching the caller; drop anything unattributed. Runs
+     |                   BEFORE ranking and BEFORE counting.)
+     |
+  Normalization  (map every source's payload to the existing SearchHit shape.
+     |            Emit entityType + entityId + sourceSystem; DO NOT emit a URL.)
+     |
+  Ranking  (PORTED rerank_score structure; weights re-tuned against a real
+     |      evaluation set. Cross-source score normalisation is REQUIRED and
+     |      does not exist in the POC -- see Performance Risks.)
+     |
+  Deduplication  (POC key: content_type|title.lower()|source. Production should
+     |            prefer a stable entity identity: sourceSystem+entityType+entityId,
+     |            with the title heuristic as a fallback only.)
+     |
+  Response  { hits[], total, partial: bool, failedSources[], tookMs, degraded }
+     |
+  Existing Application UI
+     |
+  Frontend-owned navigation  (SearchHit.entityType + entityId -> existing
+                              deep-link factory in search-sdk. The backend
+                              never emits a route.)
+
+  AI answer stays OFF the typeahead path entirely: a separate, explicitly
+  user-initiated endpoint, invoked only after results are on screen, operating
+  ONLY on the already-permission-filtered hit set.
+
+KEY DEVIATIONS FROM THE POC, AND WHY
+  - No direct DB connections. The POC's 19 privileged connections are the single
+    largest authorization hole.
+  - No LLM anywhere on /results. The POC currently can call an LLM there.
+  - Permission filtering is a first-class stage before ranking and counting.
+    The POC has no such stage.
+  - Backend stops owning URLs.
+  - Caching becomes entitlement-aware and external (Redis), not in-process.
+
+
+================================================================================
+H. API CONTRACT RECOMMENDATION
+================================================================================
+
+POC contract as built (global_search_core/models.py):
+  Request   { query, filter_type?, top_k (1..50, default 5), source_ids? }
+  Response  { ai_answer, results[], suggested_questions[], search_time_ms,
+              total_results, is_question, sources_searched[] }
+  Result    { id, title, snippet, content_type, url, metadata?, score? }
+  Errors    400 on empty query; 401 from the auth dependency; 503 from index
+            endpoints. No error envelope, no error codes, no pagination
+            (top_k only, no offset/cursor), no partial-failure signalling.
+
+Gap analysis vs the production SearchHit/SearchResult and vs the stated
+production constraints:
+
+  ADD
+    tenantId                     required, echoed from the validated JWT
+    entityType + entityId        replaces the "id" string; enables frontend
+                                 deep-link factories
+    sourceSystem                 which module answered (POC has this only as
+                                 metadata.database_id)
+    partial: boolean             REQUIRED by the "200 + partial:true" constraint
+    failedSources: string[]      which sources degraded, for UI messaging
+    highlights: {field, spans[]} POC returns no highlight data at all; the UI
+                                 does no highlighting
+    updatedAt / timestamp        POC has updated_at in the index but never
+                                 returns it on the hit
+    permissions / capabilities   optional per-hit ("canView", "canEdit")
+    cursor / offset + limit      real pagination; top_k alone is not enough
+    correlationId echo           to match the existing api-client convention
+
+  REMOVE
+    url                          backend must stop owning SPA routes (D5)
+    ai_answer from /results      keep the two endpoints strictly separate
+    suggested_questions          LLM-derived, belongs on the answer endpoint
+    source_ids in the request    letting a client choose sources is an
+                                 authorization smell; the server should decide
+
+  TRANSFORM
+    content_type   -> entityType, using the real application's canonical
+                      taxonomy, not the POC's ~30 ad-hoc TYPE_CONFIG strings
+    score          -> normalised 0..1 across sources (POC mixes raw Azure
+                      @search.score with hand-rolled +40 boosts and a separate
+                      SQL "hits + title_hits*1.5" scale -- these are not
+                      comparable and are merged anyway)
+    total_results  -> must be computed after permission filtering; should be
+                      declared as an estimate when sources are federated
+    metadata       -> typed per entityType rather than an open dict
+
+  ENDPOINTS
+    POST /search            typeahead + full search, no LLM, hard latency budget
+    POST /search/answer     explicit, user-initiated, post-results only
+    GET  /search/sources    health/diagnostics, ADMIN ONLY
+    (everything else in the POC's /search/* surface moves to an internal ops
+     API with admin authorization)
+
+  HEADERS
+    Authorization: Bearer <existing app JWT>
+    X-Correlation-Id, X-Tenant-Id  -- supplied by the existing api-client; the
+    POC sends neither.
+
+
+================================================================================
+I. INFRASTRUCTURE REQUIREMENTS
+================================================================================
+
+I1. RUNTIME -- THE BIGGEST UNRESOLVED RISK.
+    The POC is Python 3.11 / FastAPI and needs the Microsoft ODBC Driver 18 for
+    SQL Server plus native wheels (pyodbc, PyMuPDF, pypdfium2, Pillow,
+    aspose-cad) baked into the image. If the platform team does not already run
+    Python services, introducing one means new base images, new dependency
+    scanning, new runtime patching, new on-call knowledge, and a new language in
+    the estate. DO NOT ASSUME THIS IS FREE.
+    Three options must be priced before committing:
+      (a) Deploy a Python container - fastest if containers are already the
+          deployment unit and the platform accepts a Python image.
+      (b) Reimplement the Global Search service in the platform's existing
+          backend language, porting the intelligence from C1-C8. The reusable
+          logic is mostly deterministic string/keyword/scoring code and ports
+          cleanly. This is the safer long-term option if Python is unwelcome.
+      (c) Hybrid - port the orchestrator to the house language, keep nothing
+          from Python.
+    NOTE: dropping the LLM-SQL agent and the drawing-vision subsystem removes
+    most of the heavy Python-specific dependencies, which makes (b) much more
+    viable than it first appears.
+
+I2. Azure AI Search service (or an approved equivalent) with: index definitions
+    under source control, provisioned by IaC not by the Portal wizard (the POC's
+    blob/RAG index was created by the Portal and has NO definition in the repo -
+    it is unreproducible today).
+I3. Azure OpenAI (or approved LLM) for the answer endpoint ONLY, plus an
+    embeddings deployment for ingestion. Server-side only; the frontend must
+    never hold these credentials (the POC frontend correctly holds none - keep
+    it that way).
+I4. Azure Key Vault (or platform secret store) + managed identity. No .env.
+I5. Redis or an equivalent shared cache, for entitlement-scoped result caching
+    across replicas. The POC's in-process dicts cannot work behind a load
+    balancer.
+I6. Blob storage for document content, with the chunking/ingestion pipeline
+    defined in code and version-controlled.
+I7. Application Insights / OpenTelemetry with correlation-ID propagation from
+    the existing api-client. The POC has none.
+I8. CI/CD pipeline. The POC has none.
+I9. Network path from the Global Search service to every module API it federates
+    to, plus to Azure AI Search. Private endpoints where policy requires.
+I10. An ingestion/indexing worker separate from the request-serving process. The
+    POC runs indexing as asyncio tasks inside the API process.
+
+
+================================================================================
+J. PRODUCTION CONFIGURATION REQUIREMENTS
+================================================================================
+
+| Configuration                  | POC location            | Secret | Production location |
+|--------------------------------|-------------------------|--------|---------------------|
+| DATABASE_URL (+18 more DB URLs)| backend/.env            | YES    | ELIMINATE - use module APIs |
+| AZURE_SQL_CONNECTION_STRING    | backend/.env            | YES    | Key Vault (ingestion only) |
+| SECRET_KEY (JWT signing)       | config.py:18 + .env     | YES    | ELIMINATE - validate, never issue |
+| AZURE_OPENAI_KEY / ENDPOINT    | backend/.env            | YES    | Key Vault + managed identity |
+| AZURE_OPENAI_EMBEDDING_KEY     | backend/.env            | YES    | Key Vault + managed identity |
+| AZURE_SEARCH_KEY (ADMIN key)   | backend/.env            | YES    | Split: query key for runtime, admin key for the indexer job only; prefer managed identity |
+| AZURE_STORAGE_CONNECTION_STRING| backend/.env            | YES    | Key Vault + managed identity |
+| AZURE_SEARCH_*_INDEX (5 names) | config.py:89-95         | no     | App config per environment |
+| AZURE_OPENAI_*_DEPLOYMENT      | config.py:76-83         | no     | App config per environment |
+| SEARCH_ENABLE_* (19 toggles)   | config.py:54-72         | no     | Feature flag service |
+| SEARCH_SECURITY_TRIMMING       | config.py:118           | no     | REMOVE THE FLAG - security must not be switchable off |
+| SEARCH_HYDRATE_FROM_SQL,       | config.py:112-120       | no     | App config |
+| _CATALOG_ENABLED, _INCREMENTAL_SYNC, _CHUNK_INDEX_FOR_DOCS |  |    |  |
+| SCHEMA_SQL_ENABLED/MAX_ROWS/   | config.py:97-100        | no     | ELIMINATE with the SQL agent |
+| TIMEOUT/TOP_TABLES             |                         |        |  |
+| NEXT_PUBLIC_API_URL            | frontend build arg      | no     | Existing frontend env convention |
+
+MUST-FIX CONFIGURATION ISSUES
+  - SEARCH_SECURITY_TRIMMING is a boolean that disables authorization. Delete it.
+  - Sibling DB URLs are derived by swapping the database name inside another
+    connection string (core/space_databases.py resolve_space_database_url). Any
+    production equivalent must be explicit configuration, never derived.
+  - Hardcoded across the codebase and needing to become configuration:
+    index names (buildtrack-index, buildtrack-assets-index, space-action-index,
+    space-schema-index, "rag" name-substring discovery in
+    blob_retrieval.py:112-131), indexer/datasource/skillset names
+    (buildtrack-sql-indexer / -sql-datasource / -embedding-skillset),
+    the SQL view name vw_global_search_documents, the assets DB name
+    buildtrack_assets, the 17 DEV_V1_SPACE_* database names and their schema
+    names, the blob container buildtrack-documents, and the PT15M indexer
+    schedule. Also the demo project-name aliases in cross_db_links.py:51-57 and
+    the seed project IDs in scripts/smoke_pending_hops.py:13-28.
+
+NOTHING IN THIS LIST MAY MOVE TO THE FRONTEND. The POC is already correct here:
+the frontend holds only NEXT_PUBLIC_API_URL and no Azure/OpenAI credentials.
+Preserve that boundary.
+
+
+================================================================================
+K. TESTING REQUIREMENTS
+================================================================================
+
+WHAT EXISTS: 3 test files, 15 test functions, all offline unit tests.
+  tests/test_space_indexer_discovery.py  (6) excluded tables, content-type map,
+                                             SQL identifier injection guard,
+                                             searchable-column filtering
+  tests/test_catalog_routing.py          (4) catalog -> source routing, chunk
+                                             strategy flag, source selection
+  tests/test_catalog_builder.py          (5) YAML catalog load, field tiers,
+                                             search_text composition, hash
+                                             stability
+  pytest is not even listed in requirements.txt.
+
+WHAT DOES NOT EXIST:
+  - No integration tests (nothing exercises Azure AI Search, Azure OpenAI, or a
+    live database).
+  - No API tests.
+  - No authorization tests. No multi-user tests. Nothing anywhere asserts that
+    User A cannot see User B's data.
+  - No load tests.
+  - NO RELEVANCE EVALUATION SET. Searched the whole repo for golden / eval /
+    relevance / expected_ / ground_truth / benchmark. The only hit is
+    scripts/benchmark_drawing_accuracy.py, which checks that drawing OBJECT
+    COUNTS (chairs, desks, beds) fall inside hand-written ranges for specific
+    drawing numbers. That is a computer-vision accuracy check, not a search
+    relevance baseline, and it requires a live DB.
+
+  CONSEQUENCE: the ranking weights in C2 cannot be validated, cannot be safely
+  re-tuned, and cannot be regression-tested. There is no baseline to protect.
+
+REQUIRED BEFORE PRODUCTION
+  K1. Build a relevance evaluation set FIRST, before porting ranking. Minimum
+      100-200 real queries drawn from actual user behaviour, each labelled with
+      the expected entity (and ideally graded 0-3). Store as version-controlled
+      JSON. Report Recall@10, MRR and NDCG@10 on every build. This becomes the
+      production regression baseline that the POC never had.
+  K2. Authorization test matrix, automated and blocking: for each entity type,
+      assert that User A (member of project X), User B (member of project Y),
+      Admin, and a cross-tenant user each receive exactly the expected result
+      sets AND the expected totalCount. Include a cache-poisoning test: A
+      searches, then B searches the same string, and B must not see A's results.
+  K3. Partial-failure tests: kill each source in turn and assert 200 +
+      partial:true + correct failedSources + useful remaining results.
+  K4. Contract tests against every federated module API.
+  K5. Load/latency tests against the typeahead budget with realistic fan-out.
+  K6. Index ACL tests: assert that every indexed document carries a non-null
+      tenant_id and a non-empty acl_principals before it is accepted.
+
+
+================================================================================
+L. PERFORMANCE RISKS
+================================================================================
+
+NO BENCHMARK DATA AVAILABLE. The repo contains no load tests, no latency
+measurements, and no recorded timings. metrics.py accumulates latency counters
+in process memory but nothing has been captured or published. The docs/ folder
+(GLOBAL_SEARCH_PRODUCT.md, PRODUCTION_SEARCH.md, AZURE_ALTERNATIVES.md) contains
+no performance numbers. No numbers are invented below.
+
+CONFIGURED TIMEOUTS AND LIMITS (the only hard data that exists)
+  Frontend axios timeout                    60000 ms   (lib/api.ts)
+  Results debounce                            280 ms   (SearchBar.tsx:117)
+  AI answer debounce                         1200 ms   (SearchBar.tsx:119)
+  Min chars for search / for AI                 2 / 4
+  BM25 sub-search                            8000 ms   (retrieval.py:292)
+  Semantic + keyword sub-searches           10000 ms each (retrieval.py:324,328)
+  Query-vector resolve                       4000 ms default, 2000 fallback,
+                                             1500 blob, 50 ms fast probe
+  Workforce embed wait                       4000 ms
+  Schema SQL execution                      15000 ms   (SCHEMA_SQL_TIMEOUT_SECONDS)
+  Per-source fan-out timeout                 NONE      (multi_database.py:125)
+  LLM chat timeout                           NONE      (no timeout= passed to the SDK)
+  Embedding timeout                          NONE
+  Search thread pool                         8 workers (retrieval.py:46)
+  Multi-DB thread pool                       4 workers (multi_database.py:21)
+  Index-read pool                            6 workers
+  Result cache TTL                            120 s
+  Answer cache TTL                            300 s
+  Index-read cache TTL                        300 s
+  Cross-DB lookup cache TTL                    60 s
+  Upload batch 50 docs / delete batch 500
+  Retry count                                 NONE (one narrow exception:
+                                              blob semantic search retries once
+                                              as keyword-only, blob_retrieval.py:627)
+  Circuit breakers                            NONE
+
+SLOWEST COMPONENTS IN THE SEARCH PATH, IN ORDER
+  1. LLM SQL generation on /search/results (sql_agent/generator.py). A chat
+     completion with no timeout, reachable from a 280 ms typeahead debounce.
+     This alone disqualifies the current design for typeahead.
+  2. Cross-DB link expansion (cross_db_links.py). Up to ~16 sequential SQL hops
+     across sibling databases, each creating and disposing its own engine (no
+     pool reuse), executed inside the request.
+  3. Query-time embedding (up to 4 s wait) whenever the query is a question or
+     has 5+ words - which is common.
+  4. Fan-out to 17 sources through a 4-worker pool: the pool is smaller than the
+     source count, so sources queue behind each other, and there is no per-source
+     deadline, so the slowest source sets the total latency.
+  5. Live drawing vision at answer time (drawing_vision.py:805, :948) can trigger
+     dozens of vision calls in one request.
+  6. Azure AI Search semantic ranking (10 s cap) on the deep path.
+
+STRUCTURAL RISKS BEYOND LATENCY
+  - Cross-source score comparability. Azure @search.score, hand-rolled boosts up
+    to +40, and a SQL "hits + title_hits*1.5" score are merged and sorted
+    together in _merge_by_score. Ranking quality across sources is therefore
+    arbitrary. Score normalisation must be designed; it does not exist.
+  - Thread pools are module-level globals shared across all requests. Under
+    concurrency they become the bottleneck and there is no queue-depth limit or
+    backpressure.
+  - Everything is synchronous FastAPI (def, not async def) doing blocking I/O,
+    so requests occupy the threadpool for their full duration.
+  - The 60 s frontend timeout means a hung LLM call presents to the user as a
+    one-minute spinner.
+
+
+================================================================================
+M. MISSING INFORMATION (what blocks safe implementation)
+================================================================================
+
+M1. The production authorization model. Roles, groups, scopes, project/tenant
+    membership, document ACLs, and how they are represented. Without this the
+    ACL fields cannot be defined and the index cannot be built.
+M2. The production tenancy model. Is it single-tenant per deployment, or
+    multi-tenant with a tenant claim? The POC's User model has NO tenant field,
+    so nothing can be inferred from it.
+M3. The production JWT specification: issuer, audience, signing algorithm, key
+    distribution (JWKS endpoint? static key? kid rotation?), exact claim names
+    for user id / tenant / roles, lifetime, and the refresh mechanism.
+M4. The production backend architecture and runtime. Explicitly stated as
+    unknown. This gates the entire deployment decision (I1).
+M5. The contracts of the existing module-specific search APIs: paths, request
+    shapes, response shapes, pagination, filtering, sorting, latency
+    characteristics, rate limits, and whether they accept on-behalf-of calls.
+    Federation is impossible to design without these.
+M6. The canonical entity taxonomy and stable entity identifiers in production.
+    The POC invented ~30 content_type strings and prefixes ids with
+    "{source_id}::". Neither will match production.
+M7. Which entity detail pages are URL-addressable, and the deep-link factory
+    contract in search-sdk. Most detail pages are stated to be NOT fully
+    URL-addressable - so for many entity types there may be no navigable target
+    at all, which is a product problem, not just an engineering one.
+M8. Whether document/drawing content search is actually in scope for v1. If yes,
+    the blob/RAG index must be rebuilt from scratch with ACL propagation to
+    chunks, because the POC's chunk index was created via the Azure Portal and
+    has no definition in this repo and no ACL fields.
+M9. Non-functional targets: typeahead p95 latency budget, full-search p95,
+    acceptable staleness for indexed content, expected QPS, and the LLM cost
+    ceiling for the answer feature.
+M10. Data residency / compliance constraints on sending content to Azure OpenAI
+    and on storing content in an external search index.
+
+
+================================================================================
+N. POC -> PRODUCTION MIGRATION MATRIX
+================================================================================
+
+| POC Component | Current Implementation | Production Decision | Action | Reason | Risk |
+|---|---|---|---|---|---|
+| Frontend SearchBar | SearchBar.tsx, 1027 lines, no ARIA, no arrow keys | Use existing SearchBar; port behaviour spec only | REBUILD | App has its own component + design system; POC a11y is below bar | Low |
+| Frontend search SDK stub | lib/global-search/* types+client, written but never imported | Extend existing search-sdk | REMOVE | Real SDK already defines SearchHit/SearchResult/registerIndex | Low |
+| AI answer UI | Inline in SearchBar; AIAnswer.tsx is dead code | Separate, user-initiated panel | REBUILD | Must stay off the typeahead path | Low |
+| Search API routes | routes/search.py, 20 endpoints, all JWT-only | 2 public endpoints + separate admin ops API | REBUILD | 17 of 20 are admin operations exposed to every user | Med |
+| SearchPipeline | global_search_core/pipeline.py, clean orchestration | Reuse the shape; insert a permission stage | ADAPT | Good structure, but has no authorization stage and computes total after relevance filtering only | Med |
+| global_search_core package | Clean pydantic models + connector/extractor ABCs + registry | Reuse as the design template | ADAPT | Nearly dependency-free; pipeline.py:75-80 imports app.core.data_sources and must be cut | Low |
+| Query understanding | query_intel.py, fully rule-based | Port | REUSE | Fast, deterministic, no LLM; highest-value asset | Low |
+| Query planner | query_planner.py, rule-based modes | Port | REUSE | Deterministic mode selection | Low |
+| LangGraph / LangChain | NOT PRESENT | n/a | N/A | Nothing to migrate; do not introduce one | - |
+| Source router | routing/source_router.py keyword scoring (labelled "semantic", is not) | Replace with an explicit capability registry | REBUILD | Keyword scoring is not reliable enough to decide which modules to call | Med |
+| Source selection | data_sources.select_sources_for_analysis, content_type maps | Port the mapping approach | ADAPT | Sound pattern; the maps are BuildTrack/Space specific | Low |
+| DB connectors (single) | connectors/buildtrack.py | Replace with module API clients | REBUILD | Direct DB access bypasses service authorization | HIGH |
+| Multi-DB connector | multi_database.py, 19 privileged connections, 4-worker pool | Replace with federated fan-out | REBUILD | Single largest authorization hole; also no per-source timeout | HIGH |
+| LLM SQL agent | sql_agent/ generate+validate+execute T-SQL | Do not port | REMOVE | LLM-authored SQL on production data, on the typeahead path, no user predicate, soft validation | CRITICAL |
+| Schema catalog | schema_catalog/ INFORMATION_SCHEMA introspection + disk snapshots + Azure schema index | Drop with the SQL agent | REMOVE | Only exists to feed LLM SQL generation | Low |
+| Azure AI Search index schema | indexer.py ensure_index_exists, HNSW 1536, semantic config | Reuse the schema, populate ACL fields | ADAPT | Field names already exist; they are never populated | Med |
+| Pull SQL indexer | sql_indexer.py + azure/search/setup_sql_indexer.py, PT15M, full crawl each run | Redesign | REBUILD | Full crawl every 15 min does not scale; does not promote project_id to a filterable field; no soft-delete policy | Med |
+| Push indexers | space_indexer / assets_indexer / sql_push_indexer | Replace | REBUILD | Read directly from production DBs; no ACL fields | HIGH |
+| Blob/RAG chunk index | Created in the Azure Portal, NO definition in the repo | Rebuild from scratch in IaC with ACL propagation | REBUILD | Unreproducible; zero ACL fields on chunks | HIGH |
+| Chunking | Not implemented in code (delegated to the Portal skillset) | Implement explicitly | REBUILD | No chunk size/overlap under version control | Med |
+| Incremental sync | incremental_sync.py + sync_state.py watermarks + hash-gated embeds | Port the design | REUSE | Genuinely good cost-control pattern | Low |
+| Embeddings | embeddings.py, text-embedding-3-small, 1536, sequential "batch", no retry, process-global cache | Port with real batching + retry | ADAPT | Ingestion-time is fine; query-time gate is good; batching/retry missing | Low |
+| LLM (chat) | answer.py generate_answer, gpt-4o-mini, JSON mode, no timeout | Answer endpoint only | ADAPT | Must be off /results; needs timeout, budget and fallback | Med |
+| LLM (vision) | drawing_vision, object_inventory, sheet_intel, text_extract | Out of scope for v1 | REMOVE | CAD feature, not search; can fire dozens of calls per request | Low |
+| Ranking | rerank_score + _merge_by_score + result_filter thresholds | Port structure, re-tune weights | ADAPT | Real intelligence, but unvalidated and mixes incomparable score scales | HIGH (quality) |
+| Deduplication | id, then content_type|title|source | Key on sourceSystem+entityType+entityId | ADAPT | Title-based dedup is lossy across sources | Low |
+| Cross-source linking | cross_db_links.py, ~16 hardcoded hops, ProjectId assumed universal, 5 demo name aliases | Redesign or defer to v2 | REBUILD | Relationships are unverified and privilege-escalating (adds hits post-filter) | HIGH |
+| Result normalization | _tag_hits_with_source, "{source}::{id}" prefix | Map to existing SearchHit | ADAPT | Shape is close; identity and URL handling must change | Low |
+| Deep links / URLs | Backend-generated, baked into index docs | Frontend-owned via search-sdk factories | REBUILD | Backend must not own SPA routing | Med |
+| Authentication | Own HS256 JWT, hardcoded fallback secret, open registration with self-chosen role | Validate the existing app JWT only | REMOVE | Must not create a second login mechanism | CRITICAL |
+| Authorization | security_trim.py project_id OData, one call site, bypassed for Space, disabled in current config | Design from scratch | REBUILD | No working per-user filtering exists | CRITICAL |
+| Caching | 6 in-process dicts, none user-scoped | Redis, keyed with an entitlement fingerprint | REBUILD | Cross-user leakage; cannot work multi-replica | CRITICAL |
+| Logging / metrics | basicConfig INFO; in-process counters; query prefixes logged | Structured logs + App Insights + correlation ID | REBUILD | No tracing, no correlation, and queries are partially logged | Med |
+| Configuration | backend/.env + pydantic-settings; secrets on disk | Key Vault + managed identity + feature flags | REBUILD | Live credentials in a local file; admin search key used for queries | HIGH |
+| Deployment | docker-compose, no CI/CD, no IaC | Platform-standard pipeline + IaC | REBUILD | Nothing reusable; runtime language is an open question | HIGH |
+| Tests | 15 offline unit tests, no relevance set, no authz tests | Build eval set + authz matrix first | REBUILD | No baseline exists to protect | HIGH |
+
+
+================================================================================
+O. QUESTIONS TO ASK THE REAL APPLICATION / BACKEND TEAM
+================================================================================
+
+AUTHENTICATION
+ 1. Give us the JWT spec: issuer, audience, signing algorithm, JWKS or key
+    distribution mechanism, kid rotation policy, token lifetime, and the exact
+    claim names for user id, tenant id and roles. Can you provide sample tokens
+    for a normal user, a restricted user and an admin in a non-production
+    environment?
+ 2. Is there a service-to-service / on-behalf-of flow so the Global Search
+    service can call module APIs as the calling user? If not, what is the
+    approved alternative, and how do we then enforce the user's permissions?
+
+AUTHORIZATION -- ANSWER THESE BEFORE ANY CODE IS WRITTEN
+ 3. What is the authoritative permission model? Roles, groups, project/scope
+    membership, document-level ACLs. Which service owns it, and is there an API
+    to resolve "all principals for user X" and "all scope ids visible to user X"?
+ 4. Is the platform multi-tenant? If yes, which claim carries the tenant, and is
+    every entity row tenant-scoped?
+ 5. Is there an existing bulk authorization / filter API (e.g. "given this list
+    of entity ids, which may this user see?")? If not, we must push ACLs into
+    the search index, and we need the ACL data model to do so.
+
+EXISTING SEARCH APIS
+ 6. For each module (DMS, CMS, Project, HSE, LMS, Incident, ...): the search
+    endpoint contract - path, request, response, pagination, filters, sort,
+    typical and p95 latency, rate limits, and whether it already enforces the
+    caller's permissions. Which modules do NOT have a search endpoint?
+ 7. Is there a canonical entity taxonomy and a stable entity identifier scheme
+    across modules?
+
+FRONTEND / NAVIGATION
+ 8. Which entity types have URL-addressable detail pages today, and what is the
+    exact deep-link factory contract in search-sdk? For entity types that are
+    not addressable, what is the intended landing behaviour - and who owns
+    making them addressable?
+ 9. What are the exact current TypeScript definitions of SearchHit and
+    SearchResult, and what is the search() / registerIndex() contract we must
+    conform to?
+
+PLATFORM / RUNTIME
+10. Does the platform support running a Python 3.11 container in production
+    (with the MS ODBC driver if needed)? If not, which backend language and
+    framework must the Global Search service be written in? What is the standard
+    deployment unit and pipeline?
+11. Which Azure subscription/resource group hosts Azure AI Search, and is
+    Portal-created infrastructure acceptable or must everything be IaC?
+12. Is Key Vault + managed identity the standard secret mechanism? Is there a
+    feature-flag service?
+13. Is there a shared Redis (or equivalent) available for entitlement-scoped
+    caching?
+14. Is Application Insights the standard, and what is the correlation-ID header
+    name and propagation convention used by api-client?
+
+DOCUMENTS
+15. Is document/drawing content search in scope for v1? If yes: where do
+    documents live, what are their ACLs, and who owns the ingestion pipeline
+    that must propagate those ACLs onto every chunk?
+
+NON-FUNCTIONAL
+16. What are the target p95 latencies for typeahead and for full search, the
+    expected QPS, the acceptable index staleness, and the LLM cost ceiling?
+17. Are there data residency or compliance constraints on sending content to
+    Azure OpenAI or storing it in Azure AI Search?
+
+
+================================================================================
+DEPENDENCY PHASING
+================================================================================
+
+MUST HAVE BEFORE DEVELOPMENT STARTS  (these are the blockers)
+  - JWT validation spec + sample tokens (Q1)
+  - Authorization model and principal/scope resolution (Q3, Q5)
+  - Tenancy model (Q4)
+  - Runtime/language decision for the Global Search service (Q10)
+  - Contracts for at least the first 3 module search APIs (Q6)
+  - Canonical entity taxonomy and stable entity ids (Q7)
+  - search-sdk SearchHit/SearchResult definitions and the deep-link contract (Q8, Q9)
+  - Non-functional targets (Q16)
+  - A relevance evaluation set (K1) - build it in parallel, but it must exist
+    before ranking is ported
+
+NEEDED DURING DEVELOPMENT
+  - Non-production environments for every federated module API
+  - Azure AI Search dev instance + IaC templates (Q11)
+  - Key Vault / feature-flag access (Q12)
+  - Test accounts covering the full permission matrix
+  - On-behalf-of token flow working end to end (Q2)
+  - Redis dev instance (Q13)
+
+NEEDED BEFORE UAT
+  - Authorization test matrix passing (K2)
+  - Partial-failure behaviour verified against every source (K3)
+  - Relevance baseline measured and agreed
+  - Application Insights wired with correlation IDs (Q14)
+  - Document ingestion pipeline with ACL propagation, if in scope (Q15)
+  - Load test results against the agreed latency budget
+
+NEEDED BEFORE PRODUCTION
+  - Security review sign-off, specifically on index ACL trimming and cache keying
+  - All POC credentials rotated (E1)
+  - Query-key/admin-key separation or managed identity for Azure AI Search
+  - Production Azure resources provisioned by IaC
+  - CI/CD with the authorization test suite as a blocking gate
+  - Runbook: reindex, purge, cache invalidation, source-outage response
+  - Agreed logging policy that does not log raw search queries by default
+
+
+================================================================================
+RECOMMENDED NEXT STEPS, IN ORDER
+================================================================================
+
+ 1. Rotate every credential currently in backend/.env. Do this first; it is
+    independent of everything else.
+ 2. Send section O to the backend/platform team. Development cannot responsibly
+    start until MUST-HAVE items are answered.
+ 3. Get the runtime decision made (Q10). It determines whether this is a port or
+    a rewrite, and it changes the estimate materially.
+ 4. Start building the relevance evaluation set now (K1). It needs real user
+    queries and human labelling, it has the longest lead time of anything here,
+    and every ranking decision depends on it.
+ 5. Extract the reusable intelligence (C1, C2, C3, C4, C5) into a clean,
+    dependency-free library with unit tests, in whatever language wins step 3.
+    Deliberately leave out: all DB access, all auth, all caching, all URLs.
+ 6. Design the permission model and the index ACL schema with the security team
+    (F, section "MINIMUM METADATA"). Get it reviewed before writing indexing code.
+ 7. Build a single-source vertical slice end to end - existing SearchBar ->
+    existing api-client -> new Global Search API -> JWT validation -> ONE
+    existing module search API -> permission assertion -> normalization ->
+    ranking -> existing deep-link factory. Prove authorization and partial
+    failure on that one slice before adding a second source.
+ 8. Only then add federation breadth, and only then consider document/Azure AI
+    Search retrieval.
+
+DO NOT: lift-and-shift the POC backend, keep the direct database connections,
+port the LLM SQL agent, or treat "it works when logged in" as evidence that
+authorization is handled.
+
+================================================================================
+END OF ASSESSMENT
+================================================================================

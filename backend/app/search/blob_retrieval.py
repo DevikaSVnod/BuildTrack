@@ -261,6 +261,14 @@ def should_search_blob_content(
         return False
     if is_file_content_query(query):
         return True
+    # Production: prefer chunk/RAG index for document-content questions.
+    try:
+        from app.search.document_strategy import use_chunk_index_for_query
+
+        if use_chunk_index_for_query(query):
+            return True
+    except Exception:
+        pass
     if is_question(query) and filter_type in (None, "", "all", "documents"):
         return True
     return False

@@ -50,6 +50,14 @@ def _status_map_task(status: str) -> str:
     return m.get((status or "").lower().replace(" ", "_"), status or "To Do")
 
 
+def _optional_date(value: Any) -> Optional[str]:
+    """Normalize index metadata dates — empty strings break Pydantic date fields."""
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
 def map_projects(
     project_rows: list[dict[str, Any]],
     task_rows: list[dict[str, Any]],
@@ -85,9 +93,9 @@ def map_projects(
             "name": row.get("title", ""),
             "description": meta.get("description") or _extract_description(row.get("content", ""), row.get("title", "")),
             "status": status,
-            "start_date": meta.get("start_date"),
-            "end_date": meta.get("end_date"),
-            "budget": float(meta["budget"]) if meta.get("budget") is not None else None,
+            "start_date": _optional_date(meta.get("start_date")),
+            "end_date": _optional_date(meta.get("end_date")),
+            "budget": float(meta["budget"]) if meta.get("budget") not in (None, "") else None,
             "location": meta.get("location"),
             "progress": int(meta.get("progress") or 0),
             "project_manager_id": None,

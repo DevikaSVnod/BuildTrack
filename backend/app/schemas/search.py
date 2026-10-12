@@ -6,4 +6,5 @@ from global_search_core.models import (  # noqa: F401
     SearchRequest,
     SearchResponse,
     SearchResultItem,
+    SourceStatus,
 )

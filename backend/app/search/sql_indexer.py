@@ -1,10 +1,12 @@
 """
-Azure AI Search SQL Indexer — the ONLY path that writes to the search index.
+Keep Azure AI Search in sync with the primary SQL database.
 
-Data flow:
-  Azure SQL (vw_global_search_documents) → SQL Indexer → Azure AI Search
+Two modes:
+  - pull (Azure SQL only): managed Azure SQL Indexer reaches into the DB
+  - push (local / non-Azure SQL): app reads SQL and uploads documents
 
-Do not call index_documents() from application code.
+Local SQL Server cannot be reached by the cloud indexer, so push is automatic
+when DATABASE_URL is not an Azure SQL host (*.database.windows.net).
 """
 from __future__ import annotations
 
@@ -12,6 +14,7 @@ import logging
 import threading
 import time
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 from app.core.config import settings
 
@@ -34,6 +37,27 @@ _last_trigger_at: float = 0
 MIN_TRIGGER_INTERVAL_SEC = 60  # debounce rapid upload bursts
 
 
+def _database_host() -> str:
+    url = settings.DATABASE_URL or ""
+    # mssql+pyodbc://user:pass@host:1433/db?...
+    try:
+        # SQLAlchemy URLs sometimes lack a scheme SQLAlchemy understands for urlparse
+        # after the driver; normalize to something urlparse can read.
+        normalized = url.replace("mssql+pyodbc://", "mssql://", 1)
+        parsed = urlparse(normalized)
+        return (parsed.hostname or "").lower()
+    except Exception:
+        return ""
+
+
+def uses_push_indexing() -> bool:
+    """True when the managed Azure SQL indexer cannot reach this database."""
+    host = _database_host()
+    if not host:
+        return True
+    return not host.endswith(".database.windows.net")
+
+
 def _indexer_client():
     from azure.core.credentials import AzureKeyCredential
     from azure.search.documents.indexes import SearchIndexerClient
@@ -47,41 +71,60 @@ def _indexer_client():
 
 
 def trigger_sql_indexer_run() -> None:
-    """Ask Azure to run the SQL indexer now (non-blocking)."""
+    """Sync the primary search index now (pull indexer or push from SQL)."""
     global _last_trigger_at
     now = time.time()
     with _trigger_lock:
         if now - _last_trigger_at < MIN_TRIGGER_INTERVAL_SEC:
-            logger.debug("SQL indexer trigger skipped (debounced)")
+            logger.debug("Search index sync skipped (debounced)")
             return
         _last_trigger_at = now
+
+    if uses_push_indexing():
+        from app.search.sql_push_indexer import sync_primary_db_to_azure_search
+
+        stats = sync_primary_db_to_azure_search(embed=True)
+        logger.info("Push index sync: %s", stats.get("message"))
+        return
+
     client = _indexer_client()
     client.run_indexer(INDEXER_NAME)
     logger.info("SQL indexer '%s' run triggered", INDEXER_NAME)
     from app.search.index_reader import clear_index_cache
+
     clear_index_cache()
 
 
 def trigger_sql_indexer_async() -> None:
-    """Fire-and-forget SQL indexer run (e.g. after document upload to SQL)."""
+    """Fire-and-forget index sync (e.g. after document upload to SQL)."""
 
     def _run():
         try:
             trigger_sql_indexer_run()
         except Exception as exc:
-            logger.warning("Background SQL indexer trigger failed: %s", exc)
+            logger.warning("Background search index sync failed: %s", exc)
 
     threading.Thread(target=_run, daemon=True, name="sql-indexer-trigger").start()
 
 
 def get_sql_indexer_status() -> dict[str, Any]:
-    """Return Azure SQL indexer execution status."""
+    """Return indexer / push-mode status for diagnostics."""
+    if uses_push_indexing():
+        return {
+            "indexer": INDEXER_NAME,
+            "mode": "push",
+            "status": "push-from-app",
+            "schedule": "on write (debounced) + manual sync",
+            "source": "primary SQL via app push (local/non-Azure database)",
+            "database_host": _database_host() or "(unknown)",
+        }
     try:
         client = _indexer_client()
         status = client.get_indexer_status(INDEXER_NAME)
         last = status.last_result
         return {
             "indexer": INDEXER_NAME,
+            "mode": "pull",
             "status": str(status.status),
             "last_result": str(last.status) if last else None,
             "last_item_count": last.item_count if last else 0,
@@ -93,6 +136,7 @@ def get_sql_indexer_status() -> dict[str, Any]:
     except Exception as exc:
         return {
             "indexer": INDEXER_NAME,
+            "mode": "pull",
             "status": "unknown",
             "error": str(exc),
         }
@@ -100,6 +144,12 @@ def get_sql_indexer_status() -> dict[str, Any]:
 
 def wait_for_sql_indexer(timeout_sec: int = 600) -> Optional[dict[str, Any]]:
     """Block until indexer finishes or timeout. Used by setup script only."""
+    if uses_push_indexing():
+        from app.search.sql_push_indexer import sync_primary_db_to_azure_search
+
+        sync_primary_db_to_azure_search(embed=True)
+        return get_sql_indexer_status()
+
     client = _indexer_client()
     client.run_indexer(INDEXER_NAME)
     deadline = time.time() + timeout_sec

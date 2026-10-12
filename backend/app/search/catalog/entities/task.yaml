@@ -1,0 +1,41 @@
+entity: task
+source: buildtrack
+table: tasks
+id_field: id
+entity_type: task
+description: Site activity / task
+title_field: title
+url_template: "/tasks?taskId={id}"
+search_fields:
+  - title
+  - description
+filter_fields:
+  - status
+  - priority
+  - project_id
+sortable_fields:
+  - due_date
+  - created_at
+embedding_enabled: true
+sql_only_fields: []
+hydrate_fields:
+  - id
+  - title
+  - description
+  - status
+  - priority
+  - project_id
+  - assignee_id
+  - due_date
+  - created_at
+acl_fields:
+  - project_id
+updated_at_field: created_at
+domain_signals:
+  - task
+  - tasks
+  - site activity
+  - activities
+relationships:
+  - field: project_id
+    ref: projects.id

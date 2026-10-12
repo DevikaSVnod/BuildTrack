@@ -35,7 +35,16 @@ def get_db():
     try:
         yield db
     finally:
-        db.close()
+        try:
+            db.close()
+        except Exception as exc:
+            # Long jobs (e.g. space-index) can outlive the SQL idle timeout;
+            # a failed rollback on close must not turn a successful request into 500.
+            logger.warning("Database session close failed: %s", exc)
+            try:
+                db.invalidate()
+            except Exception:
+                pass
 
 
 def ping_database() -> bool:

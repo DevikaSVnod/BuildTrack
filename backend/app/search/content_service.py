@@ -35,6 +35,12 @@ def _load(*types: str) -> dict[str, list[dict[str, Any]]]:
 
 
 def projects(status_filter: Optional[str] = None) -> list[dict[str, Any]]:
+    from app.core.config import settings
+
+    # Production path: SQL is source of truth for project lists.
+    if settings.SEARCH_HYDRATE_FROM_SQL:
+        return _projects_from_sql(status_filter=status_filter)
+
     bundle = _load("project", "task", "team")
     rows = map_projects(bundle["project"], bundle["task"], bundle["team"])
     if status_filter and status_filter != "all":
@@ -42,7 +48,60 @@ def projects(status_filter: Optional[str] = None) -> list[dict[str, Any]]:
     return rows
 
 
+def _projects_from_sql(status_filter: Optional[str] = None) -> list[dict[str, Any]]:
+    """Authoritative project list from Azure SQL / primary DB."""
+    from sqlalchemy.orm import joinedload
+
+    from app.core.database import SessionLocal
+    from app.models.project import Project
+
+    db = SessionLocal()
+    try:
+        q = db.query(Project).options(
+            joinedload(Project.project_manager),
+            joinedload(Project.tasks),
+            joinedload(Project.team_members),
+        )
+        rows = q.all()
+        out: list[dict[str, Any]] = []
+        for p in rows:
+            status = p.status.value if p.status else ""
+            if status_filter and status_filter != "all" and status != status_filter:
+                continue
+            pm = p.project_manager
+            out.append(
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "description": p.description,
+                    "status": status,
+                    "start_date": p.start_date,
+                    "end_date": p.end_date,
+                    "budget": p.budget,
+                    "location": p.location,
+                    "progress": p.progress,
+                    "project_manager_id": p.project_manager_id,
+                    "created_at": p.created_at,
+                    "project_manager": pm,
+                    "task_count": len(p.tasks) if p.tasks else 0,
+                    "team_size": len(p.team_members) if p.team_members else 0,
+                }
+            )
+        return out
+    finally:
+        db.close()
+
+
 def project(project_id: int) -> Optional[dict[str, Any]]:
+    from app.core.config import settings
+
+    if settings.SEARCH_HYDRATE_FROM_SQL:
+        rows = _projects_from_sql()
+        for r in rows:
+            if r.get("id") == project_id:
+                return r
+        return None
+
     row = index_reader.get_indexed(f"project-{project_id}")
     if not row:
         return None

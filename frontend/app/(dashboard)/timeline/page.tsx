@@ -30,7 +30,7 @@ export default function TimelinePage() {
   const [selectedProject, setSelectedProject] = useState<string>("all");
   const showLoading = loading && list.length === 0;
 
-  const projectNames = [...new Set(list.map((m) => m.project).filter(Boolean))];
+  const projectNames = Array.from(new Set(list.map((m) => m.project).filter(Boolean)));
   const displayed =
     selectedProject === "all"
       ? list

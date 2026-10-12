@@ -75,6 +75,7 @@ def hybrid_search(
     top_k: int = 8,
     analysis: Optional[QueryAnalysis] = None,
     search_index: Optional[str] = None,
+    security_filter: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     if analysis is None:
         analysis = analyze_query(query, default_top_k=top_k)
@@ -84,17 +85,27 @@ def hybrid_search(
         analysis.top_k if filter_type in (None, "all", "") else top_k
     )
     key = _search_cache_key(
-        query, filter_type, effective_top, analysis.cache_suffix(), search_index
+        query,
+        filter_type,
+        effective_top,
+        analysis.cache_suffix() + (f"|sec:{security_filter}" if security_filter else ""),
+        search_index,
     )
     if key in _search_cache:
         ts, cached = _search_cache[key]
         if time.time() - ts < SEARCH_CACHE_TTL:
+            try:
+                from app.search.metrics import record_search
+                record_search(0, top_k=len(cached), sources=1, cache_hit=True)
+            except Exception:
+                pass
             return cached
 
     client = get_search_client(search_index)
     if not client:
         return _fallback_results(query)
 
+    t0 = time.time()
     try:
         # Exhaustive modes — filter / list-all (never top-K truncation)
         if plan.is_exhaustive() and plan.mode != QueryMode.WORKFORCE:
@@ -122,6 +133,10 @@ def hybrid_search(
             # Workforce / role queries ("Who are the project managers?") must
             # not compete with document/project hits for result slots.
             filter_expr = "content_type eq 'team'"
+
+        if security_filter:
+            from app.search.security_trim import merge_odata
+            filter_expr = merge_odata(filter_expr, security_filter)
 
         # Decide whether to embed this query.
         # Skip for very short / trivial queries — BM25 is sufficient and we save
@@ -349,6 +364,16 @@ def hybrid_search(
             for k, _ in oldest:
                 del _search_cache[k]
 
+        try:
+            from app.search.metrics import record_search
+            record_search(
+                (time.time() - t0) * 1000,
+                top_k=len(items),
+                sources=1,
+                cache_hit=False,
+            )
+        except Exception:
+            pass
         return items
 
     except Exception as e:
@@ -369,10 +394,13 @@ def get_cached_results(
     effective_top = analysis.top_k if filter_type in (None, "all", "") else top_k
 
     # Prefer multi-DB merged cache when multiple sources are configured.
+    # Must use the same source narrowing as MultiDatabaseConnector.retrieve
+    # (e.g. event/agenda → space only) so /answer does not miss the /results cache
+    # and fall back to a broader multi-DB retrieve.
     try:
-        from app.core.data_sources import get_enabled_sources
+        from app.core.data_sources import select_sources_for_analysis
 
-        sources = get_enabled_sources(source_ids)
+        sources = select_sources_for_analysis(analysis, source_ids)
         if len(sources) > 1:
             multi_key = _search_cache_key(
                 query,

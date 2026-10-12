@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
@@ -7,9 +9,25 @@ from app.models.user import User
 from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectResponse
 from app.api.deps import get_current_user
 from app.search import content_service
-from app.search.sql_indexer import trigger_sql_indexer_async
+from app.search.indexer import build_project_doc
+from app.search.sql_indexer import trigger_sql_indexer_async, uses_push_indexing
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/projects", tags=["projects"])
+
+
+def _sync_project_to_search(project: Project) -> None:
+    """Push mode: upload this project before the API returns so the list refreshes correctly."""
+    if not uses_push_indexing():
+        trigger_sql_indexer_async()
+        return
+    try:
+        from app.search.sql_push_indexer import push_docs_now
+
+        push_docs_now([build_project_doc(project)], embed=True)
+    except Exception as exc:
+        logger.warning("Immediate project push failed, falling back to async sync: %s", exc)
+        trigger_sql_indexer_async()
 
 
 def enrich_project(project: Project) -> dict:
@@ -54,7 +72,14 @@ def create_project(
     db.add(project)
     db.commit()
     db.refresh(project)
-    trigger_sql_indexer_async()
+    if project.project_manager_id:
+        project = (
+            db.query(Project)
+            .options(joinedload(Project.project_manager))
+            .filter(Project.id == project.id)
+            .first()
+        ) or project
+    _sync_project_to_search(project)
     return ProjectResponse(**enrich_project(project))
 
 
@@ -87,7 +112,13 @@ def update_project(
         setattr(project, field, value)
     db.commit()
     db.refresh(project)
-    trigger_sql_indexer_async()
+    project = (
+        db.query(Project)
+        .options(joinedload(Project.project_manager))
+        .filter(Project.id == project.id)
+        .first()
+    ) or project
+    _sync_project_to_search(project)
     return ProjectResponse(**enrich_project(project))
 
 

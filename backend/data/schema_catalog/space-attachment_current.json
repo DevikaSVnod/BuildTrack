@@ -1,0 +1,599 @@
+{
+  "source_id": "space-attachment",
+  "source_label": "Space Attachment",
+  "database_name": "DEV_V1_SPACE_ATTACHMENT",
+  "schema_name": "storage",
+  "version": 1,
+  "captured_at": "2026-08-17T08:46:47.441056+00:00",
+  "tables": [
+    {
+      "schema_name": "storage",
+      "name": "Attachment",
+      "columns": [
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "FileName",
+          "data_type": "nvarchar",
+          "max_length": 255,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FileName (nvarchar)"
+        },
+        {
+          "name": "BlobUrl",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "BlobUrl (nvarchar)"
+        },
+        {
+          "name": "FileDescription",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "MimeType",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "MimeType (nvarchar)"
+        },
+        {
+          "name": "FileSize",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FileSize (bigint)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AttachmentId"
+      ],
+      "foreign_keys": [],
+      "description": "Stored file attachments (blob/file metadata)",
+      "search_hints": [
+        "attachment",
+        "attachments",
+        "uploaded file",
+        "file storage",
+        "blob"
+      ]
+    },
+    {
+      "schema_name": "storage",
+      "name": "Attachment_Provisional",
+      "columns": [
+        {
+          "name": "AttachmentProvisionalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AttachmentProvisionalId"
+        },
+        {
+          "name": "FileName",
+          "data_type": "nvarchar",
+          "max_length": 255,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FileName (nvarchar)"
+        },
+        {
+          "name": "FileDescription",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "MimeType",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "MimeType (nvarchar)"
+        },
+        {
+          "name": "FileSize",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FileSize (bigint)"
+        },
+        {
+          "name": "LocalStorageFilePath",
+          "data_type": "varchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "LocalStorageFilePath (varchar)"
+        },
+        {
+          "name": "LocalStorageFileName",
+          "data_type": "varchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "LocalStorageFileName (varchar)"
+        },
+        {
+          "name": "UploadPercentage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "UploadPercentage (int)"
+        },
+        {
+          "name": "UploadStatus",
+          "data_type": "varchar",
+          "max_length": 25,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "UploadStatus (varchar)"
+        },
+        {
+          "name": "UploadedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "UploadedBy (bigint)"
+        },
+        {
+          "name": "UploadDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsMovedToAttachment",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "BlobUrl",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "BlobUrl (nvarchar)"
+        },
+        {
+          "name": "Tag",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Tag (nvarchar)"
+        },
+        {
+          "name": "EntityType",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EntityType (nvarchar)"
+        },
+        {
+          "name": "EntityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EntityId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AttachmentProvisionalId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "AttachmentId",
+          "to_table": "Attachment",
+          "to_column": "AttachmentId"
+        }
+      ],
+      "description": "Provisional attachment uploads pending finalize",
+      "search_hints": [
+        "provisional attachment",
+        "pending upload"
+      ]
+    },
+    {
+      "schema_name": "storage",
+      "name": "AttachmentReference",
+      "columns": [
+        {
+          "name": "AttachmentReferenceId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AttachmentReferenceId"
+        },
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "Tag",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Tag (nvarchar)"
+        },
+        {
+          "name": "EntityType",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EntityType (nvarchar)"
+        },
+        {
+          "name": "EntityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EntityId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AttachmentReferenceId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "AttachmentId",
+          "to_table": "Attachment",
+          "to_column": "AttachmentId"
+        }
+      ],
+      "description": "Links between attachments and owning entities",
+      "search_hints": [
+        "attachment reference",
+        "linked attachment",
+        "attachment link"
+      ]
+    },
+    {
+      "schema_name": "storage",
+      "name": "AttachmentSyncStatus",
+      "columns": [
+        {
+          "name": "SyncStatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying SyncStatusId"
+        },
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "IsDMSSyncRequired",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsSyncedToDMS",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "SyncedAt",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SyncedAt (datetime2)"
+        },
+        {
+          "name": "SyncError",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SyncError (nvarchar)"
+        },
+        {
+          "name": "RetryCount",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RetryCount (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "SyncStatusId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "AttachmentId",
+          "to_table": "Attachment",
+          "to_column": "AttachmentId"
+        }
+      ],
+      "description": "Sync status for attachment storage",
+      "search_hints": [
+        "attachment sync",
+        "sync status"
+      ]
+    }
+  ],
+  "change_summary": [
+    "No schema structure change"
+  ]
+}

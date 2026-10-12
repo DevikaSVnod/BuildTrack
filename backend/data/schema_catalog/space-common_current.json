@@ -1,0 +1,459 @@
+{
+  "source_id": "space-common",
+  "source_label": "Space Common",
+  "database_name": "DEV_V1_SPACE_COMMON",
+  "schema_name": "common",
+  "version": 1,
+  "captured_at": "2026-08-17T08:46:46.966291+00:00",
+  "tables": [
+    {
+      "schema_name": "common",
+      "name": "PersonOfTheMonth",
+      "columns": [
+        {
+          "name": "PersonOfTheMonthId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying PersonOfTheMonthId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "AssessmentMonth",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "AssessmentMonth (date)"
+        },
+        {
+          "name": "AssessmentDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "PersonOfTheMonthId"
+      ],
+      "foreign_keys": [],
+      "description": "Person of the Month award records",
+      "search_hints": [
+        "person of the month",
+        "potm",
+        "employee of the month",
+        "award",
+        "recognition"
+      ]
+    },
+    {
+      "schema_name": "common",
+      "name": "PersonOfTheMonth_Attachment",
+      "columns": [
+        {
+          "name": "PersonOfTheMonthAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying PersonOfTheMonthAttachmentId"
+        },
+        {
+          "name": "PersonOfTheMonthNominationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PersonOfTheMonthNominationId"
+        },
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "ProvisionalAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProvisionalAttachmentId"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "Tag",
+          "data_type": "nvarchar",
+          "max_length": 25,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Tag (nvarchar)"
+        },
+        {
+          "name": "UploadedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UploadedByUserId"
+        },
+        {
+          "name": "UploadDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "PersonOfTheMonthAttachmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "PersonOfTheMonthNominationId",
+          "to_table": "PersonOfTheMonth_Nomination",
+          "to_column": "PersonOfTheMonthNominationId"
+        }
+      ],
+      "description": "Attachments linked to Person of the Month entries",
+      "search_hints": [
+        "person of the month attachment",
+        "potm file",
+        "award attachment"
+      ]
+    },
+    {
+      "schema_name": "common",
+      "name": "PersonOfTheMonth_Nomination",
+      "columns": [
+        {
+          "name": "PersonOfTheMonthNominationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying PersonOfTheMonthNominationId"
+        },
+        {
+          "name": "PersonOfTheMonthId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PersonOfTheMonthId"
+        },
+        {
+          "name": "NominatedPersonTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NominatedPersonTypeId"
+        },
+        {
+          "name": "UserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserId"
+        },
+        {
+          "name": "UserName",
+          "data_type": "varchar",
+          "max_length": 300,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "UserName (varchar)"
+        },
+        {
+          "name": "LabourName",
+          "data_type": "varchar",
+          "max_length": 300,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "LabourName (varchar)"
+        },
+        {
+          "name": "LabourSPGPID",
+          "data_type": "varchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LabourSPGPID"
+        },
+        {
+          "name": "ContractorCode",
+          "data_type": "varchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ContractorCode (varchar)"
+        },
+        {
+          "name": "ContractorName",
+          "data_type": "varchar",
+          "max_length": 300,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ContractorName (varchar)"
+        },
+        {
+          "name": "Designation",
+          "data_type": "varchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Designation (varchar)"
+        },
+        {
+          "name": "ActivityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ActivityId"
+        },
+        {
+          "name": "ProjectLocationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectLocationId"
+        },
+        {
+          "name": "Remarks",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remarks (nvarchar)"
+        },
+        {
+          "name": "IsWinner",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "PersonOfTheMonthNominationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "PersonOfTheMonthId",
+          "to_table": "PersonOfTheMonth",
+          "to_column": "PersonOfTheMonthId"
+        }
+      ],
+      "description": "Nominations for Person of the Month",
+      "search_hints": [
+        "nomination",
+        "nominate",
+        "person of the month nomination"
+      ]
+    }
+  ],
+  "change_summary": [
+    "No schema structure change"
+  ]
+}

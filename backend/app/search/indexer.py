@@ -11,17 +11,45 @@ VECTOR_PROFILE = "buildtrack-hnsw"
 
 
 def _add_vector(doc: Dict[str, Any]) -> Dict[str, Any]:
-    """Embed title + content and add content_vector field in-place."""
+    """
+    Embed canonical search_text (or title+content) and add content_vector.
+    Skips re-embedding when search_text_hash matches the live indexed hash.
+    """
+    if doc.get("embedding_enabled") is False:
+        return doc
     try:
         from app.search.embeddings import embed_text
-        text = f"{doc.get('title', '')} {doc.get('content', '')}".strip()
+        from app.core.config import settings as _settings
+
+        text = (doc.get("search_text") or f"{doc.get('title', '')} {doc.get('content', '')}").strip()
+        new_hash = doc.get("search_text_hash")
+        if _settings.SEARCH_INCREMENTAL_SYNC and new_hash and doc.get("id"):
+            try:
+                client = get_search_client()
+                if client:
+                    existing = client.get_document(key=doc["id"], selected_fields=["search_text_hash", VECTOR_FIELD])
+                    if existing and existing.get("search_text_hash") == new_hash and existing.get(VECTOR_FIELD):
+                        doc[VECTOR_FIELD] = existing[VECTOR_FIELD]
+                        from app.search.metrics import record_embed
+                        record_embed(skipped=True)
+                        return doc
+            except Exception:
+                pass
+
         vector = embed_text(text)
         if vector:
             doc[VECTOR_FIELD] = vector
+            try:
+                from app.search.metrics import record_embed
+                record_embed(tokens_est=max(1, len(text) // 4))
+            except Exception:
+                pass
         else:
             logger.warning(f"No vector for doc {doc.get('id')} — embeddings not configured or call failed")
     except Exception as e:
         logger.warning(f"Vector embedding skipped for {doc.get('id')}: {e}")
+    # Never send internal flags to Azure
+    doc.pop("embedding_enabled", None)
     return doc
 
 
@@ -86,6 +114,19 @@ def ensure_index_exists(index_name: Optional[str] = None) -> bool:
         filter_fields = [
             SimpleField(name="progress_pct", type=SearchFieldDataType.Int32, filterable=True, sortable=True),
             SimpleField(name="record_status", type=SearchFieldDataType.String, filterable=True),
+            # Production discovery / ACL fields (additive — safe on existing indexes)
+            SimpleField(name="entity_id", type=SearchFieldDataType.String, filterable=True, retrievable=True),
+            SimpleField(name="entity_type", type=SearchFieldDataType.String, filterable=True, facetable=True, retrievable=True),
+            SimpleField(name="source_database", type=SearchFieldDataType.String, filterable=True, facetable=True, retrievable=True),
+            SearchableField(name="search_text", type=SearchFieldDataType.String),
+            SimpleField(name="search_text_hash", type=SearchFieldDataType.String, retrievable=True),
+            SimpleField(name="updated_at", type=SearchFieldDataType.String, filterable=True, sortable=True, retrievable=True),
+            SimpleField(name="project_id", type=SearchFieldDataType.String, filterable=True, retrievable=True),
+            SimpleField(name="organization_id", type=SearchFieldDataType.String, filterable=True),
+            SimpleField(name="tenant_id", type=SearchFieldDataType.String, filterable=True),
+            SimpleField(name="access_groups", type=SearchFieldDataType.String, filterable=True),
+            SimpleField(name="location", type=SearchFieldDataType.String, filterable=True, facetable=True),
+            SimpleField(name="status", type=SearchFieldDataType.String, filterable=True, facetable=True),
         ]
 
         def _full_index() -> SearchIndex:
@@ -109,7 +150,10 @@ def ensure_index_exists(index_name: Optional[str] = None) -> bool:
                 name="default",
                 prioritized_fields=SemanticPrioritizedFields(
                     title_field=SemanticField(field_name="title"),
-                    content_fields=[SemanticField(field_name="content")],
+                    content_fields=[
+                        SemanticField(field_name="search_text"),
+                        SemanticField(field_name="content"),
+                    ],
                 ),
             )
             vector_search = VectorSearch(
@@ -202,9 +246,43 @@ def index_documents(
             logger.error(f"Batch upload error (batch {i // batch_size}): {e}")
             total_fail += len(batch)
     logger.info(f"Indexed {total_ok} docs OK, {total_fail} failed into {index_name or settings.AZURE_SEARCH_INDEX}")
+    try:
+        from app.search.metrics import record_index
+
+        record_index(ok=total_ok, failed=total_fail)
+    except Exception:
+        pass
     return {"ok": total_ok, "failed": total_fail}
 
 def build_project_doc(project) -> Dict[str, Any]:
+    if settings.SEARCH_CATALOG_ENABLED:
+        try:
+            from app.search.catalog.builder import build_canonical_document
+
+            doc = build_canonical_document("project", project)
+            if doc:
+                # Preserve rich metadata expected by existing mappers
+                pm_name = ""
+                try:
+                    pm_name = project.project_manager.full_name if project.project_manager else ""
+                except Exception:
+                    pass
+                meta = {
+                    "status": project.status.value if project.status else "",
+                    "location": project.location or "",
+                    "progress": project.progress,
+                    "budget": project.budget,
+                    "start_date": str(project.start_date) if project.start_date else None,
+                    "end_date": str(project.end_date) if project.end_date else None,
+                    "description": project.description or "",
+                    "project_manager": pm_name,
+                    "project_id": project.id,
+                }
+                doc["metadata"] = json.dumps(meta)
+                return doc
+        except Exception as exc:
+            logger.debug("Catalog project builder fallback: %s", exc)
+
     pm_name = ""
     try:
         pm_name = project.project_manager.full_name if project.project_manager else ""
@@ -231,8 +309,10 @@ def build_project_doc(project) -> Dict[str, Any]:
             "location": project.location or "",
             "progress": project.progress,
             "budget": project.budget,
-            "start_date": str(project.start_date) if project.start_date else "",
-            "end_date": str(project.end_date) if project.end_date else "",
+            # Use null (not "") so API date fields validate when dates are unset.
+            "start_date": str(project.start_date) if project.start_date else None,
+            "end_date": str(project.end_date) if project.end_date else None,
+            "description": project.description or "",
             "project_manager": pm_name,
         }),
     }
@@ -285,6 +365,39 @@ def build_document_doc(doc) -> Dict[str, Any]:
     size_kb = round(size_bytes / 1024, 1) if size_bytes else 0
     size_mb = round(size_bytes / (1024 * 1024), 2) if size_bytes else 0
     size_label = f"{size_mb} MB" if size_mb >= 1 else (f"{size_kb} KB" if size_kb else "unknown size")
+    meta = {
+        "file_type": doc.file_type or "",
+        "project_id": doc.project_id,
+        "project_name": project_name,
+        "doc_id": doc.id,
+        "uploader": uploader_name,
+        "file_url": doc.file_url or "",
+        "file_size": size_bytes,
+        "file_size_kb": size_kb,
+        "file_size_mb": size_mb,
+        "file_size_display": size_label,
+        "upload_date": upload_date,
+        "upload_date_display": upload_display,
+    }
+    if settings.SEARCH_CATALOG_ENABLED:
+        try:
+            from app.search.catalog.builder import build_canonical_document
+
+            built = build_canonical_document("document", doc)
+            if built:
+                # Metadata-only discovery text; keep size/uploader for keyword find
+                built["content"] = (
+                    f"{doc.name} {doc.file_type or ''} {project_name} "
+                    f"uploaded by {uploader_name} uploaded on {upload_date} {size_label}"
+                ).strip()
+                built["search_text"] = built["content"]
+                from app.search.catalog.builder import search_text_hash as _sth
+
+                built["search_text_hash"] = _sth(built["content"])
+                built["metadata"] = json.dumps(meta)
+                return built
+        except Exception as exc:
+            logger.debug("Catalog document builder fallback: %s", exc)
     return {
         "id": f"document-{doc.id}",
         "title": doc.name,
@@ -295,20 +408,7 @@ def build_document_doc(doc) -> Dict[str, Any]:
         ).strip(),
         "content_type": "document",
         "url": f"/documents?docId={doc.id}",
-        "metadata": json.dumps({
-            "file_type": doc.file_type or "",
-            "project_id": doc.project_id,
-            "project_name": project_name,
-            "doc_id": doc.id,
-            "uploader": uploader_name,
-            "file_url": doc.file_url or "",
-            "file_size": size_bytes,
-            "file_size_kb": size_kb,
-            "file_size_mb": size_mb,
-            "file_size_display": size_label,
-            "upload_date": upload_date,
-            "upload_date_display": upload_display,
-        }),
+        "metadata": json.dumps(meta),
     }
 
 

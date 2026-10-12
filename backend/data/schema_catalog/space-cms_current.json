@@ -1,0 +1,4915 @@
+{
+  "source_id": "space-cms",
+  "source_label": "Space CMS",
+  "database_name": "DEV_V1_SPACE_CMS",
+  "schema_name": "cms",
+  "version": 1,
+  "captured_at": "2026-08-17T08:46:49.258840+00:00",
+  "tables": [
+    {
+      "schema_name": "cms",
+      "name": "ErrorLogs",
+      "columns": [
+        {
+          "name": "ErrorlogsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ErrorlogsID"
+        },
+        {
+          "name": "spName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "spName (nvarchar)"
+        },
+        {
+          "name": "ErrorState",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ErrorState (nvarchar)"
+        },
+        {
+          "name": "ErrorMessage",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ErrorMessage (nvarchar)"
+        },
+        {
+          "name": "ErrorNumber",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ErrorNumber (bigint)"
+        },
+        {
+          "name": "ErrorServerity",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ErrorServerity (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [],
+      "foreign_keys": [],
+      "description": "Space CMS table ErrorLogs",
+      "search_hints": [
+        "errorlogs",
+        "errorlogs"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCM",
+      "columns": [
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "SectorID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SectorID"
+        },
+        {
+          "name": "ClientTypeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ClientTypeID"
+        },
+        {
+          "name": "TypeofContractID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TypeofContractID"
+        },
+        {
+          "name": "NameofContract",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "NameofContract (nvarchar)"
+        },
+        {
+          "name": "ContractNo",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ContractNo (nvarchar)"
+        },
+        {
+          "name": "LetterofAwardDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "OriginalContractValue",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OriginalContractValue (decimal)"
+        },
+        {
+          "name": "RevisedContractValue",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RevisedContractValue (decimal)"
+        },
+        {
+          "name": "ContractDuration",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ContractDuration (int)"
+        },
+        {
+          "name": "ExpectedCompletionDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "EstimatedDelayinCompletion",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "EstimatedDelayinCompletion (int)"
+        },
+        {
+          "name": "ContractTimeElapsedPercent",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "EmployerName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EmployerName (nvarchar)"
+        },
+        {
+          "name": "EmployerContactName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EmployerContactName (nvarchar)"
+        },
+        {
+          "name": "EngineerName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EngineerName (nvarchar)"
+        },
+        {
+          "name": "EngineerContactName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EngineerContactName (nvarchar)"
+        },
+        {
+          "name": "ContractorName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ContractorName (nvarchar)"
+        },
+        {
+          "name": "ContractorContactName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ContractorContactName (nvarchar)"
+        },
+        {
+          "name": "ContractPrice",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ContractPrice (decimal)"
+        },
+        {
+          "name": "ContractPriceExRate",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ContractPriceExRate (decimal)"
+        },
+        {
+          "name": "SourceofFunding",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SourceofFunding (nvarchar)"
+        },
+        {
+          "name": "NatureofContractItemRate",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "NatureofContractItemRate (decimal)"
+        },
+        {
+          "name": "ContractModelID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ContractModelID"
+        },
+        {
+          "name": "ContractModelItemRate",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ContractModelItemRate (decimal)"
+        },
+        {
+          "name": "SubContractLimit",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SubContractLimit (nvarchar)"
+        },
+        {
+          "name": "FacilityforSiteEstablishment",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "FacilityforSiteEstablishment (nvarchar)"
+        },
+        {
+          "name": "WaterPowerSecurity",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "WaterPowerSecurity (nvarchar)"
+        },
+        {
+          "name": "DesignScope",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DesignScope (nvarchar)"
+        },
+        {
+          "name": "DesignLiability",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DesignLiability (nvarchar)"
+        },
+        {
+          "name": "InspectionAndTesting",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "InspectionAndTesting (nvarchar)"
+        },
+        {
+          "name": "ObligationsBeforeTakingOver",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ObligationsBeforeTakingOver (nvarchar)"
+        },
+        {
+          "name": "TakingOverCertificate",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TakingOverCertificate (nvarchar)"
+        },
+        {
+          "name": "PerformanceCertificateAfterDLP",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PerformanceCertificateAfterDLP (nvarchar)"
+        },
+        {
+          "name": "OtherImportantTermsOfContract",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OtherImportantTermsOfContract (nvarchar)"
+        },
+        {
+          "name": "DeterminationsProcedure",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DeterminationsProcedure (nvarchar)"
+        },
+        {
+          "name": "TaxesOriginalContractValue",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TaxesOriginalContractValue (decimal)"
+        },
+        {
+          "name": "TotalOriginalContractValue",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TotalOriginalContractValue (decimal)"
+        },
+        {
+          "name": "TaxesRevisedContractValue",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TaxesRevisedContractValue (decimal)"
+        },
+        {
+          "name": "TotalRevisedContractValue",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TotalRevisedContractValue (decimal)"
+        },
+        {
+          "name": "IsOperations",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMID"
+      ],
+      "foreign_keys": [],
+      "description": "Contract management master records (CMS)",
+      "search_hints": [
+        "contract",
+        "contracts",
+        "cms",
+        "project cm",
+        "contract management"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMAdditionalContractInformation",
+      "columns": [
+        {
+          "name": "ProjectCMAdditionalContractID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMAdditionalContractID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "ProjectID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectID"
+        },
+        {
+          "name": "OriginalContractDuration",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OriginalContractDuration (int)"
+        },
+        {
+          "name": "RevisedContractDuration",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RevisedContractDuration (int)"
+        },
+        {
+          "name": "CompletionDueDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RevisedCompletionDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IntermediateMilestone",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "IntermediateMilestone (nvarchar)"
+        },
+        {
+          "name": "TimeScheduleforSiteHandingOver",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "TimeScheduleforDrawings",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ConstructionProgram",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ConstructionProgram (nvarchar)"
+        },
+        {
+          "name": "PossessionofSitewithAccess",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PossessionofSitewithAccess (nvarchar)"
+        },
+        {
+          "name": "DelayDuetoHindrances",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DelayDuetoHindrances (nvarchar)"
+        },
+        {
+          "name": "DelaysCausedByAuthorities",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DelaysCausedByAuthorities (nvarchar)"
+        },
+        {
+          "name": "DelaysDueToSuspensionOfWorks",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DelaysDueToSuspensionOfWorks (nvarchar)"
+        },
+        {
+          "name": "DelaysDueToEmployerRisks",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DelaysDueToEmployerRisks (nvarchar)"
+        },
+        {
+          "name": "DelayInDrawingsIssue",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DelayInDrawingsIssue (nvarchar)"
+        },
+        {
+          "name": "DelayDueToOtherReasons",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DelayDueToOtherReasons (nvarchar)"
+        },
+        {
+          "name": "CompensationReceivableDueToDelays",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CompensationReceivableDueToDelays (nvarchar)"
+        },
+        {
+          "name": "LiquidatedDamagesInContract",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "LiquidatedDamagesInContractLimits",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ForIntermediateMilestone",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ForIntermediateMilestone (nvarchar)"
+        },
+        {
+          "name": "ForIntermediateMilestoneLimits",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ForIntermediateMilestoneLimits (decimal)"
+        },
+        {
+          "name": "DefectsLiabilityPeriod",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DefectsLiabilityPeriod (nvarchar)"
+        },
+        {
+          "name": "DefectsLiabilityPeriodMonths",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DefectsLiabilityPeriodMonths (int)"
+        },
+        {
+          "name": "OperationMaintenancePeriod",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OperationMaintenancePeriod (nvarchar)"
+        },
+        {
+          "name": "OperationMaintenancePeriodMonths",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OperationMaintenancePeriodMonths (int)"
+        },
+        {
+          "name": "MinimumBillAmount",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "MinimumBillAmount (decimal)"
+        },
+        {
+          "name": "MinimumBillAmountClause",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "MinimumBillAmountClause (nvarchar)"
+        },
+        {
+          "name": "InterestOnLatePayment",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "InterestOnLatePayment (decimal)"
+        },
+        {
+          "name": "PriceAdjustment",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PriceAdjustment (nvarchar)"
+        },
+        {
+          "name": "StarRates",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "StarRates (nvarchar)"
+        },
+        {
+          "name": "FreeIssueMaterials",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "FreeIssueMaterials (nvarchar)"
+        },
+        {
+          "name": "WastageLimitsforMaterialConsumption",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "WastageLimitsforMaterialConsumption (nvarchar)"
+        },
+        {
+          "name": "IsStarRates",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsFreeIssueMaterials",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsWastageLimitsforMaterialConsumption",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsMajorQuantities",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "SubContractLimit",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SubContractLimit (nvarchar)"
+        },
+        {
+          "name": "FacilityforSiteEstablishment",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "FacilityforSiteEstablishment (nvarchar)"
+        },
+        {
+          "name": "WaterPowerSecurity",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "WaterPowerSecurity (nvarchar)"
+        },
+        {
+          "name": "DesignScope",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DesignScope (nvarchar)"
+        },
+        {
+          "name": "DesignLiability",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DesignLiability (nvarchar)"
+        },
+        {
+          "name": "InspectionAndTesting",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "InspectionAndTesting (nvarchar)"
+        },
+        {
+          "name": "ObligationsBeforeTakingOver",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ObligationsBeforeTakingOver (nvarchar)"
+        },
+        {
+          "name": "TakingOverCertificate",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TakingOverCertificate (nvarchar)"
+        },
+        {
+          "name": "PerformanceCertificateAfterDLP",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PerformanceCertificateAfterDLP (nvarchar)"
+        },
+        {
+          "name": "OtherImportantTermsOfContract",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OtherImportantTermsOfContract (nvarchar)"
+        },
+        {
+          "name": "DeterminationsProcedure",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DeterminationsProcedure (nvarchar)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMAdditionalContractID"
+      ],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMAdditionalContractInformation",
+      "search_hints": [
+        "projectcmadditionalcontractinformation",
+        "projectcmadditionalcontractinformation"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMAssociatedData",
+      "columns": [
+        {
+          "name": "ProjectCMAssociatedDataID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMAssociatedDataID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "ParentDataID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ParentDataID"
+        },
+        {
+          "name": "ParentDataArea",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ParentDataArea (nvarchar)"
+        },
+        {
+          "name": "ChildDataID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ChildDataID"
+        },
+        {
+          "name": "DataArea",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DataArea (nvarchar)"
+        }
+      ],
+      "primary_keys": [],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMAssociatedData",
+      "search_hints": [
+        "projectcmassociateddata",
+        "projectcmassociateddata"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMBDattachment",
+      "columns": [
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "ProvisionalDocumentMasterId",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProvisionalDocumentMasterId"
+        },
+        {
+          "name": "DocumentId",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DocumentId"
+        },
+        {
+          "name": "AttachmentFileName",
+          "data_type": "varchar",
+          "max_length": 255,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "AttachmentFileName (varchar)"
+        },
+        {
+          "name": "FilePath",
+          "data_type": "varchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "FilePath (varchar)"
+        },
+        {
+          "name": "AttachmentDescription",
+          "data_type": "varchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "FileExtension",
+          "data_type": "varchar",
+          "max_length": 5,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FileExtension (varchar)"
+        },
+        {
+          "name": "LocalStorageFileName",
+          "data_type": "varchar",
+          "max_length": 255,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "LocalStorageFileName (varchar)"
+        },
+        {
+          "name": "ProjectCMId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMId"
+        },
+        {
+          "name": "ProcessName",
+          "data_type": "varchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ProcessName (varchar)"
+        },
+        {
+          "name": "ProcessListParentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProcessListParentId"
+        },
+        {
+          "name": "ProcessListId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProcessListId"
+        },
+        {
+          "name": "IsMovedToDMS",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsAddedFromMobile",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "FileSize",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "FileSize (bigint)"
+        },
+        {
+          "name": "IsOCRProcessed",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsOcrConversionStatus",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsOcrConversionOutcome",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsOcrStartDatetime",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsOcrEndDatetime",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsOcrTriggeredBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "MasterDocumentId",
+          "data_type": "varchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MasterDocumentId"
+        },
+        {
+          "name": "IsSearchKeyword",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsSearchOutcome",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsSearchStartDatetime",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsSearchEndDatetime",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsSearchTriggeredBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "ProjectType",
+          "data_type": "nchar",
+          "max_length": 10,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ProjectType (nchar)"
+        },
+        {
+          "name": "DocumentTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DocumentTypeId"
+        },
+        {
+          "name": "IsScaned",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ProvisionalAttachmentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProvisionalAttachmentID"
+        },
+        {
+          "name": "StorageAttachmentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StorageAttachmentID"
+        }
+      ],
+      "primary_keys": [
+        "AttachmentId"
+      ],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMBDattachment",
+      "search_hints": [
+        "projectcmbdattachment",
+        "projectcmbdattachment"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMBDkeywordAmendLog",
+      "columns": [
+        {
+          "name": "KeywordAmendLogID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying KeywordAmendLogID"
+        },
+        {
+          "name": "ChangeLogGUID",
+          "data_type": "uniqueidentifier",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ChangeLogGUID"
+        },
+        {
+          "name": "ProjectCMClauseSearchAIOutcomeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMClauseSearchAIOutcomeID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "ProjectCMConditionID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMConditionID"
+        },
+        {
+          "name": "ProjectCMDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDocumentID"
+        },
+        {
+          "name": "AttachmentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentID"
+        },
+        {
+          "name": "ContractConditionKeywordsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ContractConditionKeywordsID"
+        },
+        {
+          "name": "DocumentPageNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DocumentPageNo (int)"
+        },
+        {
+          "name": "DataSource",
+          "data_type": "nvarchar",
+          "max_length": 5,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DataSource (nvarchar)"
+        },
+        {
+          "name": "ProcessedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "KeywordAmendLogID"
+      ],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMBDkeywordAmendLog",
+      "search_hints": [
+        "projectcmbdkeywordamendlog",
+        "projectcmbdkeywordamendlog"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMBDkeywordAmendRunLog",
+      "columns": [
+        {
+          "name": "KeywordAmendRunLogID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying KeywordAmendRunLogID"
+        },
+        {
+          "name": "ChangeLogGUID",
+          "data_type": "uniqueidentifier",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ChangeLogGUID"
+        },
+        {
+          "name": "CountofRowsFound",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CountofRowsFound (int)"
+        },
+        {
+          "name": "NewKeywordFound",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "NewKeywordFound (int)"
+        },
+        {
+          "name": "ModifiedKeywordFound",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedKeywordFound (int)"
+        },
+        {
+          "name": "RunStartDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RunEndDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "KeywordAmendRunLogID"
+      ],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMBDkeywordAmendRunLog",
+      "search_hints": [
+        "projectcmbdkeywordamendrunlog",
+        "projectcmbdkeywordamendrunlog"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMClauseInfo",
+      "columns": [
+        {
+          "name": "ProjectCMClauseInfoID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMClauseInfoID"
+        },
+        {
+          "name": "ProjectCMConditionID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMConditionID"
+        },
+        {
+          "name": "ProjectCMDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDocumentID"
+        },
+        {
+          "name": "ClauseReferenceID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ClauseReferenceID"
+        },
+        {
+          "name": "ClauseNumberID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ClauseNumberID"
+        },
+        {
+          "name": "DocumentPageNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DocumentPageNo (int)"
+        },
+        {
+          "name": "ClauseDescriptionID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ClauseDescriptionID"
+        },
+        {
+          "name": "ObservationDetails",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ObservationDetails (nvarchar)"
+        },
+        {
+          "name": "SeverityID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SeverityID"
+        },
+        {
+          "name": "NoOfCopies",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "NoOfCopies (nvarchar)"
+        },
+        {
+          "name": "TimelineforSubmission",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "TypeofGuarantee",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TypeofGuarantee (nvarchar)"
+        },
+        {
+          "name": "PercentOfCV",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PercentOfCV (decimal)"
+        },
+        {
+          "name": "BGAmount",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "BGAmount (decimal)"
+        },
+        {
+          "name": "Validity",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Validity (nvarchar)"
+        },
+        {
+          "name": "ClaimPeriod",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ClaimPeriod (nvarchar)"
+        },
+        {
+          "name": "NoticeTimePeriod",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "NoticeTo",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "NoticeTo (nvarchar)"
+        },
+        {
+          "name": "EOT",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EOT (nvarchar)"
+        },
+        {
+          "name": "COST",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "COST (nvarchar)"
+        },
+        {
+          "name": "ProhibitionRestriction",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ProhibitionRestriction (nvarchar)"
+        },
+        {
+          "name": "IsFavourable",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "ClauseSource",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ClauseSource (nvarchar)"
+        },
+        {
+          "name": "AttachmentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMClauseInfoID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "AttachmentID",
+          "to_table": "ProjectCMBDattachment",
+          "to_column": "AttachmentId"
+        },
+        {
+          "from_column": "ClauseNumberID",
+          "to_table": "ProjectCMClauseNoList",
+          "to_column": "ProjectCMClauseNoListID"
+        },
+        {
+          "from_column": "ProjectCMConditionID",
+          "to_table": "ProjectCMCondition",
+          "to_column": "ProjectCMConditionID"
+        },
+        {
+          "from_column": "ProjectCMDocumentID",
+          "to_table": "ProjectCMDocuments",
+          "to_column": "ProjectCMDocumentID"
+        }
+      ],
+      "description": "Contract clause information",
+      "search_hints": [
+        "contract clause",
+        "clause info"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMClauseInfoComments",
+      "columns": [
+        {
+          "name": "ClauseCommentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ClauseCommentId"
+        },
+        {
+          "name": "ProjectCMClauseInfoID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMClauseInfoID"
+        },
+        {
+          "name": "Comment",
+          "data_type": "nvarchar",
+          "max_length": 250,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Comment (nvarchar)"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedOn",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedOn (datetime)"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedOn",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedOn (datetime)"
+        }
+      ],
+      "primary_keys": [
+        "ClauseCommentId"
+      ],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMClauseInfoComments",
+      "search_hints": [
+        "projectcmclauseinfocomments",
+        "projectcmclauseinfocomments"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMClauseNoList",
+      "columns": [
+        {
+          "name": "ProjectCMClauseNoListID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMClauseNoListID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "ClauseNo",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ClauseNo (nvarchar)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMClauseNoListID"
+      ],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMClauseNoList",
+      "search_hints": [
+        "projectcmclausenolist",
+        "projectcmclausenolist"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMClauseSearchAIOutcome",
+      "columns": [
+        {
+          "name": "ProjectCMClauseSearchAIOutcomeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMClauseSearchAIOutcomeID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "ProjectCMConditionID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMConditionID"
+        },
+        {
+          "name": "ProjectCMDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDocumentID"
+        },
+        {
+          "name": "ContractConditionKeywordsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ContractConditionKeywordsID"
+        },
+        {
+          "name": "DocumentPageNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DocumentPageNo (int)"
+        },
+        {
+          "name": "AttachmentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMClauseSearchAIOutcomeID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectCMConditionID",
+          "to_table": "ProjectCMCondition",
+          "to_column": "ProjectCMConditionID"
+        },
+        {
+          "from_column": "ProjectCMDocumentID",
+          "to_table": "ProjectCMDocuments",
+          "to_column": "ProjectCMDocumentID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMClauseSearchAIOutcome",
+      "search_hints": [
+        "projectcmclausesearchaioutcome",
+        "projectcmclausesearchaioutcome"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMCommuncationLogDocuments",
+      "columns": [
+        {
+          "name": "ProjectCMCommuncationLogDocumentsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMCommuncationLogDocumentsID"
+        },
+        {
+          "name": "ProjectCMCommuncationLogsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMCommuncationLogsID"
+        },
+        {
+          "name": "CommuncationLogDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CommuncationLogDocumentID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMCommuncationLogDocumentsID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectCMCommuncationLogsID",
+          "to_table": "ProjectCMCommuncationLogs",
+          "to_column": "ProjectCMCommuncationLogsID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMCommuncationLogDocuments",
+      "search_hints": [
+        "projectcmcommuncationlogdocuments",
+        "projectcmcommuncationlogdocuments"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMCommuncationLogs",
+      "columns": [
+        {
+          "name": "ProjectCMCommuncationLogsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMCommuncationLogsID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "CommunicationTitle",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "CommunicationDescription",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "CommunicationClassificationID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CommunicationClassificationID"
+        },
+        {
+          "name": "CommunicationSubClassificationID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CommunicationSubClassificationID"
+        },
+        {
+          "name": "ModeofDeliveryID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ModeofDeliveryID"
+        },
+        {
+          "name": "CommunicationTypeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CommunicationTypeID"
+        },
+        {
+          "name": "ProjectCMDisputeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDisputeID"
+        },
+        {
+          "name": "WorkOrderDetails",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "WorkOrderDetails (nvarchar)"
+        },
+        {
+          "name": "SentByID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SentByID"
+        },
+        {
+          "name": "SentOn",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SentOn (datetime)"
+        },
+        {
+          "name": "CommunicationLogUniqueID",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CommunicationLogUniqueID"
+        },
+        {
+          "name": "CommunicationSubTypeID",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CommunicationSubTypeID"
+        },
+        {
+          "name": "DocumentDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "SentTo",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SentTo (nvarchar)"
+        },
+        {
+          "name": "ReceivedByID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReceivedByID"
+        },
+        {
+          "name": "ReceivedFrom",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ReceivedFrom (nvarchar)"
+        },
+        {
+          "name": "ReceivedOn",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ReceivedOn (date)"
+        },
+        {
+          "name": "CommunicationName",
+          "data_type": "varchar",
+          "max_length": 255,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CommunicationName (varchar)"
+        },
+        {
+          "name": "CommunicationEmail",
+          "data_type": "varchar",
+          "max_length": 255,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CommunicationEmail (varchar)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMCommuncationLogsID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectCMDisputeID",
+          "to_table": "ProjectCMDispute",
+          "to_column": "ProjectCMDisputeID"
+        }
+      ],
+      "description": "Communication logs for contracts",
+      "search_hints": [
+        "contract communication",
+        "cms communication log"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMCommunicationLogDMSDocument",
+      "columns": [
+        {
+          "name": "CommunicationLogDMSDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CommunicationLogDMSDocumentID"
+        },
+        {
+          "name": "CommunicationLogID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CommunicationLogID"
+        },
+        {
+          "name": "DocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DocumentID"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [],
+      "foreign_keys": [
+        {
+          "from_column": "CommunicationLogID",
+          "to_table": "ProjectCMCommuncationLogs",
+          "to_column": "ProjectCMCommuncationLogsID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMCommunicationLogDMSDocument",
+      "search_hints": [
+        "projectcmcommunicationlogdmsdocument",
+        "projectcmcommunicationlogdmsdocument"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMCondition",
+      "columns": [
+        {
+          "name": "ProjectCMConditionID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMConditionID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "ConditionID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ConditionID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMConditionID"
+      ],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMCondition",
+      "search_hints": [
+        "projectcmcondition",
+        "projectcmcondition"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMDataUpdate",
+      "columns": [
+        {
+          "name": "DataUpdateID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DataUpdateID"
+        },
+        {
+          "name": "ProjectID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectID"
+        },
+        {
+          "name": "ModifiedByID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ModifiedByID"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMDataUpdate",
+      "search_hints": [
+        "projectcmdataupdate",
+        "projectcmdataupdate"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMDispute",
+      "columns": [
+        {
+          "name": "ProjectCMDisputeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMDisputeID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "DisputeTitle",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisputeDescription",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "DisputeClassificationID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DisputeClassificationID"
+        },
+        {
+          "name": "DisputeSubClassificationID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DisputeSubClassificationID"
+        },
+        {
+          "name": "WorkOrderDetails",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "WorkOrderDetails (nvarchar)"
+        },
+        {
+          "name": "CategoryID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CategoryID"
+        },
+        {
+          "name": "SubCategoryID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubCategoryID"
+        },
+        {
+          "name": "ClaimDetails",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ClaimDetails (nvarchar)"
+        },
+        {
+          "name": "ClaimantInfo",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ClaimantInfo (nvarchar)"
+        },
+        {
+          "name": "RespondentInfo",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RespondentInfo (nvarchar)"
+        },
+        {
+          "name": "EmailUpdatesTo",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "DisputeStartDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ActualClosureDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "DisputeUniqueID",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DisputeUniqueID"
+        },
+        {
+          "name": "WeakPoints",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "WeakPoints (nvarchar)"
+        },
+        {
+          "name": "StrongPoints",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "StrongPoints (nvarchar)"
+        },
+        {
+          "name": "ClaimAmount",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ClaimAmount (decimal)"
+        },
+        {
+          "name": "CounterClaimAmount",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CounterClaimAmount (decimal)"
+        },
+        {
+          "name": "ClaimAmountAsPerBooks",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ClaimAmountAsPerBooks (decimal)"
+        },
+        {
+          "name": "ExpectedAwardAmount",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ExpectedAwardAmount (decimal)"
+        },
+        {
+          "name": "ExpectedDateofAward",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ClaimantID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ClaimantID"
+        },
+        {
+          "name": "RespondentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RespondentID"
+        },
+        {
+          "name": "DisputeType",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisputeType (bigint)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMDisputeID"
+      ],
+      "foreign_keys": [],
+      "description": "Contract disputes",
+      "search_hints": [
+        "dispute",
+        "disputes",
+        "contract dispute"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMDisputeActionDMSDocument",
+      "columns": [
+        {
+          "name": "DisputeActionDMSDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DisputeActionDMSDocumentID"
+        },
+        {
+          "name": "DisputeActionID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DisputeActionID"
+        },
+        {
+          "name": "DocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DocumentID"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [],
+      "foreign_keys": [
+        {
+          "from_column": "DisputeActionID",
+          "to_table": "ProjectCMDisputeActions",
+          "to_column": "ProjectCMDisputeActionsID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMDisputeActionDMSDocument",
+      "search_hints": [
+        "projectcmdisputeactiondmsdocument",
+        "projectcmdisputeactiondmsdocument"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMDisputeActionDocuments",
+      "columns": [
+        {
+          "name": "ProjectCMDisputeActionDocumentsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMDisputeActionDocumentsID"
+        },
+        {
+          "name": "ProjectCMDisputeActionsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDisputeActionsID"
+        },
+        {
+          "name": "DisputeActionDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DisputeActionDocumentID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMDisputeActionDocumentsID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectCMDisputeActionsID",
+          "to_table": "ProjectCMDisputeActions",
+          "to_column": "ProjectCMDisputeActionsID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMDisputeActionDocuments",
+      "search_hints": [
+        "projectcmdisputeactiondocuments",
+        "projectcmdisputeactiondocuments"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMDisputeActionMeeting",
+      "columns": [
+        {
+          "name": "ProjectCMDisputeActionMeetingId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMDisputeActionMeetingId"
+        },
+        {
+          "name": "ProjectCMDisputeActionsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDisputeActionsID"
+        },
+        {
+          "name": "ActionMeetingId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ActionMeetingId"
+        },
+        {
+          "name": "ProjectCMDisputeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDisputeID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMDisputeActionMeetingId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectCMDisputeActionsID",
+          "to_table": "ProjectCMDisputeActions",
+          "to_column": "ProjectCMDisputeActionsID"
+        },
+        {
+          "from_column": "ProjectCMDisputeID",
+          "to_table": "ProjectCMDispute",
+          "to_column": "ProjectCMDisputeID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMDisputeActionMeeting",
+      "search_hints": [
+        "projectcmdisputeactionmeeting",
+        "projectcmdisputeactionmeeting"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMDisputeActions",
+      "columns": [
+        {
+          "name": "ProjectCMDisputeActionsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMDisputeActionsID"
+        },
+        {
+          "name": "ProjectCMDisputeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDisputeID"
+        },
+        {
+          "name": "StatusTypeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusTypeID"
+        },
+        {
+          "name": "DisputeStageID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DisputeStageID"
+        },
+        {
+          "name": "MeetingNoticeDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "NextActionDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "DetailedNotes",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "NextActionDetails",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "NextActionDetails (nvarchar)"
+        },
+        {
+          "name": "WeakPoints",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "WeakPoints (nvarchar)"
+        },
+        {
+          "name": "StrongPoints",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "StrongPoints (nvarchar)"
+        },
+        {
+          "name": "LegalFirms",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "LegalFirms (nvarchar)"
+        },
+        {
+          "name": "ArbitrationPanelFirms",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ArbitrationPanelFirms (nvarchar)"
+        },
+        {
+          "name": "DisputeNoticeDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ClaimAmount",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ClaimAmount (decimal)"
+        },
+        {
+          "name": "CounterClaimAmount",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CounterClaimAmount (decimal)"
+        },
+        {
+          "name": "ClaimAmountAsPerBooks",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ClaimAmountAsPerBooks (decimal)"
+        },
+        {
+          "name": "ExpectedAwardAmount",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ExpectedAwardAmount (decimal)"
+        },
+        {
+          "name": "ExpectedDateofAward",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "DisputeActionUniqueID",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DisputeActionUniqueID"
+        },
+        {
+          "name": "AssociateActionList",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "AssociateActionList (nvarchar)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMDisputeActionsID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectCMDisputeID",
+          "to_table": "ProjectCMDispute",
+          "to_column": "ProjectCMDisputeID"
+        }
+      ],
+      "description": "Actions taken on contract disputes",
+      "search_hints": [
+        "dispute action",
+        "dispute actions"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMDisputeAttachOtherProjects",
+      "columns": [
+        {
+          "name": "ProjectCMDisputeAttachOtherProjectsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMDisputeAttachOtherProjectsID"
+        },
+        {
+          "name": "ProjectCMDisputeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDisputeID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMDisputeAttachOtherProjectsID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectCMDisputeID",
+          "to_table": "ProjectCMDispute",
+          "to_column": "ProjectCMDisputeID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMDisputeAttachOtherProjects",
+      "search_hints": [
+        "projectcmdisputeattachotherprojects",
+        "projectcmdisputeattachotherprojects"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMDocumentContent",
+      "columns": [
+        {
+          "name": "ProjectCMDocumentContentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMDocumentContentID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "ProjectCMDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDocumentID"
+        },
+        {
+          "name": "DocumentPageNumber",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DocumentPageNumber (int)"
+        },
+        {
+          "name": "CMDocumentContents",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CMDocumentContents (nvarchar)"
+        },
+        {
+          "name": "AttachmentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMDocumentContentID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "AttachmentID",
+          "to_table": "ProjectCMBDattachment",
+          "to_column": "AttachmentId"
+        },
+        {
+          "from_column": "ProjectCMDocumentID",
+          "to_table": "ProjectCMDocuments",
+          "to_column": "ProjectCMDocumentID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMDocumentContent",
+      "search_hints": [
+        "projectcmdocumentcontent",
+        "projectcmdocumentcontent"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMDocumentData",
+      "columns": [
+        {
+          "name": "ProjectCMDocumentDataID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMDocumentDataID"
+        },
+        {
+          "name": "ProjectCMDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDocumentID"
+        },
+        {
+          "name": "DataDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DataDocumentID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMDocumentDataID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectCMDocumentID",
+          "to_table": "ProjectCMDocuments",
+          "to_column": "ProjectCMDocumentID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMDocumentData",
+      "search_hints": [
+        "projectcmdocumentdata",
+        "projectcmdocumentdata"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMDocumentRelatedTypes",
+      "columns": [
+        {
+          "name": "RowId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying RowId"
+        },
+        {
+          "name": "ProjectCMDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMDocumentID"
+        },
+        {
+          "name": "ContractDocumentTypeId",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ContractDocumentTypeId"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "RowId"
+      ],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMDocumentRelatedTypes",
+      "search_hints": [
+        "projectcmdocumentrelatedtypes",
+        "projectcmdocumentrelatedtypes"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMDocuments",
+      "columns": [
+        {
+          "name": "ProjectCMDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMDocumentID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "DocumentTitle",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DocumentDescription",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "ContractDocumentVersionID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ContractDocumentVersionID"
+        },
+        {
+          "name": "ContractDocumentTypeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ContractDocumentTypeID"
+        },
+        {
+          "name": "ContractDocumentDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ContractDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ContractDocumentID"
+        },
+        {
+          "name": "DocumentUniqueID",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DocumentUniqueID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMDocumentID"
+      ],
+      "foreign_keys": [],
+      "description": "Documents linked to contracts",
+      "search_hints": [
+        "contract document",
+        "cms document"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMfielddetails",
+      "columns": [
+        {
+          "name": "ProjectCMfielddetailsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMfielddetailsID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "FieldDetailType",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FieldDetailType (nvarchar)"
+        },
+        {
+          "name": "KeyValueID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying KeyValueID"
+        },
+        {
+          "name": "Rate",
+          "data_type": "decimal",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Rate (decimal)"
+        },
+        {
+          "name": "Remarks",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remarks (nvarchar)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMfielddetailsID"
+      ],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMfielddetails",
+      "search_hints": [
+        "projectcmfielddetails",
+        "projectcmfielddetails"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMKeyContractDates",
+      "columns": [
+        {
+          "name": "ProjectCMKeyContractID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMKeyContractID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "ProjectID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectID"
+        },
+        {
+          "name": "BidSubmissionDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "BidSubmissionDateDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying BidSubmissionDateDocumentID"
+        },
+        {
+          "name": "LetterofIntentDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "LetterofIntentDateDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LetterofIntentDateDocumentID"
+        },
+        {
+          "name": "LetterofAcceptanceByClientDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "LetterofAcceptanceByClientDateDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LetterofAcceptanceByClientDateDocumentID"
+        },
+        {
+          "name": "ContractAgreementDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ContractAgreementDateDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ContractAgreementDateDocumentID"
+        },
+        {
+          "name": "CommencementDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "CommencementDateDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CommencementDateDocumentID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMKeyContractID"
+      ],
+      "foreign_keys": [],
+      "description": "Key dates for contracts",
+      "search_hints": [
+        "contract dates",
+        "key contract dates"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMOtherDocInfo",
+      "columns": [
+        {
+          "name": "ProjectCMOtherDocInfoID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMOtherDocInfoID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "OtherDocumentTitle",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "OtherDocumentDescription",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "OtherDocumentTypeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying OtherDocumentTypeID"
+        },
+        {
+          "name": "OtherDocumentClassificationID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying OtherDocumentClassificationID"
+        },
+        {
+          "name": "OtherDocumentSubClassificationID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying OtherDocumentSubClassificationID"
+        },
+        {
+          "name": "PublishedOn",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "PublishedOn (datetime)"
+        },
+        {
+          "name": "OtherDocUniqueID",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying OtherDocUniqueID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMOtherDocInfoID"
+      ],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMOtherDocInfo",
+      "search_hints": [
+        "projectcmotherdocinfo",
+        "projectcmotherdocinfo"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMOtherDocInfoDocuments",
+      "columns": [
+        {
+          "name": "ProjectCMOtherDocInfoDocumentsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMOtherDocInfoDocumentsID"
+        },
+        {
+          "name": "ProjectCMOtherDocInfoID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMOtherDocInfoID"
+        },
+        {
+          "name": "OtherDocInfoDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying OtherDocInfoDocumentID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMOtherDocInfoDocumentsID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectCMOtherDocInfoID",
+          "to_table": "ProjectCMOtherDocInfo",
+          "to_column": "ProjectCMOtherDocInfoID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMOtherDocInfoDocuments",
+      "search_hints": [
+        "projectcmotherdocinfodocuments",
+        "projectcmotherdocinfodocuments"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMRegisterDMSDocument",
+      "columns": [
+        {
+          "name": "RegisterDMSDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegisterDMSDocumentID"
+        },
+        {
+          "name": "RegisterID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegisterID"
+        },
+        {
+          "name": "DocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DocumentID"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [],
+      "foreign_keys": [
+        {
+          "from_column": "RegisterID",
+          "to_table": "ProjectCMRegisters",
+          "to_column": "ProjectCMRegistersID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMRegisterDMSDocument",
+      "search_hints": [
+        "projectcmregisterdmsdocument",
+        "projectcmregisterdmsdocument"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMRegisterDocuments",
+      "columns": [
+        {
+          "name": "ProjectCMRegisterDocumentsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMRegisterDocumentsID"
+        },
+        {
+          "name": "ProjectCMRegistersID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMRegistersID"
+        },
+        {
+          "name": "ProjectCMRegisterDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMRegisterDocumentID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMRegisterDocumentsID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ProjectCMRegistersID",
+          "to_table": "ProjectCMRegisters",
+          "to_column": "ProjectCMRegistersID"
+        }
+      ],
+      "description": "Space CMS table ProjectCMRegisterDocuments",
+      "search_hints": [
+        "projectcmregisterdocuments",
+        "projectcmregisterdocuments"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMRegisters",
+      "columns": [
+        {
+          "name": "ProjectCMRegistersID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMRegistersID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "RegisterTitle",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "RegisterDescription",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "RegisterTypeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegisterTypeID"
+        },
+        {
+          "name": "RegisterClassificationID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegisterClassificationID"
+        },
+        {
+          "name": "RegisterSubClassificationID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegisterSubClassificationID"
+        },
+        {
+          "name": "SharedBy",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "SharedBy (nvarchar)"
+        },
+        {
+          "name": "SharedOn",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "SharedOn (datetime)"
+        },
+        {
+          "name": "RegisterUniqueID",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegisterUniqueID"
+        },
+        {
+          "name": "CommunicationName",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CommunicationName (nvarchar)"
+        },
+        {
+          "name": "CommunicationEmail",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CommunicationEmail (nvarchar)"
+        },
+        {
+          "name": "SentByID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SentByID"
+        },
+        {
+          "name": "ReceivedFrom",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ReceivedFrom (nvarchar)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMRegistersID"
+      ],
+      "foreign_keys": [],
+      "description": "Contract registers",
+      "search_hints": [
+        "contract register",
+        "cms register"
+      ]
+    },
+    {
+      "schema_name": "cms",
+      "name": "ProjectCMSalientFeatureDocuments",
+      "columns": [
+        {
+          "name": "ProjectCMSalientFeatureDocumentsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMSalientFeatureDocumentsID"
+        },
+        {
+          "name": "ProjectCMID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectCMID"
+        },
+        {
+          "name": "SalientFeatureKey",
+          "data_type": "nvarchar",
+          "max_length": 30,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "SalientFeatureKey (nvarchar)"
+        },
+        {
+          "name": "SalientFeatureDocumentID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SalientFeatureDocumentID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMSalientFeatureDocumentsID"
+      ],
+      "foreign_keys": [],
+      "description": "Space CMS table ProjectCMSalientFeatureDocuments",
+      "search_hints": [
+        "projectcmsalientfeaturedocuments",
+        "projectcmsalientfeaturedocuments"
+      ]
+    }
+  ],
+  "change_summary": [
+    "No schema structure change"
+  ]
+}

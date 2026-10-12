@@ -106,16 +106,27 @@ def _as_url(sqlalchemy_url):
     return make_url(sqlalchemy_url)
 
 
+def _query_value(u, key: str, default: str) -> str:
+    if not u.query or not u.query.get(key):
+        return default
+    val = u.query.get(key)
+    return val[0] if isinstance(val, (list, tuple)) else str(val)
+
+
 def _odbc_connect_string(sqlalchemy_url) -> str:
-    """Build a raw ODBC connection string (handles passwords with @ / #)."""
+    """Build a raw ODBC connection string (handles passwords with @ / #).
+
+    Encrypt/TrustServerCertificate default to Azure SQL's expectations (encrypted,
+    real CA cert) but can be overridden via the DATABASE_URL query string — e.g. for
+    a local SQL Server container with a self-signed cert, add
+    "&TrustServerCertificate=yes" to DATABASE_URL.
+    """
     u = _as_url(sqlalchemy_url)
     driver = (u.query.get("driver") if u.query else None) or "ODBC Driver 18 for SQL Server"
     if isinstance(driver, (list, tuple)):
         driver = driver[0]
-    encrypt = "yes"
-    if u.query and u.query.get("Encrypt"):
-        enc = u.query.get("Encrypt")
-        encrypt = enc[0] if isinstance(enc, (list, tuple)) else str(enc)
+    encrypt = _query_value(u, "Encrypt", "yes")
+    trust_cert = _query_value(u, "TrustServerCertificate", "no")
 
     return (
         f"Driver={{{driver}}};"
@@ -124,7 +135,7 @@ def _odbc_connect_string(sqlalchemy_url) -> str:
         f"Uid={u.username};"
         f"Pwd={{{u.password}}};"
         f"Encrypt={encrypt};"
-        f"TrustServerCertificate=no;"
+        f"TrustServerCertificate={trust_cert};"
         f"Connection Timeout=60;"
     )
 
@@ -150,10 +161,22 @@ def _assets_engine_url(primary_url: Optional[str] = None):
     return resolve_assets_database_url(primary_url)
 
 
+def _is_azure_sql_host(host: Optional[str]) -> bool:
+    return bool(host) and host.lower().endswith(".database.windows.net")
+
+
 def ensure_azure_database_exists(primary_url: str, db_name: str = ASSETS_DB_NAME) -> None:
-    """CREATE DATABASE on Azure SQL server if missing (connects to master)."""
+    """CREATE DATABASE on the SQL Server if missing (connects to master).
+
+    Uses Azure SQL's EDITION/SERVICE_OBJECTIVE syntax + ONLINE polling when the
+    target is an Azure SQL logical server (*.database.windows.net). Falls back to
+    plain CREATE DATABASE for local/on-prem SQL Server (e.g. a Docker container
+    used for local development), where those Azure-only options aren't supported
+    and the database is available immediately.
+    """
     master_url = make_url(primary_url).set(database="master")
     master = create_mssql_engine(master_url, autocommit=True)
+    is_azure = _is_azure_sql_host(master_url.host)
     try:
         with master.connect() as conn:
             exists = conn.execute(
@@ -161,17 +184,25 @@ def ensure_azure_database_exists(primary_url: str, db_name: str = ASSETS_DB_NAME
                 {"n": db_name},
             ).scalar()
             if exists:
-                print(f"Azure SQL database already exists: {db_name}")
+                print(f"SQL Server database already exists: {db_name}")
                 return
-            print(f"Creating Azure SQL database '{db_name}' (Basic)…")
-            # Same tier family as existing buildtrack Basic DB
-            conn.execute(
-                text(
-                    f"CREATE DATABASE [{db_name}] "
-                    f"(EDITION = 'Basic', SERVICE_OBJECTIVE = 'Basic')"
+            if is_azure:
+                print(f"Creating Azure SQL database '{db_name}' (Basic)…")
+                # Same tier family as existing buildtrack Basic DB
+                conn.execute(
+                    text(
+                        f"CREATE DATABASE [{db_name}] "
+                        f"(EDITION = 'Basic', SERVICE_OBJECTIVE = 'Basic')"
+                    )
                 )
-            )
-        # Wait until online
+            else:
+                print(f"Creating local SQL Server database '{db_name}'…")
+                conn.execute(text(f"CREATE DATABASE [{db_name}]"))
+        if not is_azure:
+            # Local SQL Server databases are available immediately — no ONLINE poll needed.
+            print(f"Local SQL Server database ready: {db_name}")
+            return
+        # Azure SQL: wait until online
         for _ in range(60):
             time.sleep(3)
             with master.connect() as conn:

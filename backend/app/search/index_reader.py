@@ -1,8 +1,9 @@
 """
-Read application content from Azure AI Search — the only supported read path.
+Read application content from Azure AI Search (POC page-read path).
 
-Data flow: Azure SQL (vw_global_search_documents) → SQL Indexer → Azure AI Search → here.
-Do not query SQL tables directly for page/display data.
+Production: prefer SQL hydration (`SEARCH_HYDRATE_FROM_SQL`) via content_service /
+hydrate.py. Search remains discovery-only; this module is legacy for types not yet
+migrated off the index.
 """
 from __future__ import annotations
 

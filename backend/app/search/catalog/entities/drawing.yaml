@@ -1,0 +1,53 @@
+entity: drawing
+source: buildtrack
+table: engineering_drawings
+id_field: id
+entity_type: drawing
+description: Engineering drawing sheet metadata + searchable drawing_no/title
+title_field: title
+url_template: "/drawings?drawingId={id}"
+search_fields:
+  - drawing_no
+  - title
+  - discipline
+  - sheet_notes
+filter_fields:
+  - project_id
+  - status
+  - discipline
+  - revision
+sortable_fields:
+  - created_at
+embedding_enabled: true
+sql_only_fields:
+  - object_inventory
+  - sheet_intel
+  - file_url
+  - preview_url
+index_body_text: false
+hydrate_fields:
+  - id
+  - drawing_no
+  - title
+  - discipline
+  - revision
+  - project_id
+  - project_name
+  - status
+  - file_url
+  - preview_url
+  - file_type
+  - file_size
+  - created_at
+acl_fields:
+  - project_id
+updated_at_field: created_at
+domain_signals:
+  - drawing
+  - drawings
+  - floor plan
+  - master plan
+  - university plan
+relationships:
+  - field: project_id
+    ref: projects.id

@@ -2790,6 +2790,7 @@ def answer_from_stored_inventory(
 ) -> Optional[str]:
     """Prefer stored inventory for object/count questions when available."""
     from app.search.query_intel import (
+        is_drawing_component_plan_query,
         is_drawing_count_query,
         is_drawing_furniture_inventory_query,
         is_drawing_object_query,
@@ -2801,6 +2802,7 @@ def answer_from_stored_inventory(
         or is_drawing_furniture_inventory_query(query)
         or is_drawing_object_query(query)
         or is_drawing_site_inventory_query(query)
+        or is_drawing_component_plan_query(query)
     ):
         return None
 

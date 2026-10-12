@@ -1,0 +1,144 @@
+# Local development stack for Global Search POC.
+#
+# What this replaces with local containers:
+#   - Azure SQL Database        -> SQL Server 2022 (Developer edition, free) in "sqlserver"
+#   - Azure Blob Storage        -> Azurite (Microsoft's official local Blob emulator)
+#
+# What stays in the cloud (no local equivalent exists):
+#   - Azure AI Search           -> read from backend/.env (AZURE_SEARCH_*)
+#   - Azure OpenAI               -> read from backend/.env (AZURE_OPENAI_*)
+#
+# Usage:
+#   1. Make sure backend/.env exists and has AZURE_SEARCH_* / AZURE_OPENAI_* filled in
+#      (the DATABASE_URL / AZURE_STORAGE_* values in that file are overridden below —
+#      they don't need to change).
+#   2. docker compose up --build
+#   3. First boot creates tables + seed data on the local SQL Server automatically.
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: global-search-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD:-YourStr0ng_Passw0rd!}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: global-search-azurite
+    command: "azurite-blob --blobHost 0.0.0.0 --location /data --loose"
+    ports:
+      - "10000:10000"
+    volumes:
+      - azurite-data:/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:10000/',r=>process.exit(r.statusCode?0:1)).on('error',()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  # Creates the empty [buildtrack] database on first boot (local SQL Server
+  # starts with only system DBs). Uses the same SQL Server image for sqlcmd.
+  sqlserver-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: global-search-sqlserver-init
+    user: root
+    environment:
+      SQL_SA_PASSWORD: "${SQL_SA_PASSWORD:-YourStr0ng_Passw0rd!}"
+      SQL_HOST: sqlserver
+    volumes:
+      - ./docker/sqlserver-init.sh:/sqlserver-init.sh:ro
+    entrypoint: ["/bin/bash", "/sqlserver-init.sh"]
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: global-search-backend
+    env_file:
+      - ./backend/.env
+    environment:
+      # Route the relational DB + file storage at the local containers above.
+      # DATABASE_URL uses TrustServerCertificate=yes because the local container
+      # has a self-signed cert (Azure SQL keeps the default "no" / real CA cert).
+      DATABASE_URL: "mssql+pyodbc://sa:${SQL_SA_PASSWORD:-YourStr0ng_Passw0rd!}@sqlserver:1433/buildtrack?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=yes"
+      AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+      AZURE_STORAGE_CONTAINER: "buildtrack-documents"
+      # backend/.env has this set to true for the real Azure DB (tables already exist).
+      # Force it back on so the fresh local database gets tables + seed data created.
+      SKIP_DB_INIT: "false"
+    ports:
+      - "8000:8000"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      sqlserver-init:
+        condition: service_completed_successfully
+      azurite:
+        condition: service_started
+    volumes:
+      - ./backend:/app
+    # Ensure Azurite has the blob container before the app seeds/uploads files.
+    command:
+      - /bin/bash
+      - -c
+      - |
+        python - <<'PY'
+        import os, time
+        from azure.storage.blob import BlobServiceClient
+        from azure.core.exceptions import ResourceExistsError
+        conn = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
+        name = os.environ.get("AZURE_STORAGE_CONTAINER", "buildtrack-documents")
+        for _ in range(30):
+            try:
+                BlobServiceClient.from_connection_string(conn).get_container_client(name).create_container()
+                print(f"Blob container ready: {name}")
+                break
+            except ResourceExistsError:
+                print(f"Blob container already exists: {name}")
+                break
+            except Exception as exc:
+                print(f"Waiting for Azurite… ({exc})")
+                time.sleep(2)
+        else:
+            print("WARNING: could not create blob container; continuing anyway")
+        PY
+        exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Local-dev frontend: next dev (avoids a full production build). The
+  # frontend/Dockerfile remains available for a production/Container Apps image.
+  frontend:
+    image: node:20-alpine
+    container_name: global-search-frontend
+    working_dir: /app
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:8000"
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    command: ["sh", "-c", "npm install && npm run dev -- --hostname 0.0.0.0 --port 3000"]
+    depends_on:
+      - backend
+
+volumes:
+  sqlserver-data:
+  azurite-data:
+  frontend-node-modules:

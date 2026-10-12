@@ -1,0 +1,4722 @@
+{
+  "source_id": "space-admin",
+  "source_label": "Space Admin",
+  "database_name": "DEV_V1_SPACE_ADMIN",
+  "schema_name": "admin",
+  "version": 1,
+  "captured_at": "2026-08-17T08:46:48.514689+00:00",
+  "tables": [
+    {
+      "schema_name": "admin",
+      "name": "Application",
+      "columns": [
+        {
+          "name": "ApplicationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ApplicationId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "Priority",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Priority (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ApplicationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "FunctionId",
+          "to_table": "Function",
+          "to_column": "FunctionId"
+        }
+      ],
+      "description": "Space Admin table Application",
+      "search_hints": [
+        "application",
+        "application"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Company",
+      "columns": [
+        {
+          "name": "CompanyId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying CompanyId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 250,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 250,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "IsDefault",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "CompanyId"
+      ],
+      "foreign_keys": [],
+      "description": "Company master records",
+      "search_hints": [
+        "company",
+        "companies",
+        "organization",
+        "organisation"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "ContractConditionKeywords",
+      "columns": [
+        {
+          "name": "ContractConditionKeywordsID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ContractConditionKeywordsID"
+        },
+        {
+          "name": "CCKeywordID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CCKeywordID"
+        },
+        {
+          "name": "CCKeywordText",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CCKeywordText (nvarchar)"
+        },
+        {
+          "name": "KeywordTypeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying KeywordTypeID"
+        },
+        {
+          "name": "IsContractConditionCritical",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "SortSequence",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "SortSequence (int)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ContractConditionKeywordsID"
+      ],
+      "foreign_keys": [],
+      "description": "Space Admin table ContractConditionKeywords",
+      "search_hints": [
+        "contractconditionkeywords",
+        "contractconditionkeywords"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Escalation_TimeLine",
+      "columns": [
+        {
+          "name": "EscalationTimeLineId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EscalationTimeLineId"
+        },
+        {
+          "name": "ProcessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProcessId"
+        },
+        {
+          "name": "SeverityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SeverityId"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "BaseFunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying BaseFunctionId"
+        },
+        {
+          "name": "TimeLine",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Sequence",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Sequence (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EscalationTimeLineId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "BaseFunctionId",
+          "to_table": "Function",
+          "to_column": "FunctionId"
+        },
+        {
+          "from_column": "FunctionId",
+          "to_table": "Function",
+          "to_column": "FunctionId"
+        },
+        {
+          "from_column": "LevelId",
+          "to_table": "Level",
+          "to_column": "LevelId"
+        },
+        {
+          "from_column": "PositionId",
+          "to_table": "Position",
+          "to_column": "PositionId"
+        }
+      ],
+      "description": "Space Admin table Escalation_TimeLine",
+      "search_hints": [
+        "escalation timeline",
+        "escalation_timeline"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "External_Application",
+      "columns": [
+        {
+          "name": "ExternalApplicationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ExternalApplicationId"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "InternalURL",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "InternalURL (nvarchar)"
+        },
+        {
+          "name": "ExternalURL",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ExternalURL (nvarchar)"
+        },
+        {
+          "name": "Logo",
+          "data_type": "varbinary",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Logo (varbinary)"
+        },
+        {
+          "name": "IsNameVisible",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsVisibleInOurSpace",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsSystem",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ExternalApplicationId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Admin table External_Application",
+      "search_hints": [
+        "external application",
+        "external_application"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "ExternalFirm",
+      "columns": [
+        {
+          "name": "ExternalFirmID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ExternalFirmID"
+        },
+        {
+          "name": "ExternalFirmCode",
+          "data_type": "nvarchar",
+          "max_length": 30,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ExternalFirmCode (nvarchar)"
+        },
+        {
+          "name": "ExternalFirmName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ExternalFirmName (nvarchar)"
+        },
+        {
+          "name": "InfoPAN",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "InfoPAN (nvarchar)"
+        },
+        {
+          "name": "InfoGSTN",
+          "data_type": "nvarchar",
+          "max_length": 30,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "InfoGSTN (nvarchar)"
+        },
+        {
+          "name": "ParentExternalFirmID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ParentExternalFirmID"
+        },
+        {
+          "name": "Comments",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Comments (nvarchar)"
+        },
+        {
+          "name": "ExternalFirmTypeID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ExternalFirmTypeID"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ExternalFirmID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ExternalFirmTypeID",
+          "to_table": "PickListItem",
+          "to_column": "PickListItemId"
+        }
+      ],
+      "description": "Space Admin table ExternalFirm",
+      "search_hints": [
+        "externalfirm",
+        "externalfirm"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "ExternalFirmAddress",
+      "columns": [
+        {
+          "name": "ExternalFirmAddressID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ExternalFirmAddressID"
+        },
+        {
+          "name": "ExternalFirmID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ExternalFirmID"
+        },
+        {
+          "name": "AddressLine1",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "AddressLine1 (nvarchar)"
+        },
+        {
+          "name": "AddressLine2",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "AddressLine2 (nvarchar)"
+        },
+        {
+          "name": "AddressLine3",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "AddressLine3 (nvarchar)"
+        },
+        {
+          "name": "City",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "City (nvarchar)"
+        },
+        {
+          "name": "ZoneID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ZoneID"
+        },
+        {
+          "name": "Pin",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Pin (nvarchar)"
+        },
+        {
+          "name": "StateID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StateID"
+        },
+        {
+          "name": "Comments",
+          "data_type": "nvarchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Comments (nvarchar)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ExternalFirmAddressID"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ExternalFirmID",
+          "to_table": "ExternalFirm",
+          "to_column": "ExternalFirmID"
+        },
+        {
+          "from_column": "StateID",
+          "to_table": "PickListItem",
+          "to_column": "PickListItemId"
+        },
+        {
+          "from_column": "ZoneID",
+          "to_table": "PickListItem",
+          "to_column": "PickListItemId"
+        }
+      ],
+      "description": "Space Admin table ExternalFirmAddress",
+      "search_hints": [
+        "externalfirmaddress",
+        "externalfirmaddress"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Feature",
+      "columns": [
+        {
+          "name": "FeatureId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying FeatureId"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "Group",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Group (nvarchar)"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "ParentFeatureId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ParentFeatureId"
+        },
+        {
+          "name": "GroupName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "GroupName (nvarchar)"
+        },
+        {
+          "name": "Priority",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Priority (int)"
+        },
+        {
+          "name": "IsMobileApp",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "FeatureId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "FunctionId",
+          "to_table": "Function",
+          "to_column": "FunctionId"
+        }
+      ],
+      "description": "Application feature catalog",
+      "search_hints": [
+        "feature",
+        "features",
+        "module feature"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "FeatureAccess",
+      "columns": [
+        {
+          "name": "FeatureAccessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying FeatureAccessId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "FeatureId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FeatureId"
+        },
+        {
+          "name": "BaseFunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying BaseFunctionId"
+        },
+        {
+          "name": "PositionPriority",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "PositionPriority (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "FeatureAccessId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "BaseFunctionId",
+          "to_table": "Function",
+          "to_column": "FunctionId"
+        },
+        {
+          "from_column": "FeatureId",
+          "to_table": "Feature",
+          "to_column": "FeatureId"
+        },
+        {
+          "from_column": "FunctionId",
+          "to_table": "Function",
+          "to_column": "FunctionId"
+        },
+        {
+          "from_column": "LevelId",
+          "to_table": "Level",
+          "to_column": "LevelId"
+        },
+        {
+          "from_column": "PositionId",
+          "to_table": "Position",
+          "to_column": "PositionId"
+        }
+      ],
+      "description": "Space Admin table FeatureAccess",
+      "search_hints": [
+        "featureaccess",
+        "featureaccess"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "FinancialYear",
+      "columns": [
+        {
+          "name": "FinancialYearId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying FinancialYearId"
+        },
+        {
+          "name": "FinancialYearCode",
+          "data_type": "varchar",
+          "max_length": 9,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "FinancialYearCode (varchar)"
+        },
+        {
+          "name": "StartDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "EndDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "FinancialYearId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Admin table FinancialYear",
+      "search_hints": [
+        "financialyear",
+        "financialyear"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Function",
+      "columns": [
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "Type",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Type (nvarchar)"
+        },
+        {
+          "name": "IsSystemDepartment",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "FunctionUserTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionUserTypeId"
+        },
+        {
+          "name": "Priority",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Priority (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RefLevelId",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RefLevelId"
+        },
+        {
+          "name": "Matrix_BaseRoleId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying Matrix_BaseRoleId"
+        }
+      ],
+      "primary_keys": [
+        "FunctionId"
+      ],
+      "foreign_keys": [],
+      "description": "Function / department master records",
+      "search_hints": [
+        "function",
+        "functions",
+        "department"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Holiday",
+      "columns": [
+        {
+          "name": "HolidayId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying HolidayId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "HolidayDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "HolidayDetail",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "HolidayDetail (nvarchar)"
+        },
+        {
+          "name": "IsNationalHoliday",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "Comments",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Comments (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "HolidayId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "RegionId",
+          "to_table": "Region",
+          "to_column": "RegionId"
+        },
+        {
+          "from_column": "VerticalId",
+          "to_table": "Vertical",
+          "to_column": "VerticalId"
+        }
+      ],
+      "description": "Holiday calendar records",
+      "search_hints": [
+        "holiday",
+        "holidays",
+        "leave calendar"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "IdentifierRegistry",
+      "columns": [
+        {
+          "name": "IdentifierRegistryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying IdentifierRegistryId"
+        },
+        {
+          "name": "Identifier",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier (nvarchar)"
+        },
+        {
+          "name": "YearMonth",
+          "data_type": "char",
+          "max_length": 4,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "YearMonth (char)"
+        },
+        {
+          "name": "SeriesNo",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "SeriesNo (bigint)"
+        },
+        {
+          "name": "Status",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Status (nvarchar)"
+        },
+        {
+          "name": "ModuleCode",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ModuleCode (nvarchar)"
+        },
+        {
+          "name": "LockedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "LockedBy (bigint)"
+        },
+        {
+          "name": "CreatedOn",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedOn (datetime2)"
+        },
+        {
+          "name": "LockedOn",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "LockedOn (datetime2)"
+        }
+      ],
+      "primary_keys": [
+        "IdentifierRegistryId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Admin table IdentifierRegistry",
+      "search_hints": [
+        "identifierregistry",
+        "identifierregistry"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "IdentifierRegistry_History",
+      "columns": [
+        {
+          "name": "IdentifierRegistryHistoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying IdentifierRegistryHistoryId"
+        },
+        {
+          "name": "IdentifierRegistryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IdentifierRegistryId"
+        },
+        {
+          "name": "Identifier",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier (nvarchar)"
+        },
+        {
+          "name": "YearMonth",
+          "data_type": "char",
+          "max_length": 4,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "YearMonth (char)"
+        },
+        {
+          "name": "SeriesNo",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "SeriesNo (bigint)"
+        },
+        {
+          "name": "Status",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Status (nvarchar)"
+        },
+        {
+          "name": "ModuleCode",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ModuleCode (nvarchar)"
+        },
+        {
+          "name": "CreatedOn",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedOn (datetime2)"
+        },
+        {
+          "name": "LockedOn",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "LockedOn (datetime2)"
+        },
+        {
+          "name": "AuditAction",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "AuditAction (nvarchar)"
+        },
+        {
+          "name": "AuditDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "IdentifierRegistryHistoryId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Admin table IdentifierRegistry_History",
+      "search_hints": [
+        "identifierregistry history",
+        "identifierregistry_history"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "IdentifierSeries",
+      "columns": [
+        {
+          "name": "YearMonth",
+          "data_type": "char",
+          "max_length": 4,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "YearMonth (char)"
+        },
+        {
+          "name": "LastSeries",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "LastSeries (bigint)"
+        }
+      ],
+      "primary_keys": [
+        "YearMonth"
+      ],
+      "foreign_keys": [],
+      "description": "Space Admin table IdentifierSeries",
+      "search_hints": [
+        "identifierseries",
+        "identifierseries"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Keyword",
+      "columns": [
+        {
+          "name": "KeywordId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying KeywordId"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 300,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "KeywordType",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "KeywordType (nvarchar)"
+        },
+        {
+          "name": "KeywordCategoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying KeywordCategoryId"
+        },
+        {
+          "name": "CreatedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CreatedByUserId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "KeywordId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "KeywordCategoryId",
+          "to_table": "KeywordCategory",
+          "to_column": "KeywordCategoryId"
+        }
+      ],
+      "description": "Space Admin table Keyword",
+      "search_hints": [
+        "keyword",
+        "keyword"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "KeywordCategory",
+      "columns": [
+        {
+          "name": "KeywordCategoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying KeywordCategoryId"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModuleConstant",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ModuleConstant (nvarchar)"
+        },
+        {
+          "name": "CategoryType",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CategoryType (nvarchar)"
+        }
+      ],
+      "primary_keys": [
+        "KeywordCategoryId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Admin table KeywordCategory",
+      "search_hints": [
+        "keywordcategory",
+        "keywordcategory"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "KeywordHistory",
+      "columns": [
+        {
+          "name": "KeywordHistoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying KeywordHistoryId"
+        },
+        {
+          "name": "KeywordId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying KeywordId"
+        },
+        {
+          "name": "OldName",
+          "data_type": "nvarchar",
+          "max_length": 300,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OldName (nvarchar)"
+        },
+        {
+          "name": "NewName",
+          "data_type": "nvarchar",
+          "max_length": 300,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "NewName (nvarchar)"
+        },
+        {
+          "name": "OldKeywordType",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OldKeywordType (nvarchar)"
+        },
+        {
+          "name": "NewKeywordType",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "NewKeywordType (nvarchar)"
+        },
+        {
+          "name": "OldKeywordCategoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying OldKeywordCategoryId"
+        },
+        {
+          "name": "NewKeywordCategoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NewKeywordCategoryId"
+        },
+        {
+          "name": "ChangedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ChangedByUserId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "KeywordHistoryId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Admin table KeywordHistory",
+      "search_hints": [
+        "keywordhistory",
+        "keywordhistory"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Level",
+      "columns": [
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 25,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "Priority",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Priority (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "LevelId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Admin table Level",
+      "search_hints": [
+        "level",
+        "level"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Material",
+      "columns": [
+        {
+          "name": "MaterialId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying MaterialId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "Unit",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Unit (nvarchar)"
+        },
+        {
+          "name": "MaterialGroup",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "MaterialGroup (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "MaterialId"
+      ],
+      "foreign_keys": [],
+      "description": "Material master records",
+      "search_hints": [
+        "material",
+        "materials",
+        "item master"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Module",
+      "columns": [
+        {
+          "name": "ModuleId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ModuleId"
+        },
+        {
+          "name": "ApplicationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ApplicationId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "Priority",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Priority (int)"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "FeatureId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FeatureId"
+        }
+      ],
+      "primary_keys": [
+        "ModuleId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ApplicationId",
+          "to_table": "Application",
+          "to_column": "ApplicationId"
+        },
+        {
+          "from_column": "FeatureId",
+          "to_table": "Feature",
+          "to_column": "FeatureId"
+        },
+        {
+          "from_column": "FunctionId",
+          "to_table": "Function",
+          "to_column": "FunctionId"
+        }
+      ],
+      "description": "Application module catalog",
+      "search_hints": [
+        "module",
+        "modules"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "PickListGroup",
+      "columns": [
+        {
+          "name": "PickListGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying PickListGroupId"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "Type",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Type (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "PickListGroupId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Admin table PickListGroup",
+      "search_hints": [
+        "picklistgroup",
+        "picklistgroup"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "PickListItem",
+      "columns": [
+        {
+          "name": "PickListItemId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying PickListItemId"
+        },
+        {
+          "name": "PickListGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PickListGroupId"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "Weightage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Weightage (int)"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "Priority",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Priority (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "PickListItemId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "PickListGroupId",
+          "to_table": "PickListGroup",
+          "to_column": "PickListGroupId"
+        }
+      ],
+      "description": "Pick-list / dropdown item values",
+      "search_hints": [
+        "picklist",
+        "pick list",
+        "dropdown",
+        "lookup value"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "PickListItemMapping",
+      "columns": [
+        {
+          "name": "PickListItemMappingId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying PickListItemMappingId"
+        },
+        {
+          "name": "ParentMappingId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ParentMappingId"
+        },
+        {
+          "name": "ParentPickListItemId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ParentPickListItemId"
+        },
+        {
+          "name": "ChildPickListItemId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ChildPickListItemId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "MappingConstant",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "MappingConstant (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "PickListItemMappingId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "FunctionId",
+          "to_table": "Function",
+          "to_column": "FunctionId"
+        },
+        {
+          "from_column": "ChildPickListItemId",
+          "to_table": "PickListItem",
+          "to_column": "PickListItemId"
+        },
+        {
+          "from_column": "ParentPickListItemId",
+          "to_table": "PickListItem",
+          "to_column": "PickListItemId"
+        },
+        {
+          "from_column": "ParentMappingId",
+          "to_table": "PickListItemMapping",
+          "to_column": "PickListItemMappingId"
+        }
+      ],
+      "description": "Space Admin table PickListItemMapping",
+      "search_hints": [
+        "picklistitemmapping",
+        "picklistitemmapping"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "PicklistMappingConfiguration",
+      "columns": [
+        {
+          "name": "MappingConfigurationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying MappingConfigurationId"
+        },
+        {
+          "name": "MappingKey",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "MappingKey (nvarchar)"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "MappingConstant",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "MappingConstant (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsEditable",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "Module",
+          "data_type": "varchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Module (varchar)"
+        }
+      ],
+      "primary_keys": [
+        "MappingConfigurationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "FunctionId",
+          "to_table": "Function",
+          "to_column": "FunctionId"
+        }
+      ],
+      "description": "Space Admin table PicklistMappingConfiguration",
+      "search_hints": [
+        "picklistmappingconfiguration",
+        "picklistmappingconfiguration"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "PicklistMappingHierarchy",
+      "columns": [
+        {
+          "name": "MappingHierarchyId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying MappingHierarchyId"
+        },
+        {
+          "name": "MappingConfigurationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MappingConfigurationId"
+        },
+        {
+          "name": "Hierarchy",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Hierarchy (int)"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "PicklistGroupName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "PicklistGroupName (nvarchar)"
+        },
+        {
+          "name": "DefaultValue",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DefaultValue (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "MappingHierarchyId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "MappingConfigurationId",
+          "to_table": "PicklistMappingConfiguration",
+          "to_column": "MappingConfigurationId"
+        }
+      ],
+      "description": "Space Admin table PicklistMappingHierarchy",
+      "search_hints": [
+        "picklistmappinghierarchy",
+        "picklistmappinghierarchy"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Position",
+      "columns": [
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 10,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "Priority",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Priority (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "PositionId"
+      ],
+      "foreign_keys": [],
+      "description": "Job position master records",
+      "search_hints": [
+        "position",
+        "positions",
+        "designation master"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "ProjectCMContractConditionGroup",
+      "columns": [
+        {
+          "name": "ProjectCMContractConditionGroupID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ProjectCMContractConditionGroupID"
+        },
+        {
+          "name": "ContractConditionID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ContractConditionID"
+        },
+        {
+          "name": "GroupID",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying GroupID"
+        },
+        {
+          "name": "IsContractConditionCritical",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ProjectCMContractConditionGroupID"
+      ],
+      "foreign_keys": [],
+      "description": "Space Admin table ProjectCMContractConditionGroup",
+      "search_hints": [
+        "projectcmcontractconditiongroup",
+        "projectcmcontractconditiongroup"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Region",
+      "columns": [
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 25,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "ZoneId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ZoneId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "RegionId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ZoneId",
+          "to_table": "Zone",
+          "to_column": "ZoneId"
+        }
+      ],
+      "description": "Region master records",
+      "search_hints": [
+        "region",
+        "regions",
+        "geography"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "ReviewProcess",
+      "columns": [
+        {
+          "name": "ReviewProcessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReviewProcessId"
+        },
+        {
+          "name": "ModuleId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ModuleId"
+        },
+        {
+          "name": "ModuleName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ModuleName (nvarchar)"
+        },
+        {
+          "name": "ProcessPicklistGroupName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ProcessPicklistGroupName (nvarchar)"
+        },
+        {
+          "name": "ProcessPicklistItemName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ProcessPicklistItemName (nvarchar)"
+        },
+        {
+          "name": "ProcessName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ProcessName (nvarchar)"
+        },
+        {
+          "name": "CategoryPicklistGroupName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CategoryPicklistGroupName (nvarchar)"
+        },
+        {
+          "name": "CategoryPicklistItemName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CategoryPicklistItemName (nvarchar)"
+        },
+        {
+          "name": "CategoryName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "CategoryName (nvarchar)"
+        },
+        {
+          "name": "SectionPicklistGroupName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SectionPicklistGroupName (nvarchar)"
+        },
+        {
+          "name": "SectionPicklistItemName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SectionPicklistItemName (nvarchar)"
+        },
+        {
+          "name": "SectionName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SectionName (nvarchar)"
+        },
+        {
+          "name": "ReviewProcessName",
+          "data_type": "nvarchar",
+          "max_length": 300,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ReviewProcessName (nvarchar)"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "IsMandatory",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReviewProcessId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ModuleId",
+          "to_table": "Module",
+          "to_column": "ModuleId"
+        }
+      ],
+      "description": "Space Admin table ReviewProcess",
+      "search_hints": [
+        "reviewprocess",
+        "reviewprocess"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "ReviewProcessDetail",
+      "columns": [
+        {
+          "name": "ReviewProcessDetailId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReviewProcessDetailId"
+        },
+        {
+          "name": "ReviewProcessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewProcessId"
+        },
+        {
+          "name": "ObjectLevelName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ObjectLevelName (nvarchar)"
+        },
+        {
+          "name": "ObjectFunctionName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ObjectFunctionName (nvarchar)"
+        },
+        {
+          "name": "ObjectMappingConstant",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ObjectMappingConstant (nvarchar)"
+        },
+        {
+          "name": "ReviewLevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewLevelId"
+        },
+        {
+          "name": "ReviewFunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewFunctionId"
+        },
+        {
+          "name": "ReviewPositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewPositionId"
+        },
+        {
+          "name": "ReviewSequence",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ReviewSequence (int)"
+        },
+        {
+          "name": "Stage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Stage (int)"
+        },
+        {
+          "name": "IsMandatory",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReviewProcessDetailId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ReviewFunctionId",
+          "to_table": "Function",
+          "to_column": "FunctionId"
+        },
+        {
+          "from_column": "ReviewLevelId",
+          "to_table": "Level",
+          "to_column": "LevelId"
+        },
+        {
+          "from_column": "ReviewPositionId",
+          "to_table": "Position",
+          "to_column": "PositionId"
+        },
+        {
+          "from_column": "ReviewProcessId",
+          "to_table": "ReviewProcess",
+          "to_column": "ReviewProcessId"
+        }
+      ],
+      "description": "Space Admin table ReviewProcessDetail",
+      "search_hints": [
+        "reviewprocessdetail",
+        "reviewprocessdetail"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "SubModule",
+      "columns": [
+        {
+          "name": "SubModuleId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying SubModuleId"
+        },
+        {
+          "name": "ModuleId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ModuleId"
+        },
+        {
+          "name": "ParentSubModuleId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ParentSubModuleId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "Priority",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Priority (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "SubModuleId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "ModuleId",
+          "to_table": "Module",
+          "to_column": "ModuleId"
+        },
+        {
+          "from_column": "ParentSubModuleId",
+          "to_table": "SubModule",
+          "to_column": "SubModuleId"
+        }
+      ],
+      "description": "Space Admin table SubModule",
+      "search_hints": [
+        "submodule",
+        "submodule"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "User_Group",
+      "columns": [
+        {
+          "name": "UserGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserGroupId"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "UserGroupId"
+      ],
+      "foreign_keys": [],
+      "description": "Admin user group memberships",
+      "search_hints": [
+        "user group",
+        "user groups",
+        "group membership"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "User_GroupDefinition",
+      "columns": [
+        {
+          "name": "UserGroupDefinitionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying UserGroupDefinitionId"
+        },
+        {
+          "name": "UserGroupId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserGroupId"
+        },
+        {
+          "name": "DimensionType",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DimensionType (nvarchar)"
+        },
+        {
+          "name": "DimensionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying DimensionId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "UserGroupDefinitionId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "UserGroupId",
+          "to_table": "User_Group",
+          "to_column": "UserGroupId"
+        }
+      ],
+      "description": "Space Admin table User_GroupDefinition",
+      "search_hints": [
+        "user groupdefinition",
+        "user_groupdefinition"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Vendor",
+      "columns": [
+        {
+          "name": "VendorId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying VendorId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "VendorId"
+      ],
+      "foreign_keys": [],
+      "description": "Vendor master records",
+      "search_hints": [
+        "vendor",
+        "vendors",
+        "supplier"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Vertical",
+      "columns": [
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 25,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "VerticalId"
+      ],
+      "foreign_keys": [],
+      "description": "Business vertical master records",
+      "search_hints": [
+        "vertical",
+        "verticals",
+        "business unit"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "VerticalRegion",
+      "columns": [
+        {
+          "name": "VerticalRegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying VerticalRegionId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "VerticalRegionId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "RegionId",
+          "to_table": "Region",
+          "to_column": "RegionId"
+        },
+        {
+          "from_column": "VerticalId",
+          "to_table": "Vertical",
+          "to_column": "VerticalId"
+        }
+      ],
+      "description": "Space Admin table VerticalRegion",
+      "search_hints": [
+        "verticalregion",
+        "verticalregion"
+      ]
+    },
+    {
+      "schema_name": "admin",
+      "name": "Zone",
+      "columns": [
+        {
+          "name": "ZoneId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ZoneId"
+        },
+        {
+          "name": "Code",
+          "data_type": "nvarchar",
+          "max_length": 25,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Code (nvarchar)"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "DisplayName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "DisplayName (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ZoneId"
+      ],
+      "foreign_keys": [],
+      "description": "Zone master records",
+      "search_hints": [
+        "zone",
+        "zones"
+      ]
+    }
+  ],
+  "change_summary": [
+    "No schema structure change"
+  ]
+}

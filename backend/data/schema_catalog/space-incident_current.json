@@ -1,0 +1,3052 @@
+{
+  "source_id": "space-incident",
+  "source_label": "Space Incident",
+  "database_name": "DEV_V1_SPACE_INCIDENT",
+  "schema_name": "incident",
+  "version": 1,
+  "captured_at": "2026-08-17T08:46:48.201019+00:00",
+  "tables": [
+    {
+      "schema_name": "incident",
+      "name": "EventStep",
+      "columns": [
+        {
+          "name": "EventStepId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying EventStepId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "EventStep",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "EventStep (nvarchar)"
+        },
+        {
+          "name": "EventActByUserType",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "EventActByUserType (nvarchar)"
+        },
+        {
+          "name": "EventActByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventActByUserId"
+        },
+        {
+          "name": "EventActByUserName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "EventActByUserName (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "EventStepId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Space Incident table EventStep",
+      "search_hints": [
+        "eventstep",
+        "eventstep"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_Attachment",
+      "columns": [
+        {
+          "name": "IncidentAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying IncidentAttachmentId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "Description",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "ProvisionalAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProvisionalAttachmentId"
+        },
+        {
+          "name": "UploadedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UploadedByUserId"
+        },
+        {
+          "name": "UploadDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Tag",
+          "data_type": "nvarchar",
+          "max_length": 25,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Tag (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "IncidentAttachmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Files attached to an incident",
+      "search_hints": [
+        "incident attachment",
+        "incident photo",
+        "incident file"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_Authorized_Function",
+      "columns": [
+        {
+          "name": "AuthorizedFunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying AuthorizedFunctionId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "AuthorizedFunctionId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Incident table Incident_Authorized_Function",
+      "search_hints": [
+        "incident authorized function",
+        "incident_authorized_function"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_Cost",
+      "columns": [
+        {
+          "name": "CostOfIncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying CostOfIncidentId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "ReportCompletedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReportCompletedByUserId"
+        },
+        {
+          "name": "HeadId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying HeadId"
+        },
+        {
+          "name": "SubHeadId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubHeadId"
+        },
+        {
+          "name": "FromDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ToDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "TimeSpent",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Cost",
+          "data_type": "money",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Cost (money)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "CostOfIncidentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Costs associated with an incident",
+      "search_hints": [
+        "incident cost",
+        "loss cost"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_Description",
+      "columns": [
+        {
+          "name": "DescriptionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying DescriptionId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "StageOfConstruction",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "StageOfConstruction (nvarchar)"
+        },
+        {
+          "name": "TotalManpower",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "TotalManpower (nvarchar)"
+        },
+        {
+          "name": "WeatherConditionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying WeatherConditionId"
+        },
+        {
+          "name": "IsAdmittedtoHospital",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "HospitalName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "HospitalName (nvarchar)"
+        },
+        {
+          "name": "HospitalPhoneNo",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "HospitalPhoneNo (nvarchar)"
+        },
+        {
+          "name": "HospitalDoctor",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "HospitalDoctor (nvarchar)"
+        },
+        {
+          "name": "HospitalAddress",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "HospitalAddress (nvarchar)"
+        },
+        {
+          "name": "IsTransportRequired",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "ModeOfTransportId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ModeOfTransportId"
+        },
+        {
+          "name": "ModeOfTransportOther",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ModeOfTransportOther (nvarchar)"
+        },
+        {
+          "name": "TimeTakenToShiftThePerson",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ReasonOfDelay",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ReasonOfDelay (nvarchar)"
+        },
+        {
+          "name": "FirstObservedByType",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "FirstObservedByType (nvarchar)"
+        },
+        {
+          "name": "FirstObservedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FirstObservedByUserId"
+        },
+        {
+          "name": "FirstObservedByName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "FirstObservedByName (nvarchar)"
+        },
+        {
+          "name": "ActionProposedByObserver",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ActionProposedByObserver (nvarchar)"
+        },
+        {
+          "name": "IsPersonRegisteredwithBOCWWelfareBoard",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "BoardRegistrationNO",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "BoardRegistrationNO (nvarchar)"
+        },
+        {
+          "name": "PartofEmployeesWorkDaysId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PartofEmployeesWorkDaysId"
+        },
+        {
+          "name": "PartofEmployeesWorkDaysOther",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PartofEmployeesWorkDaysOther (nvarchar)"
+        },
+        {
+          "name": "PersonWorkingOnActivityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PersonWorkingOnActivityId"
+        },
+        {
+          "name": "PersonWorkingOnActivityOther",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PersonWorkingOnActivityOther (nvarchar)"
+        },
+        {
+          "name": "IsDocumentaryEvidence",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "DocumentaryEvidence",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DocumentaryEvidence (nvarchar)"
+        },
+        {
+          "name": "DocumentaryEvidenceReason",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DocumentaryEvidenceReason (nvarchar)"
+        },
+        {
+          "name": "IsSupervisorPresent",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "SupervisorDetails",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SupervisorDetails (nvarchar)"
+        },
+        {
+          "name": "SupervisorDetailsReason",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SupervisorDetailsReason (nvarchar)"
+        },
+        {
+          "name": "IsAttendedTBT",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "AttendedTBTReason",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "AttendedTBTReason (nvarchar)"
+        },
+        {
+          "name": "IsInductionTrainingAttended",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "InductionTrainingReason",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "InductionTrainingReason (nvarchar)"
+        },
+        {
+          "name": "InductionTrainingDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "InductionTrainingNumber",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "InductionTrainingNumber (nvarchar)"
+        },
+        {
+          "name": "HSEUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying HSEUserId"
+        },
+        {
+          "name": "IsPPEUsed",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "PPEId",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PPEId"
+        },
+        {
+          "name": "PPEReason",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PPEReason (nvarchar)"
+        },
+        {
+          "name": "InspectionDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IsPersonWorkingAlone",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "DescriptionId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Narrative descriptions of incidents",
+      "search_hints": [
+        "incident description",
+        "what happened"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_Information",
+      "columns": [
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "PrimaryIncidentTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PrimaryIncidentTypeId"
+        },
+        {
+          "name": "IncidentNumber",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "IncidentNumber (nvarchar)"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "VerticalId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying VerticalId"
+        },
+        {
+          "name": "RegionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RegionId"
+        },
+        {
+          "name": "ProjectId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ProjectId"
+        },
+        {
+          "name": "LocationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LocationId"
+        },
+        {
+          "name": "SubLocationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SubLocationId"
+        },
+        {
+          "name": "LocationDetails",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Location / place"
+        },
+        {
+          "name": "ReportedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ReportedBy (bigint)"
+        },
+        {
+          "name": "ReportDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "IncidentDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Details",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Details (nvarchar)"
+        },
+        {
+          "name": "IncidentStatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentStatusId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "IncidentId"
+      ],
+      "foreign_keys": [],
+      "description": "Core incident / accident information records",
+      "search_hints": [
+        "incident",
+        "incidents",
+        "accident",
+        "near miss",
+        "safety incident"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_InjuredPerson",
+      "columns": [
+        {
+          "name": "InjuredPersonId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying InjuredPersonId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "EmployeeType",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "EmployeeType (nvarchar)"
+        },
+        {
+          "name": "SPCPLInjuredUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SPCPLInjuredUserId"
+        },
+        {
+          "name": "InjuredPersonName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "InjuredPersonName (nvarchar)"
+        },
+        {
+          "name": "Occupation",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Occupation (nvarchar)"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "Age",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Age (int)"
+        },
+        {
+          "name": "Cader",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Cader (nvarchar)"
+        },
+        {
+          "name": "ContractorId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ContractorId"
+        },
+        {
+          "name": "ContractorName",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ContractorName (nvarchar)"
+        },
+        {
+          "name": "ContractorSAPCode",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ContractorSAPCode (nvarchar)"
+        },
+        {
+          "name": "PresentAddress",
+          "data_type": "nvarchar",
+          "max_length": 250,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PresentAddress (nvarchar)"
+        },
+        {
+          "name": "PermanentAddress",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PermanentAddress (nvarchar)"
+        },
+        {
+          "name": "Phone",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Phone (nvarchar)"
+        },
+        {
+          "name": "NatureOfBuinessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NatureOfBuinessId"
+        },
+        {
+          "name": "OtherNatureOfBuiness",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OtherNatureOfBuiness (nvarchar)"
+        },
+        {
+          "name": "IsHospitalized",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "MaritialStatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying MaritialStatusId"
+        },
+        {
+          "name": "SpouseName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SpouseName (nvarchar)"
+        },
+        {
+          "name": "GenderId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying GenderId"
+        },
+        {
+          "name": "AffectedBodyParts",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "AffectedBodyParts (nvarchar)"
+        },
+        {
+          "name": "BodyPartDescription",
+          "data_type": "nvarchar",
+          "max_length": 2000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "NatureOfInjury",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "NatureOfInjury (nvarchar)"
+        },
+        {
+          "name": "IncidentTypeId",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentTypeId"
+        },
+        {
+          "name": "WorkingTimeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying WorkingTimeId"
+        },
+        {
+          "name": "ExperienceWithPresentEmployer",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ExperienceWithPresentEmployer (nvarchar)"
+        },
+        {
+          "name": "ExperianceDoingThisJob",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ExperianceDoingThisJob (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "InjuredPersonId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "People injured in an incident",
+      "search_hints": [
+        "injured person",
+        "injury",
+        "casualty"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_Investigation",
+      "columns": [
+        {
+          "name": "InvestigationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying InvestigationId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "ReportTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReportTypeId"
+        },
+        {
+          "name": "CauseOfIncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CauseOfIncidentId"
+        },
+        {
+          "name": "RootCause",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RootCause (nvarchar)"
+        },
+        {
+          "name": "CorrectiveAction",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CorrectiveAction (nvarchar)"
+        },
+        {
+          "name": "NatureofIncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NatureofIncidentId"
+        },
+        {
+          "name": "PostFirstAidStatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PostFirstAidStatusId"
+        },
+        {
+          "name": "FitnessStatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FitnessStatusId"
+        },
+        {
+          "name": "InvestigationApplicabilityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying InvestigationApplicabilityId"
+        },
+        {
+          "name": "OccupationalDisease",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "OccupationalDisease (nvarchar)"
+        },
+        {
+          "name": "DangerousOccurrence",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DangerousOccurrence (nvarchar)"
+        },
+        {
+          "name": "OfficerUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying OfficerUserId"
+        },
+        {
+          "name": "PrimaryInvestigationBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PrimaryInvestigationBy (bigint)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "InvestigationId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Incident investigation records",
+      "search_hints": [
+        "investigation",
+        "incident investigation",
+        "root cause"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_Investigation_Workflow",
+      "columns": [
+        {
+          "name": "InvestigationWorkflowId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying InvestigationWorkflowId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "Section",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Section (nvarchar)"
+        },
+        {
+          "name": "TABConstant",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "TABConstant (nvarchar)"
+        },
+        {
+          "name": "IsCompleted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CompletedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying CompletedByUserId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "InvestigationWorkflowId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Space Incident table Incident_Investigation_Workflow",
+      "search_hints": [
+        "incident investigation workflow",
+        "incident_investigation_workflow"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_Prevention",
+      "columns": [
+        {
+          "name": "PreventionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying PreventionId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "PreventThisIncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PreventThisIncidentId"
+        },
+        {
+          "name": "PreventThisIncidentOther",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PreventThisIncidentOther (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "PreventionId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Preventive actions after an incident",
+      "search_hints": [
+        "prevention",
+        "corrective action",
+        "preventive action"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_Reason",
+      "columns": [
+        {
+          "name": "ReasonId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReasonId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "UnsafeConditionExist",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "UnsafeConditionExist (nvarchar)"
+        },
+        {
+          "name": "UnsafeActsOccur",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "UnsafeActsOccur (nvarchar)"
+        },
+        {
+          "name": "IsRewardEncouraged",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RewardEncouragedDescription",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "IsUnsafeActPriorToIncident",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "UnsafeActPriorToIncidentDescription",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "IsSimilarIncidentReportedInPast",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "PastIncidentDescription",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "IsCorrectiveActionTaken",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CorrectiveActionDescription",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Free-text description/notes"
+        },
+        {
+          "name": "ImmediateCause",
+          "data_type": "nvarchar",
+          "max_length": 250,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ImmediateCause (nvarchar)"
+        },
+        {
+          "name": "IntermediateCause",
+          "data_type": "nvarchar",
+          "max_length": 250,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "IntermediateCause (nvarchar)"
+        },
+        {
+          "name": "PersonalFactors",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PersonalFactors (nvarchar)"
+        },
+        {
+          "name": "PersonalFactorOther",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "PersonalFactorOther (nvarchar)"
+        },
+        {
+          "name": "JobFactors",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "JobFactors (nvarchar)"
+        },
+        {
+          "name": "JobFactorOther",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "JobFactorOther (nvarchar)"
+        },
+        {
+          "name": "SystemFactors",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SystemFactors (nvarchar)"
+        },
+        {
+          "name": "SystemFactorOther",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SystemFactorOther (nvarchar)"
+        },
+        {
+          "name": "UnsafeWorkPlaceConditionIds",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "UnsafeWorkPlaceConditionIds (nvarchar)"
+        },
+        {
+          "name": "UnsafeWorkPlaceConditionOther",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "UnsafeWorkPlaceConditionOther (nvarchar)"
+        },
+        {
+          "name": "UnsafeActByPeopleIds",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "UnsafeActByPeopleIds (nvarchar)"
+        },
+        {
+          "name": "UnsafeActByPeopleOther",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "UnsafeActByPeopleOther (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReasonId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Reasons / causes recorded for an incident",
+      "search_hints": [
+        "incident reason",
+        "cause",
+        "why happened"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_Review",
+      "columns": [
+        {
+          "name": "ReviewId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReviewId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "UpdatedByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UpdatedByUserId"
+        },
+        {
+          "name": "UpdatedByUserCadre",
+          "data_type": "nvarchar",
+          "max_length": 25,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "UpdatedByUserFunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UpdatedByUserFunctionId"
+        },
+        {
+          "name": "ReviewDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "InvestigationUserIds",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "InvestigationUserIds (nvarchar)"
+        },
+        {
+          "name": "ReviewedByUserIds",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ReviewedByUserIds (nvarchar)"
+        },
+        {
+          "name": "IsCostOfIncidentApplicable",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsManDaysLost",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "ResumtionDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReviewId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Incident review / approval records",
+      "search_hints": [
+        "incident review",
+        "reviewed incident"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_ReviewLog",
+      "columns": [
+        {
+          "name": "ReviewLogId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReviewLogId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "EventId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying EventId"
+        },
+        {
+          "name": "ActionByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ActionByUserId"
+        },
+        {
+          "name": "ActionDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "Section",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Section (nvarchar)"
+        },
+        {
+          "name": "LogConstant",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "LogConstant (nvarchar)"
+        },
+        {
+          "name": "Details",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Details (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReviewLogId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Space Incident table Incident_ReviewLog",
+      "search_hints": [
+        "incident reviewlog",
+        "incident_reviewlog"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Incident_Spectator",
+      "columns": [
+        {
+          "name": "SpectatorId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying SpectatorId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "SpectatorCategory",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "SpectatorCategory (nvarchar)"
+        },
+        {
+          "name": "SpectatorType",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "SpectatorType (nvarchar)"
+        },
+        {
+          "name": "SpectatorUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SpectatorUserId"
+        },
+        {
+          "name": "SpectatorUserName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "SpectatorUserName (nvarchar)"
+        },
+        {
+          "name": "SpectatorAddress",
+          "data_type": "nvarchar",
+          "max_length": 250,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SpectatorAddress (nvarchar)"
+        },
+        {
+          "name": "SpectatorPhone",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SpectatorPhone (nvarchar)"
+        },
+        {
+          "name": "Employer",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Employer (nvarchar)"
+        },
+        {
+          "name": "Occupation",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Occupation (nvarchar)"
+        },
+        {
+          "name": "Designation",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Designation (nvarchar)"
+        },
+        {
+          "name": "Section",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Section (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "SpectatorId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Witnesses / spectators of an incident",
+      "search_hints": [
+        "spectator",
+        "witness",
+        "bystander"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "ReviewProcess",
+      "columns": [
+        {
+          "name": "ReviewProcessId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReviewProcessId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "ReviewProcessStageId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewProcessStageId"
+        },
+        {
+          "name": "Stage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Stage (int)"
+        },
+        {
+          "name": "LevelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying LevelId"
+        },
+        {
+          "name": "FunctionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FunctionId"
+        },
+        {
+          "name": "PositionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PositionId"
+        },
+        {
+          "name": "Remark",
+          "data_type": "varchar",
+          "max_length": 1000,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remark (varchar)"
+        },
+        {
+          "name": "IsReviewCompleted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "ReviewerUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ReviewerUserId"
+        },
+        {
+          "name": "ReviewDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "VersionNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "VersionNo (int)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReviewProcessId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        },
+        {
+          "from_column": "ReviewProcessStageId",
+          "to_table": "ReviewProcessStage",
+          "to_column": "ReviewProcessStageId"
+        }
+      ],
+      "description": "Space Incident table ReviewProcess",
+      "search_hints": [
+        "reviewprocess",
+        "reviewprocess"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "ReviewProcessStage",
+      "columns": [
+        {
+          "name": "ReviewProcessStageId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying ReviewProcessStageId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "Stage",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Stage (int)"
+        },
+        {
+          "name": "StageSequence",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "StageSequence (int)"
+        },
+        {
+          "name": "VersionNo",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "VersionNo (int)"
+        },
+        {
+          "name": "IsStageReviewCompleted",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "ReviewProcessStageId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Space Incident table ReviewProcessStage",
+      "search_hints": [
+        "reviewprocessstage",
+        "reviewprocessstage"
+      ]
+    },
+    {
+      "schema_name": "incident",
+      "name": "Suggestion",
+      "columns": [
+        {
+          "name": "SuggestionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying SuggestionId"
+        },
+        {
+          "name": "IncidentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying IncidentId"
+        },
+        {
+          "name": "Suggestion",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Suggestion (nvarchar)"
+        },
+        {
+          "name": "SuggestionByUserType",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SuggestionByUserType (nvarchar)"
+        },
+        {
+          "name": "SuggestionByUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying SuggestionByUserId"
+        },
+        {
+          "name": "SuggestionByUserName",
+          "data_type": "nvarchar",
+          "max_length": 500,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "SuggestionByUserName (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "SuggestionId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "IncidentId",
+          "to_table": "Incident_Information",
+          "to_column": "IncidentId"
+        }
+      ],
+      "description": "Suggestions related to incident/safety improvement",
+      "search_hints": [
+        "suggestion",
+        "safety suggestion"
+      ]
+    }
+  ],
+  "change_summary": [
+    "No schema structure change"
+  ]
+}

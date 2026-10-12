@@ -22,6 +22,108 @@ import {
 import { BUILDTRACK_RECENT_KEY, buildTrackSearchConfig } from "@/lib/global-search";
 
 const RECENT_KEY = BUILDTRACK_RECENT_KEY;
+const USS_URL = process.env.NEXT_PUBLIC_USS_URL || "http://localhost:8000";
+type SearchEngine = "azure" | "universal";
+
+function stripMarkup(value) {
+  return String(value || "").replace(/<\/?em>/gi, "").replace(/<[^>]+>/g, "").trim();
+}
+
+function safeAppPath(hit) {
+  const raw = String(hit.source_url || hit.source_ref?.url || "");
+  const kind = hit.entity_type || "document";
+  const fallback =
+    kind === "drawing" ? "/drawings"
+    : kind === "document" || kind === "handover" ? "/documents"
+    : kind === "team" || kind === "attendance" ? "/team"
+    : kind === "task" ? "/tasks"
+    : kind === "safety" ? "/safety"
+    : kind === "timeline" ? "/timeline"
+    : kind === "project" ? "/projects"
+    : "/dashboard";
+  if (!raw || raw.includes("blob.core.windows.net")) return fallback;
+  if (raw.startsWith("http://localhost:3000")) return raw.slice("http://localhost:3000".length) || fallback;
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return fallback;
+  return raw.startsWith("/") ? raw : fallback;
+}
+
+function mapUniversalHit(hit) {
+  const external = String(hit.source_ref?.external_id || "");
+  const drawingId = external.match(/^drawing-(\d+)$/)?.[1];
+  const documentId = external.match(/^document-(\d+)$/)?.[1];
+  return {
+    id: drawingId ? `drawing-${drawingId}` : documentId ? `document-${documentId}` : String(hit.id),
+    title: hit.title || hit.id,
+    snippet: stripMarkup(hit.snippet || ""),
+    content_type: hit.entity_type || "document",
+    url: safeAppPath(hit),
+    score: hit.score,
+    metadata: {
+      ...(hit.metadata || {}),
+      source: hit.source,
+      record_key: external,
+      ...(drawingId ? { drawing_id: Number(drawingId) } : {}),
+      ...(documentId ? { doc_id: Number(documentId) } : {}),
+    },
+  };
+}
+
+async function searchUniversalIndex(body) {
+  const res = await fetch(`${USS_URL}/v1/search`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-USS-Tenant-Id": "client_a",
+      "X-USS-User-Id": "demo",
+      "X-USS-Principals": "user:demo,role:pm",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error("Universal Search is not reachable");
+  }
+  const data = await res.json();
+  return { data, results: (data.results || []).map(mapUniversalHit) };
+}
+
+async function searchUniversal(query: string): Promise<SearchResponse> {
+  const started = performance.now();
+  const main = await searchUniversalIndex({
+    query,
+    mode: "bm25",
+    highlight: true,
+    page: 1,
+    page_size: 20,
+  });
+  let ai_answer = "";
+  try {
+    const answerRes = await fetch(`${USS_URL}/v1/answer`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-USS-Tenant-Id": "client_a",
+        "X-USS-User-Id": "demo",
+        "X-USS-Principals": "user:demo,role:pm",
+      },
+      body: JSON.stringify({ query, mode: "bm25", max_passages: 4 }),
+    });
+    if (answerRes.ok) {
+      const answer = await answerRes.json();
+      if (answer.answer_status === "generated" && answer.answer) {
+        ai_answer = answer.answer;
+      }
+    }
+  } catch {
+    // Leave the answer empty when the answer model is off.
+  }
+  return {
+    ai_answer,
+    results: main.results,
+    suggested_questions: [],
+    search_time_ms: main.data.took_ms ?? Math.round(performance.now() - started),
+    total_results: Math.max(main.data.total ?? 0, main.results.length),
+  };
+}
 
 function getRecent(): string[] {
   if (typeof window === "undefined") return [];
@@ -69,6 +171,25 @@ const TYPE_CONFIG: Record<string, {
   equipment:  { icon: Wrench,         color: "text-orange-600", bg: "bg-orange-50",  label: "Equipment",      pluralLabel: "Equipment",        listPage: "/assets?tab=equipment"  },
   vendor:     { icon: Truck,          color: "text-sky-600",    bg: "bg-sky-50",     label: "Vendor",         pluralLabel: "Vendors",          listPage: "/assets?tab=vendors"  },
   material:   { icon: Package,        color: "text-lime-700",   bg: "bg-lime-50",    label: "Material",       pluralLabel: "Material Deliveries", listPage: "/assets?tab=materials" },
+  event:      { icon: Calendar,       color: "text-violet-600", bg: "bg-violet-50",  label: "Event",          pluralLabel: "Events",           listPage: "/dashboard"  },
+  event_agenda: { icon: Calendar,     color: "text-fuchsia-600", bg: "bg-fuchsia-50", label: "Event Agenda", pluralLabel: "Event Agendas",    listPage: "/dashboard"  },
+  event_information: { icon: Calendar, color: "text-violet-700", bg: "bg-violet-50", label: "Event Info",   pluralLabel: "Event Information", listPage: "/dashboard"  },
+  schema_sql: { icon: Calendar, color: "text-emerald-700", bg: "bg-emerald-50", label: "SQL Result", pluralLabel: "SQL Results", listPage: "/dashboard" },
+  space_project: { icon: Building2, color: "text-blue-700", bg: "bg-blue-50", label: "Space Project", pluralLabel: "Space Projects", listPage: "/dashboard" },
+  occupational_review: { icon: ShieldCheck, color: "text-rose-600", bg: "bg-rose-50", label: "Occupational Review", pluralLabel: "Occupational Reviews", listPage: "/safety" },
+  environmental_review: { icon: ShieldCheck, color: "text-teal-700", bg: "bg-teal-50", label: "Environmental Review", pluralLabel: "Environmental Reviews", listPage: "/safety" },
+  incident: { icon: ShieldCheck, color: "text-rose-700", bg: "bg-rose-50", label: "Incident", pluralLabel: "Incidents", listPage: "/safety" },
+  employment: { icon: Users, color: "text-purple-600", bg: "bg-purple-50", label: "Employment", pluralLabel: "Employment", listPage: "/team" },
+  contract: { icon: FileText, color: "text-indigo-600", bg: "bg-indigo-50", label: "Contract", pluralLabel: "Contracts", listPage: "/documents" },
+  dashboard_project: { icon: LayoutDashboard, color: "text-cyan-700", bg: "bg-cyan-50", label: "Dashboard Project", pluralLabel: "Dashboard Projects", listPage: "/dashboard" },
+  dms_document: { icon: FileText, color: "text-red-700", bg: "bg-red-50", label: "DMS Document", pluralLabel: "DMS Documents", listPage: "/documents" },
+  dms_document_file: { icon: FileText, color: "text-orange-700", bg: "bg-orange-50", label: "DMS File", pluralLabel: "DMS Files", listPage: "/documents" },
+  space_attachment: { icon: FileText, color: "text-slate-700", bg: "bg-slate-50", label: "Attachment", pluralLabel: "Attachments", listPage: "/documents" },
+  space_user: { icon: Users, color: "text-violet-700", bg: "bg-violet-50", label: "Space User", pluralLabel: "Space Users", listPage: "/team" },
+  labour_attendance: { icon: ClipboardCheck, color: "text-green-700", bg: "bg-green-50", label: "Labour Attendance", pluralLabel: "Labour Attendance", listPage: "/team" },
+  checkpoint_submission: { icon: ClipboardCheck, color: "text-amber-700", bg: "bg-amber-50", label: "Checkpoint", pluralLabel: "Checkpoints", listPage: "/dashboard" },
+  bms_project: { icon: Building2, color: "text-sky-700", bg: "bg-sky-50", label: "BMS Project", pluralLabel: "BMS Projects", listPage: "/projects" },
+  tool: { icon: Wrench, color: "text-slate-600", bg: "bg-slate-50", label: "Tool", pluralLabel: "Tools", listPage: "/dashboard" },
 };
 
 const NAV_SHORTCUTS = [
@@ -118,10 +239,14 @@ function looksLikeQuestion(q: string): boolean {
 }
 
 // ── Client-side result cache (session memory) ─────────────────────────────────
+// Bump when search sources/index shape changes so stale session hits are dropped.
+const RESULT_CACHE_VERSION = "space-v1";
 const resultCache = new Map<string, SearchResponse>();
 const MAX_CACHE = 50;
 
-function cacheKey(q: string) { return q.trim().toLowerCase(); }
+function cacheKey(q: string) {
+  return `${RESULT_CACHE_VERSION}::${q.trim().toLowerCase()}`;
+}
 
 function getCached(q: string) { return resultCache.get(cacheKey(q)) ?? null; }
 
@@ -152,6 +277,7 @@ function isFilterListQuery(q: string): boolean {
 }
 
 export default function SearchBar() {
+  const engine: SearchEngine = "azure";
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -226,8 +352,13 @@ export default function SearchBar() {
           ...prev,
           ai_answer: res.data.ai_answer || prev.ai_answer || "",
           suggested_questions: res.data.suggested_questions,
-          results: res.data.results?.length ? res.data.results : prev.results,
-          total_results: res.data.total_results || prev.total_results,
+          // Prefer /answer results even when empty (AI said "not found").
+          // Do not fall back to Phase-1 hits via falsy `.length` checks.
+          results: Array.isArray(res.data.results) ? res.data.results : prev.results,
+          total_results:
+            typeof res.data.total_results === "number"
+              ? res.data.total_results
+              : prev.total_results,
           search_time_ms: res.data.search_time_ms,
           is_question: res.data.is_question ?? prev.is_question,
         };
@@ -320,6 +451,25 @@ export default function SearchBar() {
         }
       }
 
+      if (engine === "universal") {
+        setLoadingResults(true);
+        try {
+          const data = await searchUniversal(trimmed);
+          if (activeQueryRef.current.trim() !== trimmed) return;
+          setResults(data);
+          saveRecent(trimmed);
+          setRecent(getRecent());
+        } catch {
+          if (activeQueryRef.current.trim() === trimmed) {
+            setResults(null);
+            setSearchError("Universal Search failed. Start it on port 8000, or switch back to Azure.");
+          }
+        } finally {
+          setLoadingResults(false);
+        }
+        return;
+      }
+
       const cached = getCached(trimmed);
       if (cached) {
         if (opts?.immediateAI && cached.ai_answer) {
@@ -352,7 +502,7 @@ export default function SearchBar() {
         setLoadingResults(false);
       }
     },
-    [clearAIAnswer, scheduleAIAnswer],
+    [clearAIAnswer, engine, scheduleAIAnswer],
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -427,7 +577,10 @@ export default function SearchBar() {
     }
 
     if (result.url?.startsWith("http")) {
-      window.alert("This file is not linked to Document Control yet. Open it from the Documents page.");
+      const page = result.content_type === "drawing" ? "/drawings" : "/documents";
+      setOpen(false);
+      setQuery("");
+      router.push(page);
       return;
     }
 
@@ -502,6 +655,8 @@ export default function SearchBar() {
       return "document";
     }
 
+    if (/\b(agenda|agendas|event agenda|meeting agenda)\b/.test(t)) return "event_agenda";
+    if (/\b(event|events|meeting|meetings)\b/.test(t)) return "event";
     if (/\b(team|member|members|workforce|personnel|staff|who is|who are|manager|engineer|contractor)\b/.test(t)) return "team";
     if (/\b(task|tasks|activit|activity|work item|job)\b/.test(t)) return "task";
     if (/\b(timeline|phase|phases|milestone|milestones|schedule|gantt|steel erection|foundation|platform upgrade|deck|utility relocation|digital signage|final testing|design.*permit)\b/.test(t)) return "timeline";
@@ -511,7 +666,12 @@ export default function SearchBar() {
     if (/\b(safety|incident|violation|hse|hazard|near miss|ppe|inspection)\b/.test(t)) return "safety";
     if (/\b(attendance|present|absent|check.?in|check.?out|hours worked)\b/.test(t)) return "attendance";
     if (/\b(budget|utilisation|utilization|spent|expenditure|cost|financial|₹|crore|productivity|completion rate|reports?)\b/.test(t)) return "report";
-    if (/\b(project|projects)\b/.test(t) && !/\breport\b/.test(t)) return "project";
+    if (/\b(project|projects)\b/.test(t) && !/\breport\b/.test(t)) {
+      // Schema-SQL Space Project rows use content_type schema_sql / space_project
+      if (resultList?.some((r) => r.content_type === "schema_sql")) return "schema_sql";
+      if (resultList?.some((r) => r.content_type === "space_project")) return "space_project";
+      return "project";
+    }
     return null;
   }
 
@@ -542,8 +702,20 @@ export default function SearchBar() {
     return reordered;
   })();
 
+  // Keep Space ProjectId cross-DB hops visible (HSE / Incident / LMS / …)
+  const hasSpaceLinkedHits = Boolean(
+    results?.results.some(
+      (r) =>
+        r.metadata?.related_via === "space_project_id" ||
+        r.metadata?.related_via === "space_attachment_id" ||
+        r.metadata?.related_via === "space_user_id" ||
+        r.metadata?.retrieval === "cross_db_space"
+    )
+  );
+
   // Show "More Info" collapse when a primary type is detected (question OR keyword phrase)
-  const shouldCollapse = !!detectedPrimaryType && sortedGrouped.length > 1;
+  const shouldCollapse =
+    !!detectedPrimaryType && sortedGrouped.length > 1 && !hasSpaceLinkedHits;
 
   const grouped = activeFilter === "all"
     ? sortedGrouped
@@ -801,7 +973,12 @@ export default function SearchBar() {
                                       {String(r.metadata.database_label)}
                                     </span>
                                   ) : null}
-                                  {r.metadata?.relationship === "same_project" ? (
+                                  {r.metadata?.relationship === "same_project" ||
+                                  r.metadata?.relationship === "same_attachment" ||
+                                  r.metadata?.relationship === "same_user" ||
+                                  r.metadata?.related_via === "space_project_id" ||
+                                  r.metadata?.related_via === "space_attachment_id" ||
+                                  r.metadata?.related_via === "space_user_id" ? (
                                     <span
                                       className="flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded"
                                       title={

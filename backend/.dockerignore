@@ -1,0 +1,17 @@
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+.env.*
+.cache/
+.tmp/
+data/*.db
+data/*.db-*
+data/_debug_*
+.git
+.gitignore
+Dockerfile
+.dockerignore

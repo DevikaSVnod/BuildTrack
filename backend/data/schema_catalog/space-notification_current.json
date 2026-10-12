@@ -1,0 +1,1252 @@
+{
+  "source_id": "space-notification",
+  "source_label": "Space Notification",
+  "database_name": "DEV_V1_SPACE_NOTIFICATION",
+  "schema_name": "notification",
+  "version": 1,
+  "captured_at": "2026-08-17T08:46:49.637265+00:00",
+  "tables": [
+    {
+      "schema_name": "notification",
+      "name": "Notification",
+      "columns": [
+        {
+          "name": "NotificationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying NotificationId"
+        },
+        {
+          "name": "TypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TypeId"
+        },
+        {
+          "name": "ModuleId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ModuleId"
+        },
+        {
+          "name": "Module",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Module (nvarchar)"
+        },
+        {
+          "name": "TemplateId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying TemplateId"
+        },
+        {
+          "name": "PriorityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PriorityId"
+        },
+        {
+          "name": "StatusId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying StatusId"
+        },
+        {
+          "name": "Name",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "Title",
+          "data_type": "nvarchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Display title/name"
+        },
+        {
+          "name": "Content",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Content (nvarchar)"
+        },
+        {
+          "name": "IsReadReceiptRequired",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "ExpirationDays",
+          "data_type": "int",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ExpirationDays (int)"
+        },
+        {
+          "name": "IsMobileOnly",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsWebOnly",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "NotificationNumber",
+          "data_type": "nvarchar",
+          "max_length": 50,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "NotificationNumber (nvarchar)"
+        }
+      ],
+      "primary_keys": [
+        "NotificationId"
+      ],
+      "foreign_keys": [],
+      "description": "Notification / alert master records",
+      "search_hints": [
+        "notification",
+        "notifications",
+        "alert",
+        "alerts"
+      ]
+    },
+    {
+      "schema_name": "notification",
+      "name": "NotificationAttachment",
+      "columns": [
+        {
+          "name": "NotificationAttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying NotificationAttachmentId"
+        },
+        {
+          "name": "NotificationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NotificationId"
+        },
+        {
+          "name": "AttachmentId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying AttachmentId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "NotificationAttachmentId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "NotificationId",
+          "to_table": "Notification",
+          "to_column": "NotificationId"
+        }
+      ],
+      "description": "Space Notification table NotificationAttachment",
+      "search_hints": [
+        "notificationattachment",
+        "notificationattachment"
+      ]
+    },
+    {
+      "schema_name": "notification",
+      "name": "NotificationChannel",
+      "columns": [
+        {
+          "name": "NotificationChannelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying NotificationChannelId"
+        },
+        {
+          "name": "NotificationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NotificationId"
+        },
+        {
+          "name": "ChannelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ChannelId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "NotificationChannelId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "NotificationId",
+          "to_table": "Notification",
+          "to_column": "NotificationId"
+        }
+      ],
+      "description": "Channels used to deliver notifications",
+      "search_hints": [
+        "notification channel",
+        "email channel",
+        "sms channel"
+      ]
+    },
+    {
+      "schema_name": "notification",
+      "name": "NotificationExecution",
+      "columns": [
+        {
+          "name": "NotificationExecutionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying NotificationExecutionId"
+        },
+        {
+          "name": "NotificationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NotificationId"
+        },
+        {
+          "name": "PriorityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PriorityId"
+        },
+        {
+          "name": "IsMobileOnly",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsWebOnly",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "TimeToSend",
+          "data_type": "time",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ChannelId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ChannelId"
+        },
+        {
+          "name": "RecipientUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RecipientUserId"
+        },
+        {
+          "name": "RecipientEmail",
+          "data_type": "varchar",
+          "max_length": 150,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RecipientEmail (varchar)"
+        },
+        {
+          "name": "RecipientMobile",
+          "data_type": "varchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RecipientMobile (varchar)"
+        },
+        {
+          "name": "RecipientName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RecipientName (nvarchar)"
+        },
+        {
+          "name": "NotificationDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "TriggerTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Status",
+          "data_type": "varchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Status (varchar)"
+        },
+        {
+          "name": "IsRead",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "ReadDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RetryCount",
+          "data_type": "smallint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RetryCount (smallint)"
+        },
+        {
+          "name": "ExternalMessage",
+          "data_type": "varchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ExternalMessage (varchar)"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 300,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "NotificationExecutionId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "NotificationId",
+          "to_table": "Notification",
+          "to_column": "NotificationId"
+        }
+      ],
+      "description": "Execution runs of notifications",
+      "search_hints": [
+        "notification execution",
+        "notification sent"
+      ]
+    },
+    {
+      "schema_name": "notification",
+      "name": "NotificationExecutionHistory",
+      "columns": [
+        {
+          "name": "NotificationExecutionHistoryId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying NotificationExecutionHistoryId"
+        },
+        {
+          "name": "NotificationExecutionId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NotificationExecutionId"
+        },
+        {
+          "name": "NotificationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NotificationId"
+        },
+        {
+          "name": "PriorityId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying PriorityId"
+        },
+        {
+          "name": "IsMobileOnly",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsWebOnly",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "TimeToSend",
+          "data_type": "time",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ChannelId",
+          "data_type": "smallint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ChannelId"
+        },
+        {
+          "name": "RecipientUserId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RecipientUserId"
+        },
+        {
+          "name": "RecipientEmail",
+          "data_type": "varchar",
+          "max_length": 150,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RecipientEmail (varchar)"
+        },
+        {
+          "name": "RecipientMobile",
+          "data_type": "varchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RecipientMobile (varchar)"
+        },
+        {
+          "name": "RecipientName",
+          "data_type": "nvarchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RecipientName (nvarchar)"
+        },
+        {
+          "name": "NotificationDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "TriggerTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "Status",
+          "data_type": "varchar",
+          "max_length": 20,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Status (varchar)"
+        },
+        {
+          "name": "IsRead",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "ReadDateTime",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RetryCount",
+          "data_type": "smallint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RetryCount (smallint)"
+        },
+        {
+          "name": "ExternalMessage",
+          "data_type": "varchar",
+          "max_length": 100,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ExternalMessage (varchar)"
+        },
+        {
+          "name": "Remark",
+          "data_type": "nvarchar",
+          "max_length": 300,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Remark (nvarchar)"
+        }
+      ],
+      "primary_keys": [
+        "NotificationExecutionHistoryId"
+      ],
+      "foreign_keys": [],
+      "description": "Space Notification table NotificationExecutionHistory",
+      "search_hints": [
+        "notificationexecutionhistory",
+        "notificationexecutionhistory"
+      ]
+    },
+    {
+      "schema_name": "notification",
+      "name": "NotificationRecipient",
+      "columns": [
+        {
+          "name": "NotificationRecipientId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying NotificationRecipientId"
+        },
+        {
+          "name": "NotificationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NotificationId"
+        },
+        {
+          "name": "RecipientTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying RecipientTypeId"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "NotificationRecipientId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "NotificationId",
+          "to_table": "Notification",
+          "to_column": "NotificationId"
+        }
+      ],
+      "description": "Recipients of notifications",
+      "search_hints": [
+        "notification recipient",
+        "alert recipient"
+      ]
+    },
+    {
+      "schema_name": "notification",
+      "name": "NotificationRecipientDetail",
+      "columns": [
+        {
+          "name": "NotificationRecipientDetailId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying NotificationRecipientDetailId"
+        },
+        {
+          "name": "NotificationRecipientId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NotificationRecipientId"
+        },
+        {
+          "name": "UserTypeId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying UserTypeId"
+        },
+        {
+          "name": "ObjectConstant",
+          "data_type": "varchar",
+          "max_length": 30,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ObjectConstant (varchar)"
+        },
+        {
+          "name": "ObjectType",
+          "data_type": "varchar",
+          "max_length": 30,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ObjectType (varchar)"
+        },
+        {
+          "name": "ObjectId",
+          "data_type": "varchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying ObjectId"
+        },
+        {
+          "name": "ObjectDetail",
+          "data_type": "nvarchar",
+          "max_length": 200,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "ObjectDetail (nvarchar)"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "RecipientTo",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RecipientTo (nvarchar)"
+        },
+        {
+          "name": "RecipientCc",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RecipientCc (nvarchar)"
+        },
+        {
+          "name": "RecipientBcc",
+          "data_type": "nvarchar",
+          "max_length": -1,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "RecipientBcc (nvarchar)"
+        }
+      ],
+      "primary_keys": [
+        "NotificationRecipientDetailId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "NotificationRecipientId",
+          "to_table": "NotificationRecipient",
+          "to_column": "NotificationRecipientId"
+        }
+      ],
+      "description": "Space Notification table NotificationRecipientDetail",
+      "search_hints": [
+        "notificationrecipientdetail",
+        "notificationrecipientdetail"
+      ]
+    },
+    {
+      "schema_name": "notification",
+      "name": "NotificationSchedule",
+      "columns": [
+        {
+          "name": "NotificationScheduleId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": true,
+          "description": "Identifier linking or uniquely identifying NotificationScheduleId"
+        },
+        {
+          "name": "NotificationId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying NotificationId"
+        },
+        {
+          "name": "FrequencyId",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Identifier linking or uniquely identifying FrequencyId"
+        },
+        {
+          "name": "StartDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "EndDate",
+          "data_type": "date",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "TimeToSend",
+          "data_type": "time",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "DayInterval",
+          "data_type": "smallint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "DayInterval (smallint)"
+        },
+        {
+          "name": "WeekDays",
+          "data_type": "varchar",
+          "max_length": 20,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "WeekDays (varchar)"
+        },
+        {
+          "name": "WeekOfMonth",
+          "data_type": "smallint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "WeekOfMonth (smallint)"
+        },
+        {
+          "name": "MonthInterval",
+          "data_type": "smallint",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "MonthInterval (smallint)"
+        },
+        {
+          "name": "NextRunOn",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "NextRunOn (datetime2)"
+        },
+        {
+          "name": "LastRunOn",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": true,
+          "is_primary_key": false,
+          "description": "LastRunOn (datetime2)"
+        },
+        {
+          "name": "IsRecurringActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "RowVersion",
+          "data_type": "timestamp",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "RowVersion (timestamp)"
+        },
+        {
+          "name": "IsActive",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "IsArchived",
+          "data_type": "bit",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Boolean flag"
+        },
+        {
+          "name": "CreatedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "CreatedBy (bigint)"
+        },
+        {
+          "name": "CreatedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        },
+        {
+          "name": "ModifiedBy",
+          "data_type": "bigint",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "ModifiedBy (bigint)"
+        },
+        {
+          "name": "ModifiedDate",
+          "data_type": "datetime2",
+          "max_length": null,
+          "is_nullable": false,
+          "is_primary_key": false,
+          "description": "Date/time field"
+        }
+      ],
+      "primary_keys": [
+        "NotificationScheduleId"
+      ],
+      "foreign_keys": [
+        {
+          "from_column": "NotificationId",
+          "to_table": "Notification",
+          "to_column": "NotificationId"
+        }
+      ],
+      "description": "Schedules for notifications",
+      "search_hints": [
+        "notification schedule",
+        "alert schedule"
+      ]
+    }
+  ],
+  "change_summary": [
+    "No schema structure change"
+  ]
+}

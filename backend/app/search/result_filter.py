@@ -325,6 +325,74 @@ def filter_by_blob_evidence(
     return _prefer_drawing_rows(matched)
 
 
+def _is_space_linked_hit(result: Dict[str, Any]) -> bool:
+    meta = result.get("metadata") or {}
+    via = str(meta.get("related_via") or "")
+    return (
+        via in {"space_project_id", "space_attachment_id", "space_user_id"}
+        or meta.get("retrieval") == "cross_db_space"
+        or (
+            bool(meta.get("linked_by_relationship"))
+            and via.startswith("space_")
+        )
+    )
+
+
+def _space_project_ids_in(results: List[Dict[str, Any]]) -> set[str]:
+    ids: set[str] = set()
+    for r in results:
+        meta = r.get("metadata") or {}
+        pid = meta.get("space_project_id") or meta.get("project_id")
+        if pid is not None and str(pid).strip().isdigit():
+            ids.add(str(pid).strip())
+    return ids
+
+
+def _merge_space_linked_hits(
+    kept: List[Dict[str, Any]],
+    all_results: List[Dict[str, Any]],
+    *,
+    max_extra: int = 24,
+) -> List[Dict[str, Any]]:
+    """
+    Keep cross-DB Space ProjectId expansions even when answer/entity filters
+    would otherwise drop them (e.g. project-list answers only cite project names).
+    """
+    if not kept or not all_results:
+        return kept
+
+    seed_pids = _space_project_ids_in(kept)
+    if not seed_pids:
+        # Also allow seeds that are themselves Space schema rows with ProjectId
+        seed_pids = _space_project_ids_in(all_results)
+    if not seed_pids:
+        return kept
+
+    seen = {str(r.get("id") or "") for r in kept if r.get("id")}
+    extra: List[Dict[str, Any]] = []
+    for r in all_results:
+        rid = str(r.get("id") or "")
+        if rid and rid in seen:
+            continue
+        meta = r.get("metadata") or {}
+        pid = str(meta.get("space_project_id") or meta.get("project_id") or "").strip()
+        if pid not in seed_pids:
+            continue
+        if not _is_space_linked_hit(r):
+            continue
+        extra.append(r)
+        if rid:
+            seen.add(rid)
+        if len(extra) >= max_extra:
+            break
+
+    if not extra:
+        return kept
+    merged = list(kept) + extra
+    merged.sort(key=lambda x: float(x.get("score") or 0), reverse=True)
+    return merged
+
+
 def _filter_by_answer_entities(
     answer: str, results: List[Dict[str, Any]]
 ) -> List[Dict[str, Any]]:
@@ -366,6 +434,10 @@ def _extract_query_subject_terms(query: str) -> set[str]:
 _TERM_ALIASES: dict[str, tuple[str, ...]] = {
     "furniture": ("workstation", "desk", "chair", "office", "conference", "table"),
     "office": ("workstation", "conference"),
+    # Soft aliases only — exact "university" titles still win via scoring.
+    "university": ("campus", "amity", "university"),
+    "campus": ("university", "amity", "campus"),
+    "components": ("buildings", "structures", "blocks", "objects", "features", "hostel"),
 }
 
 
@@ -420,6 +492,25 @@ def _filter_by_query_relevance(
     scored = [(r, _result_query_relevance(query, r)) for r in results]
     scored.sort(key=lambda x: x[1], reverse=True)
     top_score = scored[0][1]
+    terms = _extract_query_subject_terms(query)
+    # Longer tokens (e.g. "university") are more distinctive than "plan".
+    distinctive = {t for t in terms if len(t) >= 6}
+
+    def _haystack(r: Dict[str, Any]) -> str:
+        meta = r.get("metadata") or {}
+        return " ".join(
+            [r.get("title") or "", r.get("snippet") or "",
+             " ".join(str(v) for v in meta.values())]
+        ).lower()
+
+    if distinctive:
+        with_distinctive = [
+            r for r, _ in scored
+            if any(_term_in_haystack(t, _haystack(r)) for t in distinctive)
+        ]
+        if not with_distinctive:
+            return []
+
     if top_score <= 5.0:
         return results
 
@@ -427,21 +518,21 @@ def _filter_by_query_relevance(
     min_score = max(8.0, top_score * ratio)
     filtered = [r for r, s in scored if s >= min_score and s > 0]
 
-    terms = _extract_query_subject_terms(query)
     if terms and filtered:
         term_matched: List[Dict[str, Any]] = []
         for r in filtered:
-            meta = r.get("metadata") or {}
-            haystack = " ".join(
-                [r.get("title") or "", r.get("snippet") or "",
-                 " ".join(str(v) for v in meta.values())]
-            ).lower()
+            haystack = _haystack(r)
             hits = sum(1 for t in terms if _term_in_haystack(t, haystack))
             min_hits = 2 if len(terms) >= 2 and is_which_drawing_query(query) else 1
+            if distinctive and not any(_term_in_haystack(t, haystack) for t in distinctive):
+                continue
             if hits >= min_hits:
                 term_matched.append(r)
         if term_matched:
             filtered = term_matched
+        elif distinctive:
+            # Distinctive subject terms matched nothing — don't keep weak leftovers.
+            return []
 
     return filtered if filtered else [scored[0][0]]
 
@@ -720,9 +811,9 @@ def filter_results_for_query(
     if analysis and analysis.is_question:
         relevance = _filter_by_query_relevance(query, filtered)
         if relevance:
-            return relevance
+            return _merge_space_linked_hits(relevance, results)
 
-    return filtered
+    return _merge_space_linked_hits(filtered, results)
 
 
 def _answer_says_not_found(answer: str) -> bool:
@@ -734,9 +825,11 @@ def _answer_says_not_found(answer: str) -> bool:
     return bool(
         re.search(
             r"\b(could not find|couldn't find|cannot find|can't find|"
-            r"no information|not found|not mentioned|not stated|not visible|"
+            r"no(?:\s+\w+){0,3}\s+information|"
+            r"not found|was not found|were not found|"
+            r"not mentioned|not stated|not visible|"
             r"do(?:es)? not specify|don(?:'|')t specify|excerpts do not specify|"
-            r"no (?:evidence|record|data|results?))\b",
+            r"no (?:evidence|record|data|results?|relevant))\b",
             lower,
         )
     )
@@ -776,6 +869,14 @@ def filter_results_for_display(
 
     if answer and answer.strip():
         if _answer_says_not_found(answer):
+            from app.search.query_intel import is_bms_domain_query
+
+            # e.g. BMS miss but Space Project master still matches the code.
+            if is_bms_domain_query(query) and results:
+                narrowed = filter_results_for_query(query, results, analysis)
+                if narrowed:
+                    return narrowed
+                return results[:15]
             return []
 
         # Answer cites specific drawing number(s) → only those sheets
@@ -809,13 +910,13 @@ def filter_results_for_display(
 
         entity_filtered = _filter_by_answer_entities(answer, results)
         if entity_filtered:
-            return entity_filtered
+            return _merge_space_linked_hits(entity_filtered, results)
 
         # Substantive answer but no named entities — keep all query-relevant hits
         if analysis and analysis.is_question:
             relevance = _filter_by_query_relevance(query, results)
             if len(relevance) < len(results):
-                return relevance
+                return _merge_space_linked_hits(relevance, results)
             from app.search.query_intel import is_document_content_query, is_drawing_content_query
 
             if is_document_content_query(query) or is_drawing_content_query(query):
@@ -826,4 +927,6 @@ def filter_results_for_display(
     if is_structured_filter_query(query):
         return results
 
-    return filter_results_for_query(query, results, analysis)
+    return _merge_space_linked_hits(
+        filter_results_for_query(query, results, analysis), results
+    )
